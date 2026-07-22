@@ -1,0 +1,129 @@
+.tg-layout {
+    width: min(1560px, 100%);
+    margin: auto;
+    display: grid;
+    grid-template-columns:var(--tg-sidebar) minmax(0, var(--tg-content)) var(--tg-right);
+    justify-content: center;
+    align-items: start;
+    gap: var(--tg-gap);
+    padding: 24px 28px
+}
+
+.tg-sidebar {
+    position: sticky;
+    top: 24px;
+    height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--tg-border);
+    padding: 10px 22px 8px 4px
+}
+
+.tg-content {
+    width: 550px;
+    max-width: var(--tg-content);
+    min-width: 0
+}
+
+.tg-right-rail {
+    position: sticky;
+    top: 24px;
+    width: var(--tg-right)
+}
+
+.tg-sidebar-footer {
+    margin-top: auto;
+    padding: 14px;
+    color: var(--tg-muted);
+    font-size: 12px;
+    line-height: 1.8
+}
+
+.tg-mobile-header, .tg-mobile-nav {
+    display: none
+}
+
+@media (max-width: 1180px) {
+    .tg-layout {
+        grid-template-columns:88px minmax(0, 650px)
+    }
+
+    .tg-sidebar {
+        width: 88px;
+        align-items: center;
+        padding-right: 4px
+    }
+
+    .tg-sidebar .tg-brand {
+        font-size: 0;
+        margin-inline: 0
+    }
+
+    .tg-nav-link {
+        justify-content: center;
+        width: 52px
+    }
+
+    .tg-nav-link span, .tg-sidebar-footer, .tg-right-rail {
+        display: none
+    }
+}
+
+@media (max-width: 760px) {
+    body {
+        background: #fff
+    }
+
+    .tg-layout {
+        display: block;
+        padding: 58px 0 72px
+    }
+
+    .tg-sidebar {
+        display: none
+    }
+
+    .tg-content {
+        width: 100%
+    }
+
+    .tg-mobile-header {
+        position: fixed;
+        z-index: 10;
+        inset: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 58px;
+        padding: 0 15px;
+        border-bottom: 1px solid var(--tg-border);
+        background: #fffffff5
+    }
+
+    .tg-mobile-header .tg-brand {
+        margin: 0;
+        font-size: 21px
+    }
+
+    .tg-mobile-nav {
+        position: fixed;
+        z-index: 10;
+        inset: auto 0 0;
+        display: flex;
+        justify-content: space-around;
+        height: 64px;
+        border-top: 1px solid var(--tg-border);
+        background: #fffffff8
+    }
+
+    .tg-mobile-nav a {
+        display: grid;
+        min-width: 56px;
+        place-items: center;
+        font-size: 23px
+    }
+
+    .tg-mobile-nav .active {
+        color: var(--tg-primary)
+    }
+}
