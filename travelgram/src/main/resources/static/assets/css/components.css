@@ -1,0 +1,266 @@
+.tg-panel, .tg-card {
+    background: var(--tg-surface);
+    border: 1px solid var(--tg-border);
+    border-radius: var(--tg-radius)
+}
+
+.tg-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin: 10px 12px 34px;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -1.6px
+}
+
+.tg-brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(145deg, #feda75, #fa7e1e 35%, #d62976 68%, #4f5bd5)
+}
+
+.tg-nav, .tg-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 7px
+}
+
+.tg-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 52px;
+    padding: 12px 14px;
+    border-radius: 11px
+}
+
+.tg-nav-link i {
+    width: 26px;
+    font-size: 24px;
+    text-align: center
+}
+
+.tg-nav-link:hover, .tg-nav-link.active {
+    background: #f2f2f2
+}
+
+.tg-nav-link.active {
+    font-weight: 700
+}
+
+.tg-card {
+    padding: 22px
+}
+
+.tg-card h2 {
+    font-size: 16px;
+    font-weight: 750
+}
+
+.tg-note, .tg-auth-links {
+    color: var(--tg-muted);
+    font-size: 12px
+}
+
+.tg-auth-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px
+}
+
+.tg-suggestions {
+    margin-top: 16px;
+    padding: 18px
+}
+
+.tg-user-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 14px
+}
+
+.tg-user-row > div {
+    min-width: 0;
+    flex: 1
+}
+
+.tg-user-row strong, .tg-user-row small {
+    display: block
+}
+
+.tg-user-row small {
+    color: var(--tg-muted)
+}
+
+.tg-user-row button, .tg-comment button, .tg-muted-btn {
+    border: 0;
+    background: none;
+    color: var(--tg-primary);
+    font-size: 12px;
+    font-weight: 700
+}
+
+.tg-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover
+}
+
+.tg-avatar.small {
+    width: 34px;
+    height: 34px
+}
+
+.tg-search {
+    margin-bottom: 16px
+}
+
+.tg-stories {
+    display: flex;
+    gap: 17px;
+    margin-bottom: 20px;
+    padding: 16px;
+    overflow: auto
+}
+
+.tg-story {
+    width: 72px;
+    flex: 0 0 72px;
+    text-align: center;
+    font-size: 12px
+}
+
+.tg-story b {
+    display: block;
+    width: 66px;
+    height: 66px;
+    margin: 0 auto 7px;
+    padding: 3px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ffd600, #ff7a00, #ff0169, #d300c5)
+}
+
+.tg-story img {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    object-fit: cover
+}
+
+.tg-post {
+    margin-bottom: 22px;
+    overflow: hidden
+}
+
+.tg-post-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px 15px
+}
+
+.tg-user-meta {
+    min-width: 0;
+    flex: 1
+}
+
+.tg-user-meta strong, .tg-user-meta small {
+    display: block
+}
+
+.tg-user-meta small {
+    color: var(--tg-muted)
+}
+
+.tg-post-image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover
+}
+
+.tg-actions {
+    display: flex;
+    gap: 17px;
+    padding: 12px 15px 8px
+}
+
+.tg-icon-btn {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 24px
+}
+
+.tg-icon-btn.save {
+    margin-left: auto
+}
+
+.tg-post-body {
+    padding: 0 15px 14px;
+    font-size: 14px
+}
+
+.tg-post-body p {
+    margin-bottom: 7px
+}
+
+.likes {
+    font-weight: 700
+}
+
+.tg-hashtag {
+    color: #00376b
+}
+
+.tg-muted-btn {
+    padding: 0;
+    color: var(--tg-muted)
+}
+
+.tg-comment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 15px;
+    border-top: 1px solid #efefef
+}
+
+.tg-comment input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0
+}
+
+.tg-comment button {
+    font-size: 12px
+}
+
+@media (max-width: 760px) {
+    .tg-panel {
+        border-inline: 0;
+        border-radius: 0
+    }
+
+    .tg-search {
+        margin: 10px 12px
+    }
+
+    .tg-stories {
+        margin-bottom: 0
+    }
+
+    .tg-post {
+        margin-bottom: 10px
+    }
+}

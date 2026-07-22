@@ -1,0 +1,14 @@
+:root {
+    --tg-bg: #fafafa;
+    --tg-surface: #fff;
+    --tg-border: #dbdbdb;
+    --tg-text: #262626;
+    --tg-muted: #737373;
+    --tg-primary: #0095f6;
+    --tg-sidebar: 245px;
+    --tg-content: 650px;
+    --tg-right: 290px;
+    --tg-gap: 34px;
+    --tg-radius: 14px;
+    --tg-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Roboto, Arial, sans-serif
+}
