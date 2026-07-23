@@ -31,7 +31,7 @@
 
   <div class="tg-layout tg-layout-two">
     
-<jsp:include page="/components/sidebar.jsp">
+<jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="profile" />
 </jsp:include>
 

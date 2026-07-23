@@ -30,13 +30,13 @@
 </nav>
 
   <div class="tg-layout tg-layout-wide">
-    
-<jsp:include page="/components/sidebar.jsp">
+
+<jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="new-post" />
 </jsp:include>
 
     <main class="tg-content">
-      
+
 <header class="tg-page-header">
   <h1>새 게시물 만들기</h1>
   <p>사진, 여행 동선, 경비와 태그를 입력합니다.</p>
