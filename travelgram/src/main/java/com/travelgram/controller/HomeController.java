@@ -10,6 +10,6 @@ public class HomeController {
     @GetMapping({"/", "/home"})
     public String home() {
         log.debug("Travelgram home view requested");
-        return "index";
+        return "main/index";
     }
 }
