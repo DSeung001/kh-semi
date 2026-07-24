@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,29 +28,29 @@
 <a href="${pageContext.request.contextPath}/profile" class="active" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-two">
+  <div class="zt-layout">
     
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="profile" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<header class="tg-page-header">
+<header class="zt-page-header">
   <h1>내 정보</h1>
   <p>프로필과 계정 정보를 확인하고 수정합니다.</p>
 </header>
 
-<section class="tg-panel tg-profile-card tg-panel-shadow">
-  <div class="tg-profile-hero">
-    <img class="tg-avatar tg-avatar-lg" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="내 프로필">
+<section class="zt-panel zt-profile-card zt-panel-shadow">
+  <div class="zt-profile-hero">
+    <img class="zt-avatar zt-avatar-lg" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="내 프로필">
     <div class="flex-grow-1">
       <div class="d-flex flex-wrap gap-2 align-items-center">
         <h2 class="h5 mb-0">travel_ethan</h2>
         <a class="btn btn-sm btn-outline-secondary" href="${pageContext.request.contextPath}/new-post">새 게시물</a>
       </div>
-      <p class="tg-muted small mb-0 mt-2">가성비 좋은 여행 동선을 기록합니다.</p>
-      <div class="tg-profile-stats">
+      <p class="zt-muted small mb-0 mt-2">가성비 좋은 여행 동선을 기록합니다.</p>
+      <div class="zt-profile-stats">
         <div><strong>18</strong><span>게시물</span></div>
         <div><strong>324</strong><span>팔로워</span></div>
         <div><strong>201</strong><span>팔로잉</span></div>
@@ -84,7 +84,7 @@
     </div>
     <div class="col-12 d-flex justify-content-center gap-3 mt-4">
       <button class="btn btn-outline-danger px-4" type="button">탈퇴하기</button>
-      <button class="btn btn-primary tg-primary-btn px-4" type="submit">수정 완료</button>
+      <button class="btn btn-primary zt-primary-btn px-4" type="submit">수정 완료</button>
     </div>
   </form>
 </section>

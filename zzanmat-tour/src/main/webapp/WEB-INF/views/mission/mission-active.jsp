@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,29 +28,29 @@
 <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-two">
+  <div class="zt-layout">
     
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="mission" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<header class="tg-page-header">
+<header class="zt-page-header">
   <h1>진행 중인 미션</h1>
   <p data-active-mission-title>만원으로 서울 하루 여행</p>
 </header>
 
-<section class="tg-panel tg-profile-card">
+<section class="zt-panel zt-profile-card">
   <div class="ratio ratio-21x9 rounded-3 overflow-hidden mb-4">
     <img src="${pageContext.request.contextPath}/assets/images/seoul.svg" class="object-fit-cover" alt="진행 중인 여행 미션">
   </div>
 
   <div class="mb-4">
     <div class="d-flex justify-content-between mb-2">
-      <strong>전체 진행률</strong><span class="tg-muted">2 / 4</span>
+      <strong>전체 진행률</strong><span class="zt-muted">2 / 4</span>
     </div>
-    <div class="progress tg-mission-progress" role="progressbar" aria-label="미션 진행률" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress zt-mission-progress" role="progressbar" aria-label="미션 진행률" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar" style="width: 50%"></div>
     </div>
   </div>
@@ -74,7 +74,7 @@
     </label>
   </div>
 
-  <a class="btn btn-primary tg-primary-btn w-100 py-2" href="${pageContext.request.contextPath}/new-post">인증 게시물 작성</a>
+  <a class="btn btn-primary zt-primary-btn w-100 py-2" href="${pageContext.request.contextPath}/new-post">인증 게시물 작성</a>
 </section>
 
     </main>

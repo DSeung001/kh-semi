@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,72 +28,72 @@
 <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-two">
+  <div class="zt-layout">
     
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="mission" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<header class="tg-page-header">
+<header class="zt-page-header">
   <h1>Mission Possible</h1>
   <p>재미있는 여행 미션에 도전하고 인증 기록을 남겨보세요.</p>
 </header>
 
-<section class="tg-panel tg-mission-list">
-  <article class="tg-mission-card">
-      <div class="tg-mission-icon"><i class="bi bi-wallet2"></i></div>
+<section class="zt-panel zt-mission-list">
+  <article class="zt-mission-card">
+      <div class="zt-mission-icon"><i class="bi bi-wallet2"></i></div>
       <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
           <h2 class="h6 fw-bold mb-0">만원으로 서울 하루 여행</h2>
-          <span class="tg-chip">서울</span>
+          <span class="zt-chip">서울</span>
         </div>
-        <p class="tg-muted small mb-0">교통비를 포함해 10,000원 이하로 서울 하루 코스를 완주해보세요.</p>
+        <p class="zt-muted small mb-0">교통비를 포함해 10,000원 이하로 서울 하루 코스를 완주해보세요.</p>
       </div>
       <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="만원으로 서울 하루 여행" data-redirect="${pageContext.request.contextPath}/mission-active">미션 수락</button>
     </article>
-<article class="tg-mission-card">
-      <div class="tg-mission-icon"><i class="bi bi-basket"></i></div>
+<article class="zt-mission-card">
+      <div class="zt-mission-icon"><i class="bi bi-basket"></i></div>
       <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
           <h2 class="h6 fw-bold mb-0">지역 시장 한 끼 도전</h2>
-          <span class="tg-chip">전국</span>
+          <span class="zt-chip">전국</span>
         </div>
-        <p class="tg-muted small mb-0">전통시장에서 8,000원 이하 한 끼를 찾아 인증하세요.</p>
+        <p class="zt-muted small mb-0">전통시장에서 8,000원 이하 한 끼를 찾아 인증하세요.</p>
       </div>
       <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="지역 시장 한 끼 도전" data-redirect="${pageContext.request.contextPath}/mission-active">미션 수락</button>
     </article>
-<article class="tg-mission-card">
-      <div class="tg-mission-icon"><i class="bi bi-bus-front"></i></div>
+<article class="zt-mission-card">
+      <div class="zt-mission-icon"><i class="bi bi-bus-front"></i></div>
       <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
           <h2 class="h6 fw-bold mb-0">대중교통만 이용하기</h2>
-          <span class="tg-chip">전국</span>
+          <span class="zt-chip">전국</span>
         </div>
-        <p class="tg-muted small mb-0">자가용과 택시 없이 하루 여행 동선을 완성하세요.</p>
+        <p class="zt-muted small mb-0">자가용과 택시 없이 하루 여행 동선을 완성하세요.</p>
       </div>
       <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="대중교통만 이용하기" data-redirect="${pageContext.request.contextPath}/mission-active">미션 수락</button>
     </article>
-<article class="tg-mission-card">
-      <div class="tg-mission-icon"><i class="bi bi-camera"></i></div>
+<article class="zt-mission-card">
+      <div class="zt-mission-icon"><i class="bi bi-camera"></i></div>
       <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
           <h2 class="h6 fw-bold mb-0">무료 명소 세 곳 방문</h2>
-          <span class="tg-chip">전국</span>
+          <span class="zt-chip">전국</span>
         </div>
-        <p class="tg-muted small mb-0">입장료가 없는 명소 세 곳을 방문하고 사진을 남기세요.</p>
+        <p class="zt-muted small mb-0">입장료가 없는 명소 세 곳을 방문하고 사진을 남기세요.</p>
       </div>
       <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="무료 명소 세 곳 방문" data-redirect="${pageContext.request.contextPath}/mission-active">미션 수락</button>
     </article>
-<article class="tg-mission-card">
-      <div class="tg-mission-icon"><i class="bi bi-recycle"></i></div>
+<article class="zt-mission-card">
+      <div class="zt-mission-icon"><i class="bi bi-recycle"></i></div>
       <div>
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
           <h2 class="h6 fw-bold mb-0">플라스틱 없는 여행</h2>
-          <span class="tg-chip">친환경</span>
+          <span class="zt-chip">친환경</span>
         </div>
-        <p class="tg-muted small mb-0">일회용 플라스틱 사용 없이 여행을 마쳐보세요.</p>
+        <p class="zt-muted small mb-0">일회용 플라스틱 사용 없이 여행을 마쳐보세요.</p>
       </div>
       <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="플라스틱 없는 여행" data-redirect="${pageContext.request.contextPath}/mission-active">미션 수락</button>
     </article>

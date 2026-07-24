@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const value = input?.value.trim();
       if (!value) return;
 
-      const comments = form.closest(".tg-post, .tg-panel")?.querySelector("[data-comment-list]");
+      const comments = form.closest(".zt-post, .zt-panel")?.querySelector("[data-comment-list]");
       if (comments) {
         const row = document.createElement("p");
         row.className = "mb-1 small";

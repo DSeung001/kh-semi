@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="active" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,35 +28,35 @@
 <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout">
+  <div class="zt-layout">
     
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="home" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<header class="tg-page-header">
+<header class="zt-page-header">
   <h1>여행 기록 상세</h1>
   <p>사진 없이 동선과 경비를 자세히 공유하는 게시물입니다.</p>
 </header>
 
-<article class="tg-panel tg-text-detail">
+<article class="zt-panel zt-text-detail">
   <header class="d-flex align-items-center gap-3 mb-4">
-    <img class="tg-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">
-    <div class="tg-user-meta">
+    <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">
+    <div class="zt-user-meta">
       <strong>travel_ethan</strong>
       <span>2026년 7월 20일 · 서울</span>
     </div>
-    <button class="tg-icon-btn fs-5 ms-auto"><i class="bi bi-three-dots"></i></button>
+    <button class="zt-icon-btn fs-5 ms-auto"><i class="bi bi-three-dots"></i></button>
   </header>
 
   <div class="d-flex justify-content-between gap-3 mb-3">
     <h2 class="h4 fw-bold mb-0">서울 2만 원 하루 여행 코스</h2>
-    <span class="tg-muted small">created_at</span>
+    <span class="zt-muted small">created_at</span>
   </div>
 
-  <div class="tg-article-content">#서울여행 #가성비여행
+  <div class="zt-article-content">#서울여행 #가성비여행
 
 오전 10시 홍대입구역에서 출발했습니다.
 
@@ -74,46 +74,46 @@
 
 총 17,500원을 사용했습니다. 이동 시간이 길지 않아 초보 혼행러도 따라가기 쉬운 코스였습니다.</div>
 
-  <div class="tg-post-actions px-0 mt-2">
-    <button class="tg-icon-btn" data-like-button><i class="bi bi-heart"></i></button>
-    <a class="tg-icon-btn" href="${pageContext.request.contextPath}/post-detail#comments"><i class="bi bi-chat"></i></a>
-    <button class="tg-icon-btn"><i class="bi bi-send"></i></button>
-    <button class="tg-icon-btn tg-save-btn"><i class="bi bi-bookmark"></i></button>
+  <div class="zt-post-actions px-0 mt-2">
+    <button class="zt-icon-btn" data-like-button><i class="bi bi-heart"></i></button>
+    <a class="zt-icon-btn" href="${pageContext.request.contextPath}/post-detail#comments"><i class="bi bi-chat"></i></a>
+    <button class="zt-icon-btn"><i class="bi bi-send"></i></button>
+    <button class="zt-icon-btn zt-save-btn"><i class="bi bi-bookmark"></i></button>
   </div>
   <p class="fw-bold mb-1">좋아요 94개</p>
-  <a class="tg-muted small" href="${pageContext.request.contextPath}/post-detail#comments">댓글 12개 보기</a>
+  <a class="zt-muted small" href="${pageContext.request.contextPath}/post-detail#comments">댓글 12개 보기</a>
 </article>
 
     </main>
     
-<aside class="tg-right-rail">
-  <section class="tg-login-card">
+<aside class="zt-right-rail">
+  <section class="zt-login-card">
     <h2>로그인</h2>
-    <p class="tg-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
+    <p class="zt-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
     <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
       <input class="form-control form-control-sm mb-2" type="text" placeholder="아이디" aria-label="아이디">
       <input class="form-control form-control-sm mb-2" type="password" placeholder="비밀번호" aria-label="비밀번호">
-      <button class="btn btn-primary tg-primary-btn btn-sm w-100" type="submit">로그인</button>
+      <button class="btn btn-primary zt-primary-btn btn-sm w-100" type="submit">로그인</button>
     </form>
-    <div class="d-flex justify-content-between mt-3 tg-right-note">
+    <div class="d-flex justify-content-between mt-3 zt-right-note">
       <a href="${pageContext.request.contextPath}/signup">회원가입</a>
       <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
     </div>
   </section>
 
-  <section class="tg-suggestion-card">
+  <section class="zt-suggestion-card">
     <h2>추천 여행자</h2>
-    <div class="tg-user-row">
-      <img class="tg-avatar tg-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
-      <div class="tg-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
-      <button class="tg-link-button" data-follow-button>팔로우</button>
+    <div class="zt-user-row">
+      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
+      <div class="zt-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
+      <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <div class="tg-user-row">
-      <img class="tg-avatar tg-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
-      <div class="tg-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
-      <button class="tg-link-button" data-follow-button>팔로우</button>
+    <div class="zt-user-row">
+      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
+      <div class="zt-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
+      <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <p class="tg-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
+    <p class="zt-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
   </section>
 </aside>
 

@@ -11,16 +11,16 @@
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
 </head>
 <body>
-<div class="tg-app">
-  <div class="tg-auth-wrap">
-    <section class="tg-panel tg-auth-card tg-panel-shadow text-center">
-      <a class="tg-brand d-inline-flex justify-content-center mb-3" href="${pageContext.request.contextPath}/home">
+<div class="zt-app">
+  <div class="zt-auth-wrap">
+    <section class="zt-panel zt-auth-card zt-panel-shadow text-center">
+      <a class="zt-brand d-inline-flex justify-content-center mb-3" href="${pageContext.request.contextPath}/home">
         <span>짠맛투어</span>
       </a>
       <p class="display-6 fw-bold mb-2">404</p>
       <h1 class="h4 mb-3">페이지를 찾을 수 없습니다</h1>
-      <p class="tg-muted mb-4">요청하신 주소가 변경되었거나 삭제되었을 수 있습니다.</p>
-      <a class="btn btn-primary tg-primary-btn" href="${pageContext.request.contextPath}/home">홈으로 돌아가기</a>
+      <p class="zt-muted mb-4">요청하신 주소가 변경되었거나 삭제되었을 수 있습니다.</p>
+      <a class="btn btn-primary zt-primary-btn" href="${pageContext.request.contextPath}/home">홈으로 돌아가기</a>
     </section>
   </div>
 </div>

@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="active" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,27 +28,27 @@
 <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-wide">
+  <div class="zt-layout">
 
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="new-post" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
 
-<header class="tg-page-header">
+<header class="zt-page-header">
   <h1>새 게시물 만들기</h1>
   <p>사진, 여행 동선, 경비와 태그를 입력합니다.</p>
 </header>
 
-<section class="tg-panel tg-profile-card">
+<section class="zt-panel zt-profile-card">
   <form class="row g-4" data-demo-form data-message="게시물 작성 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
     <div class="col-lg-6">
-      <label class="tg-upload-zone p-3" for="new-post-image" data-upload-preview>
+      <label class="zt-upload-zone p-3" for="new-post-image" data-upload-preview>
         <span>
           <i class="bi bi-images display-5 d-block mb-3"></i>
           <strong class="d-block mb-1">사진을 선택하세요</strong>
-          <small class="tg-muted">JPG, PNG 파일을 업로드할 수 있습니다.</small>
+          <small class="zt-muted">JPG, PNG 파일을 업로드할 수 있습니다.</small>
         </span>
       </label>
       <input id="new-post-image" class="d-none" type="file" accept="image/*" data-upload-input required>
@@ -75,41 +75,41 @@
         <input id="share-route" class="form-check-input" type="checkbox" checked>
         <label class="form-check-label" for="share-route">여행 동선 공개</label>
       </div>
-      <button class="btn btn-primary tg-primary-btn w-100 py-2" type="submit">작성 완료</button>
+      <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">작성 완료</button>
     </div>
   </form>
 </section>
 
     </main>
     
-<aside class="tg-right-rail">
-  <section class="tg-login-card">
+<aside class="zt-right-rail">
+  <section class="zt-login-card">
     <h2>로그인</h2>
-    <p class="tg-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
+    <p class="zt-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
     <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
       <input class="form-control form-control-sm mb-2" type="text" placeholder="아이디" aria-label="아이디">
       <input class="form-control form-control-sm mb-2" type="password" placeholder="비밀번호" aria-label="비밀번호">
-      <button class="btn btn-primary tg-primary-btn btn-sm w-100" type="submit">로그인</button>
+      <button class="btn btn-primary zt-primary-btn btn-sm w-100" type="submit">로그인</button>
     </form>
-    <div class="d-flex justify-content-between mt-3 tg-right-note">
+    <div class="d-flex justify-content-between mt-3 zt-right-note">
       <a href="${pageContext.request.contextPath}/signup">회원가입</a>
       <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
     </div>
   </section>
 
-  <section class="tg-suggestion-card">
+  <section class="zt-suggestion-card">
     <h2>추천 여행자</h2>
-    <div class="tg-user-row">
-      <img class="tg-avatar tg-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
-      <div class="tg-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
-      <button class="tg-link-button" data-follow-button>팔로우</button>
+    <div class="zt-user-row">
+      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
+      <div class="zt-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
+      <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <div class="tg-user-row">
-      <img class="tg-avatar tg-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
-      <div class="tg-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
-      <button class="tg-link-button" data-follow-button>팔로우</button>
+    <div class="zt-user-row">
+      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
+      <div class="zt-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
+      <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <p class="tg-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
+    <p class="zt-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
   </section>
 </aside>
 

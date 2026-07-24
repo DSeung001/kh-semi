@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,20 +28,20 @@
 <a href="${pageContext.request.contextPath}/profile" class="active" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-wide">
+  <div class="zt-layout">
 
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="profile" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<header class="tg-page-header">
+<header class="zt-page-header">
   <h1>계정 찾기</h1>
   <p>가입한 이메일로 본인 인증을 진행합니다.</p>
 </header>
 
-<section class="tg-panel tg-profile-card tg-panel-shadow">
+<section class="zt-panel zt-profile-card zt-panel-shadow">
   <ul class="nav nav-tabs mb-4" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#find-password" type="button">비밀번호 찾기</button>
@@ -90,34 +90,34 @@
 
     </main>
     
-<aside class="tg-right-rail">
-  <section class="tg-login-card">
+<aside class="zt-right-rail">
+  <section class="zt-login-card">
     <h2>로그인</h2>
-    <p class="tg-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
+    <p class="zt-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
     <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
       <input class="form-control form-control-sm mb-2" type="text" placeholder="아이디" aria-label="아이디">
       <input class="form-control form-control-sm mb-2" type="password" placeholder="비밀번호" aria-label="비밀번호">
-      <button class="btn btn-primary tg-primary-btn btn-sm w-100" type="submit">로그인</button>
+      <button class="btn btn-primary zt-primary-btn btn-sm w-100" type="submit">로그인</button>
     </form>
-    <div class="d-flex justify-content-between mt-3 tg-right-note">
+    <div class="d-flex justify-content-between mt-3 zt-right-note">
       <a href="${pageContext.request.contextPath}/signup">회원가입</a>
       <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
     </div>
   </section>
 
-  <section class="tg-suggestion-card">
+  <section class="zt-suggestion-card">
     <h2>추천 여행자</h2>
-    <div class="tg-user-row">
-      <img class="tg-avatar tg-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
-      <div class="tg-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
-      <button class="tg-link-button" data-follow-button>팔로우</button>
+    <div class="zt-user-row">
+      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
+      <div class="zt-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
+      <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <div class="tg-user-row">
-      <img class="tg-avatar tg-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
-      <div class="tg-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
-      <button class="tg-link-button" data-follow-button>팔로우</button>
+    <div class="zt-user-row">
+      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
+      <div class="zt-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
+      <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <p class="tg-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
+    <p class="zt-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
   </section>
 </aside>
 
