@@ -75,7 +75,7 @@
   <header class="zt-post-header">
     <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">
     <div class="zt-user-meta">
-      <strong><a href="${pageContext.request.contextPath}/profile">travel_ethan</a></strong>
+      <strong><a href="${pageContext.request.contextPath}/member/profile">travel_ethan</a></strong>
       <span>서울 · 2시간 전</span>
     </div>
     <button class="zt-icon-btn fs-5" type="button" aria-label="더보기"><i class="bi bi-three-dots"></i></button>
@@ -111,7 +111,7 @@
   <header class="zt-post-header">
     <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="travel_sora 프로필">
     <div class="zt-user-meta">
-      <strong><a href="${pageContext.request.contextPath}/profile">travel_sora</a></strong>
+      <strong><a href="${pageContext.request.contextPath}/member/profile">travel_sora</a></strong>
       <span>제주 · 2시간 전</span>
     </div>
     <button class="zt-icon-btn fs-5" type="button" aria-label="더보기"><i class="bi bi-three-dots"></i></button>
@@ -154,8 +154,8 @@
       <button class="btn btn-primary zt-primary-btn btn-sm w-100" type="submit">로그인</button>
     </form>
     <div class="d-flex justify-content-between mt-3 zt-right-note">
-      <a href="${pageContext.request.contextPath}/signup">회원가입</a>
-      <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/signup">회원가입</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password">비밀번호 찾기</a>
     </div>
   </section>
 

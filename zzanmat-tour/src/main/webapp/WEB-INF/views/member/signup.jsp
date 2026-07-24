@@ -41,24 +41,24 @@
     <h1 class="h3 text-center fw-bold mb-2">회원가입</h1>
     <p class="zt-muted text-center small mb-4">여행을 기록하고 새로운 여행자를 만나보세요.</p>
 
-    <form class="row g-3" data-demo-form data-message="회원가입 데모입니다." data-redirect="${pageContext.request.contextPath}/login">
+    <form class="row g-3" method="post" action="/member/signup">
       <div class="col-12">
         <label class="form-label" for="signup-id">아이디</label>
         <div class="input-group">
-          <input id="signup-id" class="form-control" type="text" required>
-          <button class="btn btn-outline-secondary" type="button">중복 확인</button>
+          <input id="signup-id" name="userId" class="form-control" type="text" required>
+          <button id="checkUsernameDuplicateBtn" lass="btn btn-outline-secondary" type="button">중복 확인</button>
         </div>
       </div>
       <div class="col-12">
         <label class="form-label" for="signup-email">이메일</label>
         <div class="input-group">
-          <input id="signup-email" class="form-control" type="email" required>
+          <input id="signup-email" name="email" class="form-control" type="email" required>
           <button class="btn btn-outline-secondary" type="button">인증</button>
         </div>
       </div>
       <div class="col-md-6">
         <label class="form-label" for="signup-password">비밀번호</label>
-        <input id="signup-password" class="form-control" type="password" required>
+        <input id="signup-password" name="userPassword" class="form-control" type="password" required>
       </div>
       <div class="col-md-6">
         <label class="form-label" for="signup-password2">비밀번호 확인</label>
@@ -66,14 +66,14 @@
       </div>
       <div class="col-12">
         <label class="form-label" for="signup-nickname">닉네임</label>
-        <input id="signup-nickname" class="form-control" type="text" required>
+        <input id="signup-nickname" name="nickname" class="form-control" type="text" required>
       </div>
       <div class="col-12 form-check ms-2">
         <input id="terms" class="form-check-input" type="checkbox" required>
         <label for="terms" class="form-check-label small">이용약관과 개인정보처리방침에 동의합니다.</label>
       </div>
       <div class="col-12">
-        <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">가입하기</button>
+        <button id="signupBtn" class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">가입하기</button>
       </div>
     </form>
 
@@ -87,6 +87,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/member.js"></script>
 
 </body>
 </html>
