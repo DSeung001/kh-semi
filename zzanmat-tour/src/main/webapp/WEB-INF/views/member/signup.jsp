@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,18 +28,18 @@
 <a href="${pageContext.request.contextPath}/profile" class="active" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-two">
+  <div class="zt-layout">
     
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="profile" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<div class="tg-auth-wrap">
-  <section class="tg-panel tg-auth-card tg-panel-shadow">
+<div class="zt-auth-wrap">
+  <section class="zt-panel zt-auth-card zt-panel-shadow">
     <h1 class="h3 text-center fw-bold mb-2">회원가입</h1>
-    <p class="tg-muted text-center small mb-4">여행을 기록하고 새로운 여행자를 만나보세요.</p>
+    <p class="zt-muted text-center small mb-4">여행을 기록하고 새로운 여행자를 만나보세요.</p>
 
     <form class="row g-3" data-demo-form data-message="회원가입 데모입니다." data-redirect="${pageContext.request.contextPath}/login">
       <div class="col-12">
@@ -73,7 +73,7 @@
         <label for="terms" class="form-check-label small">이용약관과 개인정보처리방침에 동의합니다.</label>
       </div>
       <div class="col-12">
-        <button class="btn btn-primary tg-primary-btn w-100 py-2" type="submit">가입하기</button>
+        <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">가입하기</button>
       </div>
     </form>
 

@@ -12,15 +12,15 @@
   
 </head>
 <body>
-<div class="tg-app">
+<div class="zt-app">
   
-<header class="tg-mobile-header">
-  <a class="tg-brand" href="${pageContext.request.contextPath}/home">
+<header class="zt-mobile-header">
+  <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
   </a>
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
-<nav class="tg-mobile-nav" aria-label="모바일 메뉴">
+<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
   <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
 <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
@@ -28,17 +28,17 @@
 <a href="${pageContext.request.contextPath}/profile" class="active" aria-label="profile"><i class="bi bi-person-circle"></i></a>
 </nav>
 
-  <div class="tg-layout tg-layout-two">
+  <div class="zt-layout">
     
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="profile" />
 </jsp:include>
 
-    <main class="tg-content">
+    <main class="zt-content">
       
-<div class="tg-auth-wrap">
-  <section class="tg-panel tg-auth-card tg-panel-shadow">
-    <h1 class="tg-auth-title">login</h1>
+<div class="zt-auth-wrap">
+  <section class="zt-panel zt-auth-card zt-panel-shadow">
+    <h1 class="zt-auth-title">login</h1>
     <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
       <div class="form-floating mb-3">
         <input id="login-id" class="form-control" type="text" placeholder="아이디" required>
@@ -60,23 +60,23 @@
         </div>
       </div>
 
-      <button class="btn btn-primary tg-primary-btn w-100 py-2" type="submit">로그인</button>
+      <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">로그인</button>
     </form>
 
     <div class="d-flex justify-content-center flex-wrap gap-2 my-3 small">
       <a href="${pageContext.request.contextPath}/forgot-password">아이디 찾기</a>
-      <span class="tg-muted">/</span>
+      <span class="zt-muted">/</span>
       <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
-      <span class="tg-muted">/</span>
+      <span class="zt-muted">/</span>
       <a href="${pageContext.request.contextPath}/signup">회원가입</a>
     </div>
 
-    <div class="tg-divider">또는</div>
+    <div class="zt-divider">또는</div>
 
-    <button class="btn tg-social-kakao w-100 py-2 mb-3" type="button">
+    <button class="btn zt-social-kakao w-100 py-2 mb-3" type="button">
       <i class="bi bi-chat-fill me-2"></i>카카오 로그인
     </button>
-    <button class="btn tg-social-naver w-100 py-2" type="button">
+    <button class="btn zt-social-naver w-100 py-2" type="button">
       <strong class="me-2">N</strong>네이버 로그인
     </button>
   </section>
