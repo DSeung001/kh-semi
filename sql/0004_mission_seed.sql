@@ -1,10 +1,4 @@
-CREATE DATABASE IF NOT EXISTS zzanmat_tour
-DEFAULT CHARACTER SET utf8mb4
-COLLATE utf8mb4_general_ci;
-
--- zad --
-
-USE zzanmat_tour;
+USE zad;
 
 SET FOREIGN_KEY_CHECKS = 0;
 

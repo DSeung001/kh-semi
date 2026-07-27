@@ -1,4 +1,4 @@
-use ZAD;
+USE zad;
 
 SHOW DATABASES;
 
