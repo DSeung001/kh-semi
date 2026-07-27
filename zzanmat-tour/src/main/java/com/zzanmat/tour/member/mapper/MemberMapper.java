@@ -9,4 +9,9 @@ public interface MemberMapper {
     //회원가입
     int insertMember(MemberDto memberDto);
 
+    //아이디 중복확인
+    int countByMemberId(String userId);
+
+    //아이디 존재유무 확인
+    MemberDto selectByMemberId(String memberId);
 }

@@ -88,6 +88,12 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- Spring Security: 인증 및 인가 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

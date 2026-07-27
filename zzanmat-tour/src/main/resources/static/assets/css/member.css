@@ -1,0 +1,33 @@
+.zt-auth-card form > .col-md-6, .col-md-7 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.signup-message {
+    display: none;
+    margin: 0.4rem 0 0;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+.signup-message.is-visible {
+    display: block;
+}
+
+.form-message {
+    display: none;
+    margin: 0.4rem 0 0;
+    font-size: 0.875rem;
+}
+
+.form-message.is-visible {
+    display: block;
+}
+
+.form-message.is-error {
+    color: #dc3545;
+}
+
+.form-message.is-success {
+    color: #198754;
+}

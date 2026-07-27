@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <aside class="zt-sidebar">
   <a class="zt-brand" href="${pageContext.request.contextPath}/home">
@@ -25,11 +26,22 @@
        aria-current="${param.activePage eq 'mission' ? 'page' : 'false'}">
       <i class="bi bi-flag"></i><span>Mission Possible</span>
     </a>
-    <a class="zt-nav-link ${param.activePage eq 'profile' ? 'active' : ''}"
-       href="${pageContext.request.contextPath}/profile"
-       aria-current="${param.activePage eq 'profile' ? 'page' : 'false'}">
-      <i class="bi bi-person-circle"></i><span>내 정보</span>
-    </a>
+    <c:choose>
+      <c:when test="${not empty loginMember}">
+      <a class="zt-nav-link ${param.activePage eq 'profile' ? 'active' : ''}"
+         href="${pageContext.request.contextPath}/member/profile"
+         aria-current="${param.activePage eq 'profile' ? 'page' : 'false'}">
+        <i class="bi bi-person-circle"></i><span>내 정보</span>
+      </a>
+      </c:when>
+      <c:otherwise>
+        <a class="zt-nav-link ${param.activePage eq 'profile' ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/member/login"
+           aria-current="${param.activePage eq 'profile' ? 'page' : 'false'}">
+          <i class="bi bi-person-circle"></i><span>로그인</span>
+        </a>
+      </c:otherwise>
+    </c:choose>
     <a class="zt-nav-link ${param.activePage eq 'new-post' ? 'active' : ''}"
        href="${pageContext.request.contextPath}/new-post"
        aria-current="${param.activePage eq 'new-post' ? 'page' : 'false'}">
