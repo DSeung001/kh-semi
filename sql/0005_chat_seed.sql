@@ -1,4 +1,5 @@
 USE zad;
+SET NAMES utf8mb4;
 
 -- 0002_user_seed.sql의 USER.ID(1~10)를 참조하는 채팅 더미
 INSERT INTO CHAT_MESSAGE (ID, CONTENT, CREATE_AT, UPDATE_AT)

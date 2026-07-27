@@ -41,20 +41,12 @@
     <div class="flex-grow-1">
       <h1 class="h5 mb-1">Talk for Travel</h1>
       <p class="zt-muted zt-small mb-2">실시간으로 여행 정보와 동선을 나눠보세요.</p>
-      <c:choose>
-        <c:when test="${not empty loginMember}">
-          <input id="chat-nickname" class="form-control form-control-sm" type="text" maxlength="20"
-                 placeholder="닉네임" aria-label="닉네임" value="${loginMember.nickname}" readonly>
-        </c:when>
-        <c:otherwise>
-          <input id="chat-nickname" class="form-control form-control-sm" type="text" maxlength="20"
-                 placeholder="로그인 후 사용 가능합니다" aria-label="닉네임" value="여행자" disabled>
-          <p class="zt-muted zt-small mt-2 mb-0">
-            메시지 전송은 로그인이 필요합니다.
-            <a href="${pageContext.request.contextPath}/member/login?redirectURL=${pageContext.request.contextPath}/chat">로그인</a>
-          </p>
-        </c:otherwise>
-      </c:choose>
+      <c:if test="${empty loginMember}">
+        <p class="zt-muted zt-small mb-0">
+          메시지 전송은 로그인이 필요합니다.
+          <a href="${pageContext.request.contextPath}/member/login?redirectURL=${pageContext.request.contextPath}/chat">로그인</a>
+        </p>
+      </c:if>
     </div>
     <span id="chat-status" class="zt-chip"><i class="bi bi-circle-fill text-secondary"></i> 연결 중</span>
   </header>
@@ -131,6 +123,7 @@
   const chatInput = document.getElementById("chat-input");
   const statusEl = document.getElementById("chat-status");
   const isLoggedIn = "${not empty loginMember}" === "true";
+  const myUserId = ${not empty loginMember ? loginMember.id : 'null'};
 
   let stompClient = null;
 
@@ -141,8 +134,9 @@
   }
 
   function appendMessage(message) {
+    const isMine = myUserId != null && Number(message.userId) === Number(myUserId);
     const article = document.createElement("article");
-    article.className = "zt-chat-item";
+    article.className = isMine ? "zt-chat-item zt-chat-item-mine" : "zt-chat-item";
     article.innerHTML =
       '<img class="zt-avatar" src="' + avatarSrc + '" alt="">' +
       "<div>" +

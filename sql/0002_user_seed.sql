@@ -1,6 +1,7 @@
 -- 평문 비밀번호: 1234 (BCrypt 해시로 저장)
 -- Spring Security BCryptPasswordEncoder와 동일한 방식으로 생성
 USE zad;
+SET NAMES utf8mb4;
 
 INSERT INTO `USER` (USER_ID, USER_PASSWORD, EMAIL, NICKNAME)
 VALUES
