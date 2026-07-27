@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zzanmat.tour.post.mapper.PostMapper">
+
+    <resultMap id="postResultMap"
+               type="com.zzanmat.tour.post.dto.PostDto">
+
+        <id property="postId" column="POST_ID"/>
+
+        <result property="userId" column="USER_ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="content" column="CONTENT"/>
+        <result property="viewCount" column="VIEW_COUNT"/>
+        <result property="createAt" column="CREATE_AT"/>
+        <result property="isBlock" column="IS_BLOCK"/>
+
+    </resultMap>
+
+    <select id="findAll" resultMap="postResultMap">
+        SELECT
+            P.POST_ID,
+            P.USER_ID,
+            P.TITLE,
+            P.VIEW_COUNT,
+            P.CREATE_AT,
+            P.IS_BLOCK
+        FROM POST P
+        WHERE P.IS_BLOCK = FALSE
+
+        <choose>
+
+            <when test="sort == 'views'">
+                ORDER BY P.VIEW_COUNT DESC, P.POST_ID DESC
+            </when>
+
+            <when test="sort == 'popular'">
+                ORDER BY (
+                    SELECT COUNT(*)
+                    FROM POST_LIKE PL
+                    WHERE PL.POST_ID = P.POST_ID
+                ) DESC,
+                P.POST_ID DESC
+            </when>
+
+            <otherwise>
+                ORDER BY P.POST_ID DESC
+            </otherwise>
+        </choose>
+
+    </select>
+<select id="findById"
+        parameterType="long"
+        resultMap="postResultMap">
+    SELECT
+        P.POST_ID,
+        P.USER_ID,
+        P.TITLE,
+        P.CONTENT,
+        P.VIEW_COUNT,
+        P.CREATE_AT,
+        P.IS_BLOCK
+    FROM POST P
+    WHERE P.POST_ID = #{postId}
+        AND P.IS_BLOCK = FALSE
+</select>
+</mapper>

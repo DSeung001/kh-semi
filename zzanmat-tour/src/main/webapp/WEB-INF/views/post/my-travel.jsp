@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -40,87 +41,55 @@
   <span class="zt-muted small d-block">짠맛투어</span>
   나만의 여행 일기
 </header>
+    <form action="${pageContext.request.contextPath}/my-travel"
+          method="get"
+          class="d-flex align-items-center mb-2 px-2">
 
-<div class="d-flex justify-content-end gap-2 mb-2 px-2">
-  <button class="btn btn-sm btn-dark"><i class="bi bi-sort-down me-1"></i>최신순</button>
-  <button class="btn btn-sm btn-outline-secondary">조회순</button>
-  <button class="btn btn-sm btn-outline-secondary">인기순</button>
-</div>
+        <label for="post-sort" class="visually-hidden">
+            게시글 정렬 기준
+        </label>
 
-<section class="zt-travel-grid" aria-label="나만의 여행 사진 그리드">
-  <a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card narrow" href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/busan.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/jeju.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card narrow" href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/gangneung.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/gyeongju.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card narrow" href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/sokcho.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/jeonju.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card narrow" href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/incheon.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/busan.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card narrow" href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/jeju.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card narrow" href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
-<a class="zt-grid-card " href="${pageContext.request.contextPath}/post-detail">
-      <img src="${pageContext.request.contextPath}/assets/images/gyeongju.svg" alt="여행 사진">
-      <span class="zt-grid-overlay"><i class="bi bi-heart-fill me-2"></i> 128</span>
-    </a>
+        <select id="post-sort"
+                name="sort"
+                class="form-select form-select-sm w-auto ms-auto"
+                aria-label="게시글 정렬 기준"
+                onchange="this.form.submit()">
+            <option value = "latest"
+                    ${sort eq 'latest' ? 'selected' : ''}>
+            최신순
+            </option>
+
+            <option value = "views"
+                    ${sort eq 'views' ? 'selected' : ''}>
+                조회순
+            </option>
+
+            <option value = "popular"
+                    ${sort eq 'popular' ? 'selected' : ''}>
+                인기순
+            </option>
+        </select>
+    </form>
+
+
+<section class="zt-travel-grid" aria-label="나만의 여행 게시글">
+    <c:forEach var="post" items="${posts}">
+        <a class="zt-grid-card"
+           href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
+
+            <img src="${pageContext.request.contextPath}/assets/images/seoul.svg"
+                 alt="${post.title}">
+
+            <span class="zt-grid-overlay">
+                ${post.title}
+                <i class="bi bi-eye-fill ms-2 me-1"></i>
+                ${post.viewCount}
+            </span>
+
+        </a>
+    </c:forEach>
 </section>
+
 
     </main>
     

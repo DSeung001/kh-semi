@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -35,11 +36,6 @@
 </jsp:include>
 
     <main class="zt-content">
-      
-<header class="zt-page-header">
-  <h1>피드 상세</h1>
-  <p>게시물 사진과 댓글을 한 화면에서 확인합니다.</p>
-</header>
 
 <article class="zt-panel overflow-hidden">
   <header class="zt-post-header">
@@ -58,9 +54,20 @@
   </div>
 
   <div class="zt-post-body">
-    <p id="detail-likes" data-count="128" class="fw-bold">좋아요 128개</p>
-    <p><strong>travel_ethan</strong> 서울에서 교통비 포함 2만 원으로 하루 여행을 다녀왔습니다.
-      <a class="zt-hashtag" href="#">#서울여행 #가성비여행</a>
+   <p class="fw-bold">
+     <c:out value="${post.title}"/>
+   </p>
+
+    <p>
+      <c:out value="${post.content}"/>
+    </p>
+
+    <p class="zt-muted small mb-0">
+      작성자 번호:
+      <c:out value="${post.userId}"/>
+
+      . 조회수:
+      <c:out value="${post.viewCount}"/>
     </p>
   </div>
 
