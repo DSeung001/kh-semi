@@ -39,13 +39,13 @@
 <div class="zt-auth-wrap">
   <section class="zt-panel zt-auth-card zt-panel-shadow">
     <h1 class="zt-auth-title">login</h1>
-    <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
+    <form method="post" action="/member/login">
       <div class="form-floating mb-3">
-        <input id="login-id" class="form-control" type="text" placeholder="아이디" required>
+        <input id="login-id" name="userId" class="form-control" type="text" placeholder="아이디" required>
         <label for="login-id">아이디</label>
       </div>
       <div class="form-floating mb-3">
-        <input id="login-password" class="form-control" type="password" placeholder="비밀번호" required>
+        <input id="login-password" name="userPassword" class="form-control" type="password" placeholder="비밀번호" required>
         <label for="login-password">비밀번호</label>
       </div>
 
@@ -64,11 +64,11 @@
     </form>
 
     <div class="d-flex justify-content-center flex-wrap gap-2 my-3 small">
-      <a href="${pageContext.request.contextPath}/forgot-password">아이디 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password">아이디 찾기</a>
       <span class="zt-muted">/</span>
-      <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password">비밀번호 찾기</a>
       <span class="zt-muted">/</span>
-      <a href="${pageContext.request.contextPath}/signup">회원가입</a>
+      <a href="${pageContext.request.contextPath}/member/signup">회원가입</a>
     </div>
 
     <div class="zt-divider">또는</div>

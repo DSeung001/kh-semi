@@ -12,4 +12,20 @@
         VALUES (#{userId}, #{userPassword}, #{email}, #{nickname})
     </insert>
 
+    <select id="countByMemberId" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+          FROM `USER`
+         WHERE USER_ID = #{userId}
+    </select>
+
+    <select id="selectByMemberId" parameterType="string" resultType="MemberDto">
+        SELECT user_id
+              ,user_password
+              ,nickname
+              ,email
+              <!--,DATE_FORMAT(create_at, '%Y-%M-%d %H:%i') as create_at_str-->
+          FROM `USER`
+         WHERE user_id = #{userId}
+    </select>
+
 </mapper>
