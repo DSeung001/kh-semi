@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzanmat.tour.chat.mapper.ChatMapper">
+
+    <insert id="insertMessage">
+        INSERT INTO `CHAT_MESSAGE` (ID, CONTENT, CREATE_AT, UPDATE_AT)
+        VALUES (#{userId}, #{content}, NOW(), NOW())
+    </insert>
+
+    <select id="selectRecent" resultType="com.zzanmat.tour.chat.dto.ChatMessage">
+        SELECT
+            c.CHAT_ID as chatId
+          , c.ID as userId
+          , u.NICKNAME as sender
+          , c.CONTENT as content
+          , DATE_FORMAT(c.CREATE_AT, '%H:%i') as time
+        FROM `CHAT_MESSAGE` c
+        JOIN `USER` u ON c.ID = u.ID
+        ORDER BY c.CHAT_ID DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

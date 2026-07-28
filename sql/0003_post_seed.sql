@@ -1,4 +1,5 @@
-use ZAD;
+USE zad;
+SET NAMES utf8mb4;
 
 SHOW DATABASES;
 

@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -40,8 +41,12 @@
     <div class="flex-grow-1">
       <h1 class="h5 mb-1">Talk for Travel</h1>
       <p class="zt-muted zt-small mb-2">실시간으로 여행 정보와 동선을 나눠보세요.</p>
-      <input id="chat-nickname" class="form-control form-control-sm" type="text" maxlength="20"
-             placeholder="닉네임" aria-label="닉네임" value="여행자">
+      <c:if test="${empty loginMember}">
+        <p class="zt-muted zt-small mb-0">
+          메시지 전송은 로그인이 필요합니다.
+          <a href="${pageContext.request.contextPath}/member/login?redirectURL=${pageContext.request.contextPath}/chat">로그인</a>
+        </p>
+      </c:if>
     </div>
     <span id="chat-status" class="zt-chip"><i class="bi bi-circle-fill text-secondary"></i> 연결 중</span>
   </header>
@@ -54,9 +59,18 @@
         <i class="bi bi-image"></i>
       </label>
       <input id="chat-image" type="file" class="d-none" accept="image/*" disabled>
-      <input id="chat-input" class="form-control bg-white" type="text" maxlength="300"
-             placeholder="메시지를 입력하세요" aria-label="메시지" autocomplete="off">
-      <button class="btn btn-primary zt-primary-btn" type="submit">전송</button>
+      <c:choose>
+        <c:when test="${not empty loginMember}">
+          <input id="chat-input" class="form-control bg-white" type="text" maxlength="300"
+                 placeholder="메시지를 입력하세요" aria-label="메시지" autocomplete="off">
+          <button class="btn btn-primary zt-primary-btn" type="submit">전송</button>
+        </c:when>
+        <c:otherwise>
+          <input id="chat-input" class="form-control bg-white" type="text" maxlength="300" disabled
+                 placeholder="로그인 후 전송할 수 있습니다" aria-label="메시지" autocomplete="off">
+          <button class="btn btn-primary zt-primary-btn" type="submit" disabled>전송</button>
+        </c:otherwise>
+      </c:choose>
     </div>
   </form>
 </section>
@@ -90,7 +104,7 @@
       <div class="zt-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
       <button class="zt-link-button" data-follow-button>팔로우</button>
     </div>
-    <p class="zt-right-note mb-0">공용 실시간 톡입니다. 메시지 이력은 저장되지 않습니다.</p>
+    <p class="zt-right-note mb-0">공용 실시간 톡입니다. 메시지 이력은 저장됩니다.</p>
   </section>
 </aside>
 
@@ -107,8 +121,9 @@
   const chatList = document.getElementById("chat-list");
   const chatForm = document.getElementById("chat-form");
   const chatInput = document.getElementById("chat-input");
-  const nicknameInput = document.getElementById("chat-nickname");
   const statusEl = document.getElementById("chat-status");
+  const isLoggedIn = "${not empty loginMember}" === "true";
+  const myUserId = ${not empty loginMember ? loginMember.id : 'null'};
 
   let stompClient = null;
 
@@ -119,8 +134,9 @@
   }
 
   function appendMessage(message) {
+    const isMine = myUserId != null && Number(message.userId) === Number(myUserId);
     const article = document.createElement("article");
-    article.className = "zt-chat-item";
+    article.className = isMine ? "zt-chat-item zt-chat-item-mine" : "zt-chat-item";
     article.innerHTML =
       '<img class="zt-avatar" src="' + avatarSrc + '" alt="">' +
       "<div>" +
@@ -151,8 +167,27 @@
     });
   }
 
+  async function loadHistory() {
+    try {
+      const res = await fetch(contextPath + "/api/chat/messages?limit=50");
+      if (!res.ok) return;
+      const messages = await res.json();
+      if (!Array.isArray(messages)) return;
+      messages.forEach(function (m) {
+        appendMessage(m);
+      });
+    } catch (e) {
+      // 이력 로드 실패해도 실시간 구독은 진행
+    }
+  }
+
   chatForm.addEventListener("submit", function (event) {
     event.preventDefault();
+    if (!isLoggedIn) {
+      window.location.href = contextPath + "/member/login?redirectURL=" +
+        encodeURIComponent(contextPath + "/chat");
+      return;
+    }
     if (!stompClient || !stompClient.connected) {
       return;
     }
@@ -160,15 +195,12 @@
     if (!content) {
       return;
     }
-    stompClient.send("/app/chat.send", {}, JSON.stringify({
-      sender: nicknameInput.value.trim() || "익명",
-      content: content
-    }));
+    stompClient.send("/app/chat.send", {}, JSON.stringify({ content: content }));
     chatInput.value = "";
     chatInput.focus();
   });
 
-  connect();
+  loadHistory().finally(connect);
 })();
 </script>
 

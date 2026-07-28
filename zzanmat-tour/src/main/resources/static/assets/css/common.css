@@ -381,10 +381,36 @@ button, input, textarea, select { font: inherit; }
   margin-bottom: 18px;
 }
 
+.zt-chat-item-mine {
+  grid-template-columns: 1fr 42px;
+  justify-items: end;
+}
+
+.zt-chat-item-mine > img {
+  order: 2;
+}
+
+.zt-chat-item-mine > div {
+  order: 1;
+  text-align: right;
+}
+
+.zt-chat-item-mine .d-flex {
+  justify-content: flex-end;
+}
+
 .zt-chat-bubble {
   padding: 12px 14px;
   border-radius: 4px 14px 14px 14px;
   background: #f2f3f5;
+  display: inline-block;
+  text-align: left;
+}
+
+.zt-chat-item-mine .zt-chat-bubble {
+  border-radius: 14px 4px 14px 14px;
+  background: #e7f5ff;
+  color: #0b3d5c;
 }
 
 .zt-chat-compose {
