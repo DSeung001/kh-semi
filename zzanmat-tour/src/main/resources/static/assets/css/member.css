@@ -31,3 +31,25 @@
 .form-message.is-success {
     color: #198754;
 }
+
+textarea {
+    resize: none;
+}
+
+.logoutArea{
+    margin-top: 100px;
+}
+
+.logout{
+    width: 18px;
+    height: 18px;
+    /*flex: 0 0 auto;*/
+    overflow: hidden;
+    /*border-radius: 50%;*/
+    background: #eee;
+    object-fit: cover;
+}
+
+.logoutArea a span {
+    font-size: 10px;
+}

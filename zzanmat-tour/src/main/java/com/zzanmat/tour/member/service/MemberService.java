@@ -11,4 +11,8 @@ public interface MemberService {
     boolean isMemberIdCheck(String userId);
 
     MemberDto login(String userId, String userPassword) throws IllegalStateException;
+
+    boolean update(MemberDto memberDto);
+
+    MemberDto selectUser(MemberDto memberDto);
 }

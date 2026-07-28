@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -12,6 +13,19 @@
   
 </head>
 <body>
+
+<c:if test="${not empty joinSuccess}">
+  <script>
+    alert("회원가입이 완료되었습니다. 로그인 해주세요.");
+  </script>
+</c:if>
+
+<c:if test="${not empty error}">
+  <script>
+    alert("회원가입 처리 중 오류가 발생했습니다. 다시 회원가입을 진행해 주세요.");
+  </script>
+</c:if>
+
 <div class="zt-app">
   
 <header class="zt-mobile-header">

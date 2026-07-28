@@ -59,4 +59,14 @@ public class MemberServiceImpl implements MemberService{
         return member;
     }
 
+    @Override
+    public boolean update(MemberDto memberDto) {
+        System.out.println("업데이트 service까지" + memberDto.getUserId() + " : " + memberDto.getNickname());
+        return memberMapper.memberUpdate(memberDto) > 0;
+    }
+
+    @Override
+    public MemberDto selectUser(MemberDto memberDto) {
+        return memberMapper.selectUser(memberDto);
+    }
 }

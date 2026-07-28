@@ -1,9 +1,10 @@
-/* 회원가입 화면 스크립트 */
+/* 회원가입, 프로필, 로그인 화면 스크립트 */
 const checkIdReult = document.querySelector("#checkUsernameDuplicateBtn"); //아이디 중복체크 버튼
 const userIdInput = document.querySelector("#signup-id"); //아이디 입력창
 const checkIdResult = document.querySelector("#signupIdMessage"); //아이디 상태
 const pwPassValidationResult = document.querySelector("#passwordValidationMessage"); // 비밀번호 유효성 검사 표시
 const pwConfirmResult = document.querySelector("#passwordConfirmMessage"); // 비밀번호 일치여부 표시
+/*const withdrawBtn = document.querySelector("#withdrawBtn"); //*/
 
 /* 유효성 검사 */
 const idRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/; //
@@ -12,6 +13,16 @@ const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]
 //서버에 마지막으로 중복이 아님을 확인받은 아이디값
 let checkedMemberId = null;
 let checkedPwd = false;
+
+/*window.onload = function() {
+    const successMessage = "${joinSuccess}";
+
+    if (successMessage) {
+        alert('회원가입이 완료되었습니다. 로그인 해주세요.');
+    }else{
+        alert('회원가입이 정상적으로 되지 않았습니다. \n 다시 회원가입 해주세요.')
+    }
+}*/
 
 /* 아이디 중복확인 */
 checkIdReult.addEventListener("click",async function(){

@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
                 //로그인 해야만 접근 가능한 페이지 경로
                 .addPathPatterns(
                         // 추후 접근페이지 설정
-                        /*"/member/mypage"*/
+                        "/member/profile"
                 );
     }
 }

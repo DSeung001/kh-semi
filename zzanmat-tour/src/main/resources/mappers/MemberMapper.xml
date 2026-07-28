@@ -28,4 +28,17 @@
          WHERE user_id = #{userId}
     </select>
 
+    <update id="memberUpdate">
+        UPDATE `USER`
+           SET nickname = #{nickname}
+         WHERE USER_ID = #{userId}
+    </update>
+
+    <select id="selectUser" parameterType="MemberDto" resultType="MemberDto">
+        SELECT user_id
+              ,nickname
+          FROM `USER`
+         WHERE USER_ID = #{userId}
+    </select>
+
 </mapper>
