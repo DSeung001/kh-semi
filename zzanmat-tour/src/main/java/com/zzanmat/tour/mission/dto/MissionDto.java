@@ -2,8 +2,12 @@ package com.zzanmat.tour.mission.dto;
 
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+@NotNull
+@NotBlank
 @Getter
 @Setter
 @NoArgsConstructor

@@ -61,9 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll("[data-mission-accept]").forEach((button) => {
     button.addEventListener("click", () => {
-      const mission = encodeURIComponent(button.dataset.mission || "여행 미션");
+      const missionId = button.dataset.missionId;
       const redirect = button.dataset.redirect;
-      if (redirect) window.location.href = `${redirect}?mission=${mission}`;
+      if (redirect) {
+        window.location.href = `${redirect}?missionId=${missionId}`;
+      }
     });
   });
 
