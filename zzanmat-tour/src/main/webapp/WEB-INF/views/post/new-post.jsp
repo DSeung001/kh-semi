@@ -42,8 +42,10 @@
 </header>
 
 <section class="zt-panel zt-profile-card">
-  <form class="row g-4" data-demo-form data-message="게시물 작성 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
-    <div class="col-lg-6">
+  <form class="row g-4"
+        action="${pageContext.request.contextPath}/new-post"
+        method="post">
+  <div class="col-lg-6">
       <label class="zt-upload-zone p-3" for="new-post-image" data-upload-preview>
         <span>
           <i class="bi bi-images display-5 d-block mb-3"></i>
@@ -51,13 +53,12 @@
           <small class="zt-muted">JPG, PNG 파일을 업로드할 수 있습니다.</small>
         </span>
       </label>
-      <input id="new-post-image" class="d-none" type="file" accept="image/*" data-upload-input required>
     </div>
 
     <div class="col-lg-6">
       <div class="mb-3">
         <label class="form-label" for="post-title">제목</label>
-        <input id="post-title" class="form-control" type="text" maxlength="60" placeholder="여행 제목" required>
+        <input id="post-title" name="title" class="form-control" type="text" maxlength="60" placeholder="여행 제목" required>
       </div>
       <div class="mb-3">
         <label class="form-label" for="post-place">여행 장소</label>
@@ -65,7 +66,12 @@
       </div>
       <div class="mb-3">
         <label class="form-label" for="post-content">내용</label>
-        <textarea id="post-content" class="form-control" rows="8" placeholder="동선, 비용, 팁을 적어주세요." required></textarea>
+        <textarea id="post-content"
+                  name="content"
+                  class="form-control"
+                  rows="8"
+                  placeholder="여행 내용을 적어 주세요."
+                  required></textarea>
       </div>
       <div class="mb-3">
         <label class="form-label" for="post-tags">태그</label>

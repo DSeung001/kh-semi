@@ -1,9 +1,11 @@
 package com.zzanmat.tour.post.controller;
 
+import com.zzanmat.tour.post.dto.PostDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.zzanmat.tour.post.service.PostService;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -24,6 +26,7 @@ public class PostController {
             @RequestParam Long postId,
             Model model
     ) {
+        postService.increaseViewCount(postId);
         model.addAttribute("post", postService.findById(postId));
         return "post/post-detail";
     }
@@ -37,4 +40,20 @@ public class PostController {
         model.addAttribute("sort", sort);
         return "post/my-travel";
     }
+    @PostMapping("/new-post")
+    public String createPost(
+            @RequestParam String title,
+            @RequestParam String content
+    ){
+        PostDto post = new PostDto();
+
+        post.setUserId(1L);
+        post.setTitle(title);
+        post.setContent(content);
+
+        postService.save(post);
+
+        return "redirect:/my-travel";
+    }
+
 }

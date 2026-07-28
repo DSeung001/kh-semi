@@ -10,4 +10,6 @@ import java.util.List;
 public interface PostMapper {
     List<PostDto> findAll(@Param("sort") String sort);
     PostDto findById(@Param("postId") Long postId);
+    void save(PostDto post);
+    void increaseViewCount(@Param("postId") Long postID);
 }

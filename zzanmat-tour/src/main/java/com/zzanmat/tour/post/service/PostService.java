@@ -21,4 +21,10 @@ public class PostService {
     public PostDto findById(Long postId) {
         return postMapper.findById(postId);
     }
+    public void save(PostDto post){
+        postMapper.save(post);
+    }
+    public void increaseViewCount(Long postId){
+        postMapper.increaseViewCount(postId);
+    }
 }

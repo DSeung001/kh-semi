@@ -66,4 +66,28 @@
     WHERE P.POST_ID = #{postId}
         AND P.IS_BLOCK = FALSE
 </select>
+    <insert id="save" parameterType="com.zzanmat.tour.post.dto.PostDto">
+        INSERT INTO POST (
+            USER_ID,
+            TITLE,
+            CONTENT,
+            VIEW_COUNT,
+            CREATE_AT,
+            IS_BLOCK
+        )
+        VALUES (
+            #{userId},
+            #{title},
+            #{content},
+            0,
+            now(),
+            FALSE
+        )
+    </insert>
+
+    <update id="increaseViewCount">
+        UPDATE POST
+        SET VIEW_COUNT = VIEW_COUNT + 1
+        WHERE POST_ID = #{postId}
+    </update>
 </mapper>
