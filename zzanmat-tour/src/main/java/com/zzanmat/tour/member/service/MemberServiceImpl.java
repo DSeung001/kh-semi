@@ -1,10 +1,15 @@
 package com.zzanmat.tour.member.service;
 
+import com.zzanmat.tour.common.util.FileUploadUtil;
+import com.zzanmat.tour.common.util.SavedFile;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.mapper.MemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -17,8 +22,14 @@ public class MemberServiceImpl implements MemberService{
     @Autowired
     private MemberMapper memberMapper;
 
+    @Autowired
+    private FileUploadUtil fileUploadUtil;
+
+    @Value("${file.upload-dir.profile}")
+    private String profileUploadDir;
+
     @Override
-    public void join(MemberDto memberDto) throws IOException {
+    public void join(MemberDto memberDto, MultipartFile profileImage) throws IOException {
         // 아이디 중복검사
         if(isMemberIdCheck(memberDto.getUserId())){
             throw new IllegalStateException("이미 사용중인 아이디 입니다.");
@@ -30,10 +41,10 @@ public class MemberServiceImpl implements MemberService{
         memberDto.setUserPassword(encodePwd);
 
         //프로필 이미지를 업로드 했다면 디스크에 저장 후, 경로를 dto에 채워준다.
-        /*SavedFile saved = fileUploadUtil.save(profileImage, profileUploadDir, "/uploads/profile");
+        SavedFile saved = fileUploadUtil.save(profileImage, profileUploadDir, "/uploads/profile");
         if(saved != null){
             memberDto.setProfile(saved.getPath());
-        }*/
+        }
 
         memberMapper.insertMember(memberDto);
     }
@@ -59,4 +70,18 @@ public class MemberServiceImpl implements MemberService{
         return member;
     }
 
+    @Override
+    public boolean update(MemberDto memberDto) {
+        return memberMapper.memberUpdate(memberDto) > 0;
+    }
+
+    @Override
+    public MemberDto selectUser(MemberDto memberDto) {
+        return memberMapper.selectUser(memberDto);
+    }
+
+    @Override
+    public void withdraw(String userId) {
+        memberMapper.deleteMember(userId);
+    }
 }

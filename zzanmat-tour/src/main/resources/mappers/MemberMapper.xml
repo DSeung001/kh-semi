@@ -8,8 +8,27 @@
 <mapper namespace="com.zzanmat.tour.member.mapper.MemberMapper">
 
     <insert id="insertMember" parameterType="MemberDto">
-        INSERT INTO `USER` (USER_ID, USER_PASSWORD, EMAIL, NICKNAME)
-        VALUES (#{userId}, #{userPassword}, #{email}, #{nickname})
+        INSERT INTO
+        `USER`
+        (
+         USER_ID
+        ,USER_PASSWORD
+        ,EMAIL
+        ,NICKNAME
+        ,USER_NAME
+        ,BIO
+        ,PROFILE
+        )
+        VALUES
+        (
+         #{userId}
+        ,#{userPassword}
+        ,#{email}
+        ,#{nickname}
+        ,#{userName}
+        ,#{bio}
+        ,#{profile}
+        )
     </insert>
 
     <select id="countByMemberId" parameterType="string" resultType="int">
@@ -28,5 +47,43 @@
           FROM `USER`
          WHERE user_id = #{userId}
     </select>
+
+    <update id="memberUpdate">
+        UPDATE `USER`
+        <set>
+            <if test="nickname != null">
+                nickname = #{nickname},
+            </if>
+            <if test="bio != null">
+                bio = #{bio},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+            <if test="profile != null">
+                profile = #{profile},
+            </if>
+        </set>
+         WHERE USER_ID = #{userId}
+    </update>
+
+    <select id="selectUser" parameterType="MemberDto" resultType="MemberDto">
+        SELECT user_id
+              ,nickname
+              ,bio
+              ,user_name
+              ,email
+              ,profile
+          FROM `USER`
+         WHERE USER_ID = #{userId}
+    </select>
+
+    <delete id="deleteMember">
+        DELETE FROM user
+         WHERE user_id = #{userId}
+    </delete>
 
 </mapper>

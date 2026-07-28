@@ -14,4 +14,12 @@ public interface MemberMapper {
 
     //아이디 존재유무 확인
     MemberDto selectByMemberId(String memberId);
+
+    int memberUpdate(MemberDto memberDto);
+
+    MemberDto selectUser(MemberDto memberDto);
+
+    //회원탈퇴
+    int deleteMember(String userId);
+
 }

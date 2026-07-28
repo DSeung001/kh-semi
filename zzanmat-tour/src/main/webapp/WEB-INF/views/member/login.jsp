@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -9,9 +10,23 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/member.css">
   
 </head>
 <body>
+
+<c:if test="${not empty joinSuccess}">
+  <script>
+    alert("회원가입이 완료되었습니다. 로그인 해주세요.");
+  </script>
+</c:if>
+
+<c:if test="${not empty error}">
+  <script>
+    alert("${error}");
+  </script>
+</c:if>
+
 <div class="zt-app">
   
 <header class="zt-mobile-header">
@@ -37,7 +52,7 @@
     <main class="zt-content">
       
 <div class="zt-auth-wrap">
-  <section class="zt-panel zt-auth-card zt-panel-shadow">
+  <section class="zt-panel zt-auth-card zt-panel-shadow zt-signup-card">
     <h1 class="zt-auth-title">login</h1>
     <form method="post" action="/member/login">
       <div class="form-floating mb-3">

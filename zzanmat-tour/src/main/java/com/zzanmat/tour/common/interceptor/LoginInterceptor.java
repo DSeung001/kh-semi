@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 public class LoginInterceptor implements HandlerInterceptor {
 
-    /*@Override
+    @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession(false); // false : 세션이 없으면 null반환
         boolean isLoggedIn = session != null && session.getAttribute(SessionConst.LOGIN_MEMBER) != null;
@@ -43,6 +43,6 @@ public class LoginInterceptor implements HandlerInterceptor {
                 || "XMLHttpRequest".equals(requestedWith)
                 || (accept != null && accept.contains("application/json"));
 
-    }*/
+    }
 
 }

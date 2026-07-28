@@ -1,6 +1,82 @@
+.zt-panel{
+    margin-bottom: 300px;
+}
+
 .zt-auth-card form > .col-md-6, .col-md-7 {
     flex: 0 0 100%;
     max-width: 100%;
+}
+
+.zt-signup-card {
+    width: 100%;
+    padding: 28px;
+}
+
+.zt-signup-profile {
+    margin: 0;
+    padding: 20px;
+    border: 1px solid var(--zt-border);
+    border-radius: var(--zt-radius);
+}
+
+.zt-optional {
+    margin-left: 4px;
+    color: var(--zt-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.zt-signup-profile-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.zt-profile-upload {
+    display: grid;
+    flex: 0 0 88px;
+    width: 88px;
+    height: 88px;
+    place-items: center;
+    align-content: center;
+    gap: 4px;
+    border: 1px dashed var(--zt-border);
+    border-radius: 50%;
+    color: var(--zt-muted);
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease, background-color .2s ease;
+}
+
+.zt-profile-upload:hover,
+.zt-profile-upload:focus-within {
+    border-color: var(--zt-primary);
+    background: rgba(var(--bs-primary-rgb), .05);
+    color: var(--zt-primary);
+}
+
+.zt-profile-upload-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.zt-profile-upload-text {
+    font-size: .75rem;
+    font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+    .zt-signup-card {
+        padding: 20px;
+    }
+
+    .zt-signup-profile {
+        padding: 16px;
+    }
+
+    .zt-signup-profile-content {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
 
 .signup-message {
@@ -30,4 +106,32 @@
 
 .form-message.is-success {
     color: #198754;
+}
+
+textarea {
+    resize: none;
+}
+
+.logoutArea{
+    margin-top: 100px;
+}
+
+.logout{
+    width: 18px;
+    height: 18px;
+    /*flex: 0 0 auto;*/
+    overflow: hidden;
+    /*border-radius: 50%;*/
+    background: #eee;
+    object-fit: cover;
+}
+
+.logoutArea a span {
+    font-size: 10px;
+}
+
+.my-profile{
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
 }
