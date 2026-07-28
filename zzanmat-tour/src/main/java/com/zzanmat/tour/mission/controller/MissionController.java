@@ -1,48 +1,49 @@
 package com.zzanmat.tour.mission.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import com.zzanmat.tour.mission.dto.MissionDto;
 import com.zzanmat.tour.mission.dto.MissionPostDto;
+import com.zzanmat.tour.mission.dto.UserMissionResponseDto;
 import com.zzanmat.tour.mission.service.MissionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/missions")
+@RequestMapping("/mission")
 @RequiredArgsConstructor
 public class MissionController {
 
     private final MissionService missionService;
 
-    // 💡 서버 정상 작동 확인용 GET 테스트 메서드 (클래스 내부로 이동)
-    @GetMapping("/test")
-    public String serverTest() {
-        return "서버와 컨트롤러가 정상 동작 중입니다!";
-    }
-
-    // 1. 미션 등록 요청 처리 (JSON 데이터 전송)
     @PostMapping
-    public String createMission(@RequestBody MissionDto missionDto) {
+    public ResponseEntity<String> createMission(@RequestBody @Valid MissionDto missionDto) {
         missionService.insertMission(missionDto);
-        return "Mission registered successfully!";
+        return ResponseEntity.ok("Mission registered successfully!");
     }
 
-    // 2. 미션 인증 처리 (JSON 텍스트 데이터 + 멀티파트 파일 동시 전송)
-    @PutMapping
-    public ResponseEntity<String> createMissionAuth(
-            @RequestPart("PostDto") MissionPostDto postDto,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
-
-        missionService.processMissionAuth(postDto, files);
-        return ResponseEntity.ok("미션 인증이 완료 되었습니다!");
+    @GetMapping(value = "/subscribe/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@PathVariable Long userId) {
+        return missionService.subscribe(userId);  // 실시간 진행률 보냄
     }
 
-    // 3. 미션 삭제 요청 처리 (Path 파라미터 활용)
+    @PostMapping("/auth")
+    public ResponseEntity<UserMissionResponseDto> createMissionAuth(
+            @RequestPart("postDto") @Valid MissionPostDto postDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+
+        UserMissionResponseDto progressDto = missionService.processMissionAuthAndPush(postDto, files);
+        return ResponseEntity.ok(progressDto);
+    }
+
     @DeleteMapping("/{missionId}")
-    public String removeMission(@PathVariable Long missionId) {
+    public ResponseEntity<String> removeMission(@PathVariable Long missionId) {
         missionService.deleteMission(missionId);
-        return "Mission deleted successfully!";
+        return ResponseEntity.ok("Mission deleted successfully!");
     }
 }
