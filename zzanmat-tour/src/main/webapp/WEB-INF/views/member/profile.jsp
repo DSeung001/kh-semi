@@ -44,11 +44,11 @@
 
 <section class="zt-panel zt-profile-card zt-panel-shadow">
   <div class="zt-profile-hero">
-    <img class="zt-avatar zt-avatar-lg" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="내 프로필">
+    <img class="my-profile" src="${userInfo.profile}" alt="내 프로필">
     <div class="flex-grow-1">
       <div class="d-flex flex-wrap gap-2 align-items-center">
         <h2 class="h5 mb-0">${userInfo.userId}</h2>
-        <a class="btn btn-sm btn-outline-secondary" href="${pageContext.request.contextPath}/new-post">새 게시물</a>
+        <%--<a class="btn btn-sm btn-outline-secondary" href="${pageContext.request.contextPath}/new-post">새 게시물</a>--%>
       </div>
       <p class="zt-muted small mb-0 mt-2">가성비 좋은 여행 동선을 기록합니다.</p>
       <div class="zt-profile-stats">
@@ -77,21 +77,23 @@
     <div class="col-md-6">
       <label for="name" class="form-label">이름</label>
       <input type="hidden" name="userId" value="${userInfo.userId}">
-      <input id="name" name="userName" class="form-control" type="text" value="Ethan">
+      <input id="name" name="userName" class="form-control" type="text" value="${userInfo.userName}">
     </div>
     <div class="col-12">
       <label for="email" class="form-label">이메일</label>
       <div class="input-group">
-        <input id="email" name="email" class="form-control" type="email" value="user01@example.com">
+        <input id="email" name="email" class="form-control" type="email" value="${userInfo.email}">
         <button class="btn btn-outline-secondary" type="button">인증</button>
       </div>
     </div>
     <div class="col-12">
       <label for="bio" class="form-label">소개</label>
-      <textarea id="bio" name="bio" class="form-control" rows="4">가성비 좋은 여행 동선을 기록합니다.</textarea>
+      <textarea id="bio" name="bio" class="form-control" rows="4" maxlength="200">${userInfo.bio}</textarea>
     </div>
     <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-      <button id="withdrawBtn" class="btn btn-outline-danger px-4" type="submit">탈퇴하기</button>
+      <button id="withdrawBtn" class="btn btn-outline-danger px-4"
+              formaction="/member/withdraw"
+              onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기</button>
       <button id="saveBtn" class="btn btn-primary zt-primary-btn px-4" type="submit">수정 완료</button>
     </div>
   </form>

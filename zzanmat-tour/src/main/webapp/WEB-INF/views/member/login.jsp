@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/member.css">
   
 </head>
 <body>
@@ -22,7 +23,7 @@
 
 <c:if test="${not empty error}">
   <script>
-    alert("회원가입 처리 중 오류가 발생했습니다. 다시 회원가입을 진행해 주세요.");
+    alert("${error}");
   </script>
 </c:if>
 
@@ -51,7 +52,7 @@
     <main class="zt-content">
       
 <div class="zt-auth-wrap">
-  <section class="zt-panel zt-auth-card zt-panel-shadow">
+  <section class="zt-panel zt-auth-card zt-panel-shadow zt-signup-card">
     <h1 class="zt-auth-title">login</h1>
     <form method="post" action="/member/login">
       <div class="form-floating mb-3">

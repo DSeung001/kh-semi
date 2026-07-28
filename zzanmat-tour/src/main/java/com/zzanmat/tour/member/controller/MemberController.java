@@ -25,12 +25,14 @@ public class MemberController {
     // 회원가입
     @PostMapping("/signup")
     public String signup(MemberDto memberDto,
+                         @RequestParam(required = false) MultipartFile profileImage,
                          RedirectAttributes redirectAttributes){
         try {
-            memberService.join(memberDto);
+            memberService.join(memberDto, profileImage);
         } catch (IOException e) {
 //             RedirectAttributes.addFlashAttribute
             // 리다이렉트 후 딱 한번 다음 요청에서만 살아있는 데이터
+            System.out.println(e.getMessage());
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/member/signup";
         }
@@ -82,7 +84,6 @@ public class MemberController {
 
     @PostMapping("/update")
     public String update(MemberDto memberDto){
-        System.out.println("업데이트 controller까지 왔음");
         memberService.update(memberDto);
         return "redirect:/";
     }
@@ -91,7 +92,7 @@ public class MemberController {
     @PostMapping("/withdraw")
     public String withdraw(HttpSession session){
         MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        /*memberService.withdraw(loginMember.getMemberId());*/
+        memberService.withdraw(loginMember.getUserId());
 
         session.invalidate();
         return "redirect:/";

@@ -18,4 +18,8 @@ public interface MemberMapper {
     int memberUpdate(MemberDto memberDto);
 
     MemberDto selectUser(MemberDto memberDto);
+
+    //회원탈퇴
+    int deleteMember(String userId);
+
 }
