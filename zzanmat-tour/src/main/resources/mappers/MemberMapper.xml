@@ -48,7 +48,7 @@
          WHERE user_id = #{userId}
     </select>
 
-    <update id="memberUpdate">
+    <update id="updateUser">
         UPDATE `USER`
         <set>
             <if test="nickname != null">

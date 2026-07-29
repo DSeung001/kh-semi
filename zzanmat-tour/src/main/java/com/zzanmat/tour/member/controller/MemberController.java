@@ -83,9 +83,21 @@ public class MemberController {
     }
 
     @PostMapping("/update")
-    public String update(MemberDto memberDto){
-        memberService.update(memberDto);
-        return "redirect:/";
+    public String update(MemberDto memberDto
+                        ,@RequestParam(required = false) MultipartFile profileImage
+                        ,String originProfileName
+                        ,Model model
+                        ,RedirectAttributes redirectAttributes){
+        try {
+            memberService.updateUser(memberDto, profileImage, originProfileName);
+
+            // 리다이렉트 시점에 일회성으로 메시지 전달
+            redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 수정되었습니다.");
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "프로필 이미지 업로드 중 오류가 발생했습니다.");
+            return "redirect:/member/profile";
+        }
+        return "redirect:/member/profile";
     }
 
     // 탈퇴하기

@@ -42,12 +42,14 @@
         </a>
       </c:otherwise>
     </c:choose>
+    <c:if test="${not empty loginMember}">
     <a class="zt-nav-link ${param.activePage eq 'new-post' ? 'active' : ''}"
        href="${pageContext.request.contextPath}/new-post"
        aria-current="${param.activePage eq 'new-post' ? 'page' : 'false'}">
       <i class="bi bi-plus-square"></i>
       <span>게시물 만들기</span>
     </a>
+    </c:if>
   </nav>
 <script>
   console.log("${pageContext.request.contextPath}");
