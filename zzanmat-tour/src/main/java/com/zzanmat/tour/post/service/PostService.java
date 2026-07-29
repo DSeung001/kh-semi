@@ -27,4 +27,19 @@ public class PostService {
     public void increaseViewCount(Long postId){
         postMapper.increaseViewCount(postId);
     }
+    public void update(PostDto post) {
+        postMapper.update(post);
+    }
+    public void deleteById(Long postId) {
+        postMapper.deleteById(postId);
+    }
+
+    public List<PostDto> findPage(String sort, int page, int size) {
+        int offset= (page - 1) * size;
+        return postMapper.findPage(sort, offset, size);
+    }
+
+    public int countALL() {
+        return postMapper.countAll();
+    }
 }
