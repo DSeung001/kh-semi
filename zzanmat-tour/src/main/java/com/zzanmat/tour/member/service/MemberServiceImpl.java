@@ -37,7 +37,6 @@ public class MemberServiceImpl implements MemberService{
 
         //비밀번호는 항상 암호화해서 저장.
         String encodePwd = passwordEncoder.encode(memberDto.getUserPassword());
-        System.out.println(encodePwd);
         memberDto.setUserPassword(encodePwd);
 
         //프로필 이미지를 업로드 했다면 디스크에 저장 후, 경로를 dto에 채워준다.
@@ -71,8 +70,21 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public boolean update(MemberDto memberDto) {
-        return memberMapper.memberUpdate(memberDto) > 0;
+    public boolean updateUser(MemberDto memberDto, MultipartFile newprofileImage, String originProfileName) throws IOException {
+
+        //사용자가 새로운 프로필을 등록한다면 기존에 등록되어 있던 프로필 삭제 후
+        //새로운 프로필 이미지 등록
+        boolean hasNewImages = newprofileImage != null && !newprofileImage.isEmpty();
+        if(hasNewImages){
+            fileUploadUtil.delete(originProfileName, profileUploadDir);
+
+            SavedFile saved = fileUploadUtil.save(newprofileImage, profileUploadDir, "/uploads/profile");
+            if(saved != null){
+                memberDto.setProfile(saved.getPath());
+            }
+        }
+
+        return memberMapper.updateUser(memberDto) > 0;
     }
 
     @Override

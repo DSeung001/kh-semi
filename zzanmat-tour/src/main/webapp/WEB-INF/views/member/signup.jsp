@@ -72,7 +72,7 @@
             <label class="form-label" for="signup-email">이메일</label>
             <div class="input-group">
               <input id="signup-email" name="email" class="form-control" type="email" required>
-              <button class="btn btn-outline-secondary" type="button">인증</button>
+              <button id="sendCodeBtn" class="btn btn-outline-secondary" type="button">인증</button>
             </div>
             <p id="signupEmailMessage" class="signup-message" role="alert"></p>
           </div>

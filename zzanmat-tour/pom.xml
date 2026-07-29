@@ -113,6 +113,12 @@
 		</dependency>
 		<!-- 프로젝트에서 데이터의 유효성 검증(Validation)을 수행할 수 있도록 해주는 필수 라이브러리(의존성)를 추가하는 코드 -->
 
+		<!-- Spring Boot Mail Starter -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
