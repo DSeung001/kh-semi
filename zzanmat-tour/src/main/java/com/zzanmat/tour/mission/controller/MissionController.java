@@ -1,25 +1,29 @@
 package com.zzanmat.tour.mission.controller;
 
+import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.dto.MissionDto;
-import com.zzanmat.tour.mission.dto.MissionPostDto;
-import com.zzanmat.tour.mission.dto.UserMissionResponseDto;
 import com.zzanmat.tour.mission.service.MissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/mission")
+@RequestMapping("/api/mission")
 @RequiredArgsConstructor
 public class MissionController {
 
     private final MissionService missionService;
+
+    @GetMapping
+    public ResponseEntity<List<MissionResponseDto>> getAllMissions() {
+        List<MissionResponseDto> missions = missionService.getAllMissions();
+        return ResponseEntity.ok(missions);
+    }
 
     @PostMapping
     public ResponseEntity<String> createMission(@RequestBody @Valid MissionDto missionDto) {
@@ -30,15 +34,6 @@ public class MissionController {
     @GetMapping(value = "/subscribe/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@PathVariable Long userId) {
         return missionService.subscribe(userId);  // 실시간 진행률 보냄
-    }
-
-    @PostMapping("/auth")
-    public ResponseEntity<UserMissionResponseDto> createMissionAuth(
-            @RequestPart("postDto") @Valid MissionPostDto postDto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-
-        UserMissionResponseDto progressDto = missionService.processMissionAuthAndPush(postDto, files);
-        return ResponseEntity.ok(progressDto);
     }
 
     @DeleteMapping("/{missionId}")

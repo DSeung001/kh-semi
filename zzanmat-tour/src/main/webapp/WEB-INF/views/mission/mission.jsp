@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
-
 </head>
 <body>
 <div class="zt-app">
@@ -40,79 +39,103 @@
                 <p>재미있는 여행 미션에 도전하고 인증 기록을 남겨보세요.</p>
             </header>
 
-            <section class="zt-panel zt-mission-list">
-                <!-- 1번 미션 카드 -->
-                <article class="zt-mission-card">
-                    <div class="zt-mission-icon"><i class="bi bi-wallet2"></i></div>
-                    <div>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                            <h2 class="h6 fw-bold mb-0">만원으로 서울 하루 여행</h2>
-                            <span class="zt-chip">서울</span>
-                        </div>
-                        <p class="zt-muted small mb-0">교통비를 포함해 10,000원 이하로 서울 하루 코스를 완주해보세요.</p>
-                    </div>
-                    <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="만원으로 서울 하루 여행" data-redirect="${pageContext.request.contextPath}/mission-active?missionId=1">미션 수락</button>
-                </article>
-
-                <!-- 2번 미션 카드 -->
-                <article class="zt-mission-card">
-                    <div class="zt-mission-icon"><i class="bi bi-basket"></i></div>
-                    <div>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                            <h2 class="h6 fw-bold mb-0">지역 시장 한 끼 도전</h2>
-                            <span class="zt-chip">전국</span>
-                        </div>
-                        <p class="zt-muted small mb-0">전통시장에서 8,000원 이하 한 끼를 찾아 인증하세요.</p>
-                    </div>
-                    <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="지역 시장 한 끼 도전" data-redirect="${pageContext.request.contextPath}/mission-active?missionId=2">미션 수락</button>
-                </article>
-
-                <!-- 3번 미션 카드 -->
-                <article class="zt-mission-card">
-                    <div class="zt-mission-icon"><i class="bi bi-bus-front"></i></div>
-                    <div>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                            <h2 class="h6 fw-bold mb-0">대중교통만 이용하기</h2>
-                            <span class="zt-chip">전국</span>
-                        </div>
-                        <p class="zt-muted small mb-0">자가용과 택시 없이 하루 여행 동선을 완성하세요.</p>
-                    </div>
-                    <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="대중교통만 이용하기" data-redirect="${pageContext.request.contextPath}/mission-active?missionId=3">미션 수락</button>
-                </article>
-
-                <!-- 4번 미션 카드 -->
-                <article class="zt-mission-card">
-                    <div class="zt-mission-icon"><i class="bi bi-camera"></i></div>
-                    <div>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                            <h2 class="h6 fw-bold mb-0">무료 명소 세 곳 방문</h2>
-                            <span class="zt-chip">전국</span>
-                        </div>
-                        <p class="zt-muted small mb-0">입장료가 없는 명소 세 곳을 방문하고 사진을 남기세요.</p>
-                    </div>
-                    <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="무료 명소 세 곳 방문" data-redirect="${pageContext.request.contextPath}/mission-active?missionId=4">미션 수락</button>
-                </article>
-
-                <!-- 5번 미션 카드 -->
-                <article class="zt-mission-card">
-                    <div class="zt-mission-icon"><i class="bi bi-recycle"></i></div>
-                    <div>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                            <h2 class="h6 fw-bold mb-0">플라스틱 없는 여행</h2>
-                            <span class="zt-chip">친환경</span>
-                        </div>
-                        <p class="zt-muted small mb-0">일회용 플라스틱 사용 없이 여행을 마쳐보세요.</p>
-                    </div>
-                    <button class="btn btn-warning fw-bold" type="button" data-mission-accept data-mission="플라스틱 없는 여행" data-redirect="${pageContext.request.contextPath}/mission-active?missionId=5"> 미션 수락 </button>
-                </article>
+            <!-- 미션 목록이 동적으로 들어갈 영역 -->
+            <section class="zt-panel zt-mission-list" id="missionListSection">
+                <!-- 자바스크립트로 데이터가 렌더링됩니다. -->
             </section>
 
         </main>
 
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+
+<!-- API 호출 및 동적 렌더링 스크립트 -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const contextPath = "${pageContext.request.contextPath}";
+        const missionListSection = document.getElementById("missionListSection");
+
+        // 미션 타입(missionType)에 따라 어울리는 아이콘을 매핑해주는 함수
+        function getMissionIcon(missionType) {
+            switch (missionType) {
+                case 'POST': return 'bi-wallet2';
+                case 'PHOTO': return 'bi-camera';
+                case 'VIDEO': return 'bi-camera-video';
+                case 'SHORTS': return 'bi-film';
+                default: return 'bi-bookmark-check';
+            }
+        }
+
+        // API 호출
+        fetch(contextPath + "/api/mission")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("네트워크 응답에 문제가 있습니다.");
+                }
+                return response.json();
+            })
+            .then(missions => {
+                missionListSection.innerHTML = ""; // 기존 내용 초기화
+
+                if (missions.length === 0) {
+                    missionListSection.innerHTML = '<p class="text-center text-muted py-4">등록된 미션이 없습니다.</p>';
+                    return;
+                }
+
+                // 데이터 순회하며 카드 생성
+                missions.forEach(mission => {
+                    const iconClass = getMissionIcon(mission.missionType);
+
+                    // 💡 [수정 포인트] /mission-active 가 아니라 올바른 컨트롤러 경로인 /mission/active 로 수정
+                    const redirectUrl = contextPath + "/mission/active?missionId=" + mission.id;
+
+                    const article = document.createElement("article");
+                    article.className = "zt-mission-card";
+
+                    article.innerHTML = `
+                        <div class="zt-mission-icon"><i class="bi \${iconClass}"></i></div>
+                        <div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+                                <h2 class="h6 fw-bold mb-0">\${mission.title}</h2>
+                                <span class="zt-chip">\${mission.missionType}</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">\+\${mission.rewardPoint.toLocaleString()}P</span>
+                            </div>
+                            <p class="zt-muted small mb-0">\${mission.description}</p>
+                        </div>
+                        <button class="btn btn-warning fw-bold" type="button"
+                                data-mission-accept
+                                data-mission="\${mission.title}"
+                                data-redirect="\${redirectUrl}">
+                            미션 수락
+                        </button>
+                    `;
+
+                    missionListSection.appendChild(article);
+                });
+            })
+            .catch(error => {
+                console.error("미션 데이터를 불러오는 중 에러 발생:", error);
+                missionListSection.innerHTML = '<p class="text-center text-danger py-4">미션 목록을 불러오지 못했습니다.</p>';
+            });
+
+        // 수락 버튼 클릭 이벤트 위임 (동적으로 생성된 버튼 대응)
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest("[data-mission-accept]");
+            if (btn) {
+                const redirectUrl = btn.getAttribute("data-redirect");
+                const missionTitle = btn.getAttribute("data-mission");
+
+                console.log(`[\${missionTitle}] 미션 수락됨. 이동 경로: \${redirectUrl}`);
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

@@ -8,6 +8,7 @@ import lombok.*;
 
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -16,6 +17,8 @@ public class UserMissionDto {
     private Long userMissionId;
 
     private Long memberId;
+
+    private Long userId;
 
     private Long missionId;
 
