@@ -43,7 +43,26 @@
     <div class="zt-user-meta"><strong>travel_ethan</strong><span>서울 · 2시간 전</span></div>
     <button class="zt-icon-btn fs-5"><i class="bi bi-three-dots"></i></button>
   </header>
+    <div class="p-3 text-end">
+      <a class="btn btn-outline-secondary btn-sm"
+         href="${pageContext.request.contextPath}/edit-post?postId=${post.postId}">
+        수정
+      </a>
+      <form action="${pageContext.request.contextPath}/delete-post"
+            method="post"
+            class="d-inline"
+            onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <input type="hidden"
+               name="postId"
+               value="${post.postId}">
 
+        <button type="submit"
+                class="btn btn-outline-danger btn-sm">
+          삭제
+        </button>
+      </form>
+
+    </div>
   <img class="zt-detail-image" src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="서울 여행 사진">
 
   <div class="zt-post-actions">

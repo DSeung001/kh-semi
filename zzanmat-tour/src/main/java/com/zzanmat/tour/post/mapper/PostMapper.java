@@ -9,7 +9,17 @@ import java.util.List;
 @Mapper
 public interface PostMapper {
     List<PostDto> findAll(@Param("sort") String sort);
+    List<PostDto> findPage(
+            @Param("sort") String sort,
+            @Param("offset") int offset,
+            @Param("size") int size
+    );
+
+    int countAll();
+    
     PostDto findById(@Param("postId") Long postId);
     void save(PostDto post);
     void increaseViewCount(@Param("postId") Long postID);
+    void update(PostDto post);
+    void deleteById(@Param("postId") Long postId);
 }
