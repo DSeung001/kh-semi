@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @NotNull
+@Data
 @NotBlank
 @Getter
 @Setter

@@ -9,7 +9,9 @@ import lombok.*;
 @Builder  // (객체 조립 편리화)
 public class UserMissionResponseDto {
 
-
+    private Long id;
+    private String title;
+    private String description;
     private Long userMissionId; // 유저 미션 매핑 ID
     private Long missionId;     // 미션 ID
     private String status;      // 미션 상태 (예: "COMPLETED", "IN_PROGRESS")
