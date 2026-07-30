@@ -202,3 +202,29 @@ if(emailInput) {
         }
     });
 }
+
+const sendCodeBtn = document.querySelector("#sendCodeBtn");
+if(sendCodeBtn){
+    sendCodeBtn.addEventListener("click", function(){
+        const email = document.querySelector("#signup-email").value;
+
+        if(!email) {
+            alert("이메일을 입력해주세요.");
+            return;
+        }
+
+        // 서버로 이메일 전송 요청 (Ajax)
+        fetch('/email/send?email=' + encodeURIComponent(email), {
+            method: 'POST'
+        })
+            .then(response => response.text())
+            .then(result => {
+                alert(result); // "인증번호가 성공적으로 전송되었습니다."
+                // TODO: 인증번호 입력 칸을 화면에 보여주는 로직 추가
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("오류가 발생했습니다.");
+            });
+    });
+}
