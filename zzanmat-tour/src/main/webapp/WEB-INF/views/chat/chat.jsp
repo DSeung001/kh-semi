@@ -102,6 +102,10 @@
       : '<i class="bi bi-circle-fill text-secondary"></i> 연결 끊김';
   }
 
+  function scrollToLatest() {
+    chatList.scrollTop = chatList.scrollHeight;
+  }
+
   function appendMessage(message) {
     const isMine = myUserId != null && Number(message.userId) === Number(myUserId);
     const article = document.createElement("article");
@@ -116,7 +120,7 @@
         '<div class="zt-chat-bubble">' + escapeHtml(message.content || "") + "</div>" +
       "</div>";
     chatList.appendChild(article);
-    chatList.scrollTop = chatList.scrollHeight;
+    scrollToLatest();
   }
 
   function connect() {
@@ -146,6 +150,7 @@
       messages.forEach(function (m) {
         appendMessage(m);
       });
+      requestAnimationFrame(scrollToLatest);
     } catch (e) {
       // 이력 로드 실패해도 실시간 구독은 진행
     }
