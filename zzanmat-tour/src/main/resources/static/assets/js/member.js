@@ -19,6 +19,8 @@ const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/; // 이메
 //서버에 마지막으로 중복이 아님을 확인받은 아이디값
 let checkedMemberId = null;
 let checkedPwd = false;
+//이메일 인증 성공 확인값
+let isEmailVerified = false;
 
 /* 아이디 중복확인 */
 if(checkIdReult) {
@@ -75,13 +77,19 @@ if(signupBtn) {
 
         if (!checkedMemberId) {
             ev.preventDefault();
-            alert("아이디 중복확인을 진행해주세요");
+            alert("아이디 중복확인을 진행해주세요.");
             return;
         }
 
         if (!checkedPwd) {
             ev.preventDefault();
             alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        if (!isEmailVerified){
+            ev.preventDefault();
+            alert("이메일 인증을 진행해주세요.");
             return;
         }
         // js에서의 검증은 UX관점일 뿐.
@@ -203,11 +211,12 @@ if(emailInput) {
     });
 }
 
+// 인증번호 요청
 const sendCodeBtn = document.querySelector("#sendCodeBtn");
 if(sendCodeBtn){
     sendCodeBtn.addEventListener("click", function(){
         const email = document.querySelector("#signup-email").value;
-
+        const authDiv = document.querySelector(".input-group.auth-email");
         if(!email) {
             alert("이메일을 입력해주세요.");
             return;
@@ -220,7 +229,44 @@ if(sendCodeBtn){
             .then(response => response.text())
             .then(result => {
                 alert(result); // "인증번호가 성공적으로 전송되었습니다."
+
                 // TODO: 인증번호 입력 칸을 화면에 보여주는 로직 추가
+                authDiv.classList.add("is-visible");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("오류가 발생했습니다.");
+            });
+    });
+}
+
+// 인증번호 확인
+const authConfirmBtn = document.querySelector("#authConfirmBtn");
+
+if(authConfirmBtn){
+    authConfirmBtn.addEventListener("click", function(){
+        const email = document.querySelector("#signup-email").value;
+        const authCode = document.querySelector("#email-auth-section").value; // 사용자가 입력한 6자리 번호
+
+        if(!authCode) {
+            alert("인증번호 6자리를 입력해주세요.");
+            return;
+        }
+
+        // 서버로 이메일과 인증번호를 함께 보내서 검증 요청
+        fetch('/email/verify?email=' + encodeURIComponent(email) + '&authCode=' + encodeURIComponent(authCode), {
+            method: 'POST'
+        })
+            .then(response => response.text())
+            .then(result => {
+                // 서버에서 반환된 결과에 따른 처리 (예: "인증성공", "인증실패" 등)
+                if(result === "success") {
+                    alert("인증이 완료되었습니다.");
+                    isEmailVerified = true;
+                    // TODO: 회원가입 버튼 활성화 또는 인증 완료 상태 표시
+                } else {
+                    alert("인증번호가 일치하지 않거나 만료되었습니다.");
+                }
             })
             .catch(error => {
                 console.error('Error:', error);

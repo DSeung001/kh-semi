@@ -76,6 +76,14 @@
             </div>
             <p id="signupEmailMessage" class="signup-message" role="alert"></p>
           </div>
+          <div class="col-12">
+            <%--<label class="form-label" for="signup-email"></label>--%>
+            <div class="input-group auth-email auth-email-area">
+              <input id="email-auth-section" name="email" class="form-control" type="number" maxlength="6">
+              <button id="authConfirmBtn" class="btn btn-outline-secondary" type="button">인증 확인</button>
+            </div>
+            <p id="signupEmailMessage" class="signup-message" role="alert"></p>
+          </div>
           <div class="col-md-6">
             <label class="form-label" for="signup-password">비밀번호</label>
             <input id="signup-password" name="userPassword" class="form-control" type="password" required>
