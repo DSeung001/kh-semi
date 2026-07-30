@@ -39,9 +39,27 @@
                 <p>재미있는 여행 미션에 도전하고 인증 기록을 남겨보세요.</p>
             </header>
 
+            <!-- [추가] 실시간 프로그레스바 및 요약 영역 -->
+            <section class="zt-panel mb-3 p-3 bg-white shadow-sm rounded-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark"><i class="bi bi-trophy text-warning me-1"></i> 나의 미션 진행 상황</span>
+                    <span id="progressText" class="text-primary fw-bold">
+            <!-- 초기값은 서버에서 EL표기법으로 렌더링 가능 -->
+            ${completedCount} / ${totalCount} 완료 (${progressPercent}%)
+        </span>
+                </div>
+                <div class="progress" style="height: 12px; border-radius: 6px;">
+                    <div id="missionProgressBar"
+                         class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                         role="progressbar"
+                         style="width: ${progressPercent}%;">
+                    </div>
+                </div>
+            </section>
+
             <!-- 미션 목록이 동적으로 들어갈 영역 -->
             <section class="zt-panel zt-mission-list" id="missionListSection">
-                <!-- 자바스크립트로 데이터가 렌더링됩니다. -->
+
             </section>
 
         </main>
@@ -59,6 +77,7 @@
         const missionListSection = document.getElementById("missionListSection");
 
         // 미션 타입(missionType)에 따라 어울리는 아이콘을 매핑해주는 함수
+
         function getMissionIcon(missionType) {
             switch (missionType) {
                 case 'POST': return 'bi-wallet2';
@@ -89,7 +108,6 @@
                 missions.forEach(mission => {
                     const iconClass = getMissionIcon(mission.missionType);
 
-                    // 💡 [수정 포인트] /mission-active 가 아니라 올바른 컨트롤러 경로인 /mission/active 로 수정
                     const redirectUrl = contextPath + "/mission/active?missionId=" + mission.id;
 
                     const article = document.createElement("article");

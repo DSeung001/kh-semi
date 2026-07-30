@@ -4,6 +4,7 @@ import lombok.*;
 
 @Getter
 @Setter
+@Data
 @NoArgsConstructor  // 기본 생성자 생성
 @AllArgsConstructor //모든 필드를 포함한 생성자 생성
 @Builder  // (객체 조립 편리화)
