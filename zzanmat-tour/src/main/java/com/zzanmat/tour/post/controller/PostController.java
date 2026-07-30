@@ -4,12 +4,15 @@ import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.service.PostService;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class PostController {
@@ -65,6 +68,9 @@ public class PostController {
     public String createPost(
             @RequestParam String title,
             @RequestParam String content,
+            @RequestParam Long transportCost,
+            @RequestParam Long foodCost,
+            @RequestParam Long otherCost,
             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
     ) {
 
@@ -73,6 +79,9 @@ public class PostController {
         post.setUserId(loginMember.getId());
         post.setTitle(title);
         post.setContent(content);
+        post.setTransportCost(transportCost);
+        post.setFoodCost(foodCost);
+        post.setOtherCost(otherCost);
 
         postService.save(post);
 
@@ -82,19 +91,33 @@ public class PostController {
     @GetMapping("/edit-post")
     public String editPost(
             @RequestParam Long postId,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember,
             Model model
     ) {
-        model.addAttribute("post", postService.findById(postId));
+        PostDto post = postService.findById(postId);
 
-        return "post/edit-post"; // post 폴더 안의 edit-post.jsp 화면 실행
+        if(!post.getUserId().equals(loginMember.getId())){
+            return "redirect:/post-detail?postId=" + postId;
+        }
+
+        model.addAttribute("post", post);
+
+        return "post/edit-post";
     }
 
     @PostMapping("/edit-post")
     public String updatePost(
             @RequestParam Long postId,
             @RequestParam String title,
-            @RequestParam String content
+            @RequestParam String content,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
     ) {
+        PostDto savePost = postService.findById(postId);
+
+        if(!savePost.getUserId().equals(loginMember.getId())){
+            return "redirect:/post-detail?postId=" + postId;
+        }
+
         PostDto post = new PostDto();
 
         post.setPostId(postId);
@@ -107,9 +130,41 @@ public class PostController {
     }
 
     @PostMapping("/delete-post")
-    public String deletePost(@RequestParam Long postId) {
-        postService.deleteById(postId);
+    public String deletePost(
+            @RequestParam Long postId,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
+        ) {
+            PostDto post = postService.findById(postId);
 
+            if(!post.getUserId().equals(loginMember.getId())){
+                return "redirect:/post-detail?postId=" + postId;
+            }
+
+            postService.deleteById(postId);
         return "redirect:/my-travel";
+    }
+
+    @GetMapping("/api/posts")
+    @ResponseBody
+    public Map<String, Object> getPostPage(
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "1") int page
+    ) {
+        int size = 9;
+        int totalCount = postService.countALL();
+        int totalPages = (int) Math.ceil((double) totalCount /size);
+
+        if(page<1){
+            page=1;
+        }
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("posts", postService.findPage(sort, page, size));
+        result.put("page", page);
+        result.put("totalPages", totalPages);
+        result.put("hasNext", page < totalPages);
+
+        return result;
     }
 }

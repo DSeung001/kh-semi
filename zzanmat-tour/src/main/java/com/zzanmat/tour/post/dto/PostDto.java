@@ -20,4 +20,9 @@ public class PostDto {
     private Integer viewCount;
     private LocalDateTime createAt;
     private Boolean isBlock;
+
+    private Long transportCost;
+    private Long foodCost;
+    private Long otherCost;
+    
 }
