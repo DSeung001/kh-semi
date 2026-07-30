@@ -89,7 +89,7 @@ public class MemberController {
                         ,Model model
                         ,RedirectAttributes redirectAttributes){
         try {
-            memberService.updateUser(memberDto, profileImage, originProfileName);
+            memberService.update(memberDto, profileImage, originProfileName);
 
             // 리다이렉트 시점에 일회성으로 메시지 전달
             redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 수정되었습니다.");
@@ -125,7 +125,7 @@ public class MemberController {
     public String profile(HttpServletRequest request, Model model){
         HttpSession session = request.getSession(false);
         MemberDto memberDto = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        MemberDto memberInfo = memberService.selectUser(memberDto);
+        MemberDto memberInfo = memberService.findById(memberDto);
         model.addAttribute("userInfo", memberInfo);
         return "member/profile";
     }

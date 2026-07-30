@@ -223,15 +223,19 @@ if(sendCodeBtn){
         }
 
         // 서버로 이메일 전송 요청 (Ajax)
-        fetch('/email/send?email=' + encodeURIComponent(email), {
-            method: 'POST'
+        fetch('/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
         })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                alert(result); // "인증번호가 성공적으로 전송되었습니다."
+                alert(result.message || (result.success ? "인증번호가 성공적으로 전송되었습니다." : "메일 전송에 실패했습니다."));
 
                 // TODO: 인증번호 입력 칸을 화면에 보여주는 로직 추가
-                authDiv.classList.add("is-visible");
+                if (result.success) {
+                    authDiv.classList.add("is-visible");
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -254,18 +258,20 @@ if(authConfirmBtn){
         }
 
         // 서버로 이메일과 인증번호를 함께 보내서 검증 요청
-        fetch('/email/verify?email=' + encodeURIComponent(email) + '&authCode=' + encodeURIComponent(authCode), {
-            method: 'POST'
+        fetch('/email/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, authCode: authCode })
         })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                // 서버에서 반환된 결과에 따른 처리 (예: "인증성공", "인증실패" 등)
-                if(result === "success") {
+                // 서버에서 반환된 결과에 따른 처리
+                if(result.success) {
                     alert("인증이 완료되었습니다.");
                     isEmailVerified = true;
                     // TODO: 회원가입 버튼 활성화 또는 인증 완료 상태 표시
                 } else {
-                    alert("인증번호가 일치하지 않거나 만료되었습니다.");
+                    alert(result.message || "인증번호가 일치하지 않거나 만료되었습니다.");
                 }
             })
             .catch(error => {

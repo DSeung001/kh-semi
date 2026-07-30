@@ -1,15 +1,13 @@
 package com.zzanmat.tour.post.controller;
 
+import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.service.PostService;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,6 @@ public class PostController {
 
     @GetMapping("/new-post")
     public String newPost() {
-        //log.debug("ZzanmatTour home view requested");
         return "post/new-post";
     }
 
@@ -45,7 +42,7 @@ public class PostController {
             Model model
     ) {
         int size = 9;
-        int totalCount = postService.countALL();
+        int totalCount = postService.countAll();
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
         if(page < 1){
@@ -66,25 +63,11 @@ public class PostController {
 
     @PostMapping("/new-post")
     public String createPost(
-            @RequestParam String title,
-            @RequestParam String content,
-            @RequestParam Long transportCost,
-            @RequestParam Long foodCost,
-            @RequestParam Long otherCost,
+            PostDto post,
             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
     ) {
-
-        PostDto post = new PostDto();
-
         post.setUserId(loginMember.getId());
-        post.setTitle(title);
-        post.setContent(content);
-        post.setTransportCost(transportCost);
-        post.setFoodCost(foodCost);
-        post.setOtherCost(otherCost);
-
         postService.save(post);
-
         return "redirect:/my-travel";
     }
 
@@ -107,26 +90,18 @@ public class PostController {
 
     @PostMapping("/edit-post")
     public String updatePost(
-            @RequestParam Long postId,
-            @RequestParam String title,
-            @RequestParam String content,
+            PostDto post,
             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
     ) {
-        PostDto savePost = postService.findById(postId);
+        PostDto savePost = postService.findById(post.getPostId());
 
         if(!savePost.getUserId().equals(loginMember.getId())){
-            return "redirect:/post-detail?postId=" + postId;
+            return "redirect:/post-detail?postId=" + post.getPostId();
         }
-
-        PostDto post = new PostDto();
-
-        post.setPostId(postId);
-        post.setTitle(title);
-        post.setContent(content);
 
         postService.update(post);
 
-        return "redirect:/post-detail?postId=" + postId;
+        return "redirect:/post-detail?postId=" + post.getPostId();
     }
 
     @PostMapping("/delete-post")
@@ -146,12 +121,12 @@ public class PostController {
 
     @GetMapping("/api/posts")
     @ResponseBody
-    public Map<String, Object> getPostPage(
+    public ApiResponse<Map<String, Object>> getPostPage(
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(defaultValue = "1") int page
     ) {
         int size = 9;
-        int totalCount = postService.countALL();
+        int totalCount = postService.countAll();
         int totalPages = (int) Math.ceil((double) totalCount /size);
 
         if(page<1){
@@ -159,12 +134,11 @@ public class PostController {
         }
 
         Map<String, Object> result = new HashMap<>();
-
         result.put("posts", postService.findPage(sort, page, size));
         result.put("page", page);
         result.put("totalPages", totalPages);
         result.put("hasNext", page < totalPages);
 
-        return result;
+        return ApiResponse.success(result);
     }
 }

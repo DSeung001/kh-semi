@@ -6,7 +6,7 @@
 <mapper namespace="com.zzanmat.tour.post.mapper.PostMapper">
 
     <resultMap id="postResultMap"
-               type="com.zzanmat.tour.post.dto.PostDto">
+               type="PostDto">
 
         <id property="postId" column="POST_ID"/>
 
@@ -75,7 +75,7 @@
         AND P.IS_BLOCK = FALSE
 </select>
     <insert id="save"
-            parameterType="com.zzanmat.tour.post.dto.PostDto">
+            parameterType="PostDto">
 
         INSERT INTO POST (
             USER_ID,
@@ -108,7 +108,7 @@
     </update>
 
     <update id="update"
-            parameterType="com.zzanmat.tour.post.dto.PostDto">
+            parameterType="PostDto">
         UPDATE POST
         SET
             TITLE = #{title},

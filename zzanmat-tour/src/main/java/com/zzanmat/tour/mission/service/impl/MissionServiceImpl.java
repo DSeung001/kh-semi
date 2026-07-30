@@ -41,33 +41,33 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void insertMission(MissionDto mission) {
-        missionMapper.insertMission(mission);
+    public void createMission(MissionDto mission) {
+        missionMapper.save(mission);
     }
 
     @Override
     public void updateMission(MissionDto mission) {
-        missionMapper.updateMission(mission);
+        missionMapper.update(mission);
     }
 
     @Override
     public void deleteMission(Long missionId) {
-        missionMapper.deleteMission(missionId);
+        missionMapper.deleteById(missionId);
     }
 
     @Override
     public void createDefaultMissions(Long userId) {
-        missionMapper.insertDefaultMissionsForUser(userId);
+        missionMapper.saveDefaultMissionsForUser(userId);
     }
 
     @Override
     public List<UserMissionDto> getUserMissions(Long userId) {
-        return missionMapper.selectUserMissions(userId);
+        return missionMapper.findUserMissionsByUserId(userId);
     }
 
     @Override
     public void updateMissionStatus(UserMissionDto userMissionDto) {
-        missionMapper.updateMissionStatus(userMissionDto);
+        missionMapper.updateStatus(userMissionDto);
     }
 
     @Override
@@ -79,10 +79,10 @@ public class MissionServiceImpl implements MissionService {
         userMissionDto.setMissionId(missionId);
 
         // 2. MyBatis 쿼리를 이용해 DB 업데이트 수행
-        missionMapper.updateMissionStatus(userMissionDto);
+        missionMapper.updateStatus(userMissionDto);
 
         // 3. 업데이트된 최신 사용자 미션 목록을 가져온 뒤, 방금 인증한 미션 객체 찾기
-        List<UserMissionDto> userMissions = missionMapper.selectUserMissions(userId);
+        List<UserMissionDto> userMissions = missionMapper.findUserMissionsByUserId(userId);
         UserMissionDto updated = userMissions.stream()
                 .filter(m -> m.getMissionId().equals(missionId))
                 .findFirst()

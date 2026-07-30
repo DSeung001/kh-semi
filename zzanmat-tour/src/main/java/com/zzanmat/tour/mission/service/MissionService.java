@@ -16,7 +16,7 @@ public interface MissionService {
 
     SseEmitter subscribe(Long userId);
 
-    void insertMission(MissionDto mission);
+    void createMission(MissionDto mission);
 
     void updateMission(MissionDto mission);
 

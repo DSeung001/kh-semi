@@ -171,7 +171,8 @@
     try {
       const res = await fetch(contextPath + "/api/chat/messages?limit=50");
       if (!res.ok) return;
-      const messages = await res.json();
+      const body = await res.json();
+      const messages = Array.isArray(body) ? body : (body.data ?? []);
       if (!Array.isArray(messages)) return;
       messages.forEach(function (m) {
         appendMessage(m);
