@@ -74,6 +74,52 @@
                   placeholder="여행 내용을 적어 주세요."
                   required>${post.content}</textarea>
       </div>
+
+      <div class="mb-3">
+        <label class="form-label"
+               for="transport-cost">
+          교통비
+        </label>
+
+        <input id="transport-cost"
+               name="transportCost"
+               class="form-control"
+               type="number"
+               min="0"
+               value="${post.transportCost}"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label"
+               for="food-cost">
+          식비
+        </label>
+
+        <input id="food-cost"
+               name="foodCost"
+               class="form-control"
+               type="number"
+               min="0"
+               value="${post.foodCost}"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label"
+               for="other-cost">
+          입장료 및 기타 비용
+        </label>
+
+        <input id="other-cost"
+               name="otherCost"
+               class="form-control"
+               type="number"
+               min="0"
+               value="${post.otherCost}"
+               required>
+      </div>
+
       <div class="mb-3">
         <label class="form-label" for="post-tags">태그</label>
         <input id="post-tags" class="form-control" type="text" placeholder="#서울여행 #가성비여행">

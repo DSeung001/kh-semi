@@ -16,6 +16,11 @@
         <result property="viewCount" column="VIEW_COUNT"/>
         <result property="createAt" column="CREATE_AT"/>
         <result property="isBlock" column="IS_BLOCK"/>
+        <result property="transportCost" column="TRANSPORT_COST"/>
+        <result property="foodCost" column="FOOD_COST"/>
+        <result property="otherCost" column="OTHER_COST"/>
+
+
 
     </resultMap>
 
@@ -61,19 +66,27 @@
         P.CONTENT,
         P.VIEW_COUNT,
         P.CREATE_AT,
-        P.IS_BLOCK
+        P.IS_BLOCK,
+        P.TRANSPORT_COST,
+        P.FOOD_COST,
+        P.OTHER_COST
     FROM POST P
     WHERE P.POST_ID = #{postId}
         AND P.IS_BLOCK = FALSE
 </select>
-    <insert id="save" parameterType="com.zzanmat.tour.post.dto.PostDto">
+    <insert id="save"
+            parameterType="com.zzanmat.tour.post.dto.PostDto">
+
         INSERT INTO POST (
             USER_ID,
             TITLE,
             CONTENT,
             VIEW_COUNT,
             CREATE_AT,
-            IS_BLOCK
+            IS_BLOCK,
+            TRANSPORT_COST,
+            FOOD_COST,
+            OTHER_COST
         )
         VALUES (
             #{userId},
@@ -81,7 +94,10 @@
             #{content},
             0,
             now(),
-            FALSE
+            FALSE,
+            #{transportCost},
+            #{foodCost},
+            #{otherCost}
         )
     </insert>
 

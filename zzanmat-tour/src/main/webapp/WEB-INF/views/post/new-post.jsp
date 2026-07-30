@@ -61,7 +61,8 @@
         <input id="post-title" name="title" class="form-control" type="text" maxlength="60" placeholder="여행 제목" required>
       </div>
       <div class="mb-3">
-        <label class="form-label" for="post-place">여행 장소</label>
+        <label class="form-label"
+               for="post-place">여행 장소</label>
         <input id="post-place" class="form-control" type="text" placeholder="예: 서울 망원동">
       </div>
       <div class="mb-3">
@@ -71,8 +72,47 @@
                   class="form-control"
                   rows="8"
                   placeholder="여행 내용을 적어 주세요."
-                  required></textarea>
+                  required>
+
+        </textarea>
       </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="transport-cost">교통비</label>
+        <input id="transport-cost"
+               name="transportCost"
+               class="form-control"
+               type="number"
+               min="0"
+               value="0"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="food-cost">식비</label>
+        <input id="food-cost"
+               name="foodCost"
+               class="form-control"
+               type="number"
+               min="0"
+               value="0"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="other-cost">
+          입장료 및 기타 비용
+        </label>
+        <input id="other-cost"
+               name="otherCost"
+               class="form-control"
+               type="number"
+               min="0"
+               value="0"
+               required>
+      </div>
+
+
       <div class="mb-3">
         <label class="form-label" for="post-tags">태그</label>
         <input id="post-tags" class="form-control" type="text" placeholder="#서울여행 #가성비여행">

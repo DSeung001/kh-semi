@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt"%>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -43,15 +44,21 @@
     <div class="zt-user-meta"><strong>travel_ethan</strong><span>서울 · 2시간 전</span></div>
     <button class="zt-icon-btn fs-5"><i class="bi bi-three-dots"></i></button>
   </header>
+
+  <c:if test="${not empty sessionScope.loginMember
+                and sessionScope.loginMember.id == post.userId}">
+
     <div class="p-3 text-end">
       <a class="btn btn-outline-secondary btn-sm"
          href="${pageContext.request.contextPath}/edit-post?postId=${post.postId}">
         수정
       </a>
+
       <form action="${pageContext.request.contextPath}/delete-post"
             method="post"
             class="d-inline"
             onsubmit="return confirm('정말 삭제하시겠습니까?');">
+
         <input type="hidden"
                name="postId"
                value="${post.postId}">
@@ -61,8 +68,10 @@
           삭제
         </button>
       </form>
-
     </div>
+
+  </c:if>
+
   <img class="zt-detail-image" src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="서울 여행 사진">
 
   <div class="zt-post-actions">
@@ -80,6 +89,41 @@
     <p>
       <c:out value="${post.content}"/>
     </p>
+
+    <div class="border rounded p-3 mb-3">
+      <h2 class="h6 fw-bold mb-3">여행 경비</h2>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span>교통비</span>
+        <strong>
+          <fmt:formatNumber value="${post.transportCost}"/>원
+        </strong>
+      </div>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span>식비</span>
+        <strong>
+          <fmt:formatNumber value="${post.foodCost}"/>원
+        </strong>
+      </div>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span>입장료 및 기타 비용</span>
+        <strong>
+          <fmt:formatNumber value="${post.otherCost}"/>원
+        </strong>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="d-flex justify-content-between">
+      <span class="fw-bold">총비용</span>
+      <strong class="text-primary">
+        <fmt:formatNumber
+            value="${post.transportCost + post.foodCost + post.otherCost}"/>원
+      </strong>
+    </div>
 
     <p class="zt-muted small mb-0">
       작성자 번호:

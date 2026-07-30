@@ -72,7 +72,13 @@
     </form>
 
 
-<section class="zt-travel-grid" aria-label="나만의 여행 게시글">
+<section id="post-grid"
+         class="zt-travel-grid"
+         aria-label="나만의 여행 게시글"
+         data-context-path="${pageContext.request.contextPath}"
+         data-sort="${sort}"
+         data-total-pages="${totalPages}">
+
     <c:forEach var="post" items="${posts}">
         <a class="zt-grid-card"
            href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
@@ -89,43 +95,19 @@
         </a>
     </c:forEach>
 </section>
+        <div id="post-scroll-sentinel"
+             class="text-center py-4">
+            <div id="post-loading"
+                 class="spinner-border text-primary"
+                 role="status"
+                 hidden>
 
- <!-- 여기부터 페이지네이션 -->
- <c:if test="${totalPages > 0}">
-     <nav class="mt-4">
-         <ul class="pagination justify-content-center">
+                <span class="visually-hidden">
+                    게시글을 불러오는 중입니다.
+                </span>
+            </div>
 
-             <c:if test="${page > 1}">
-                 <li class="page-item">
-                     <a class="page-link"
-                        href="${pageContext.request.contextPath}/my-travel?sort=${sort}&page=${page - 1}">
-                         이전
-                     </a>
-                 </li>
-             </c:if>
-
-             <c:forEach begin="1" end="${totalPages}" var="pageNumber">
-                 <li class="page-item ${pageNumber == page ? 'active' : ''}">
-                     <a class="page-link"
-                        href="${pageContext.request.contextPath}/my-travel?sort=${sort}&page=${pageNumber}">
-                         ${pageNumber}
-                     </a>
-                 </li>
-             </c:forEach>
-
-             <c:if test="${page < totalPages}">
-                 <li class="page-item">
-                     <a class="page-link"
-                        href="${pageContext.request.contextPath}/my-travel?sort=${sort}&page=${page + 1}">
-                         다음
-                     </a>
-                 </li>
-             </c:if>
-
-         </ul>
-     </nav>
- </c:if>
-<%-- 여기까지 페이지네이션 코드  --%>
+        </div>
 
     </main>
     
@@ -164,6 +146,8 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-infinite-scroll.js"></script>
+
 
 </body>
 </html>
