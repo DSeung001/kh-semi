@@ -9,6 +9,12 @@ const pwConfirmResult = document.querySelector("#passwordConfirmMessage"); // �
 const emailInput = document.querySelector("#signup-email"); // 이메일 입력창
 const emailResult = document.querySelector("#signupEmailMessage"); // 이메일 상태
 const profileForm = document.querySelector("#profileForm");
+const emailAuthCode = document.querySelector("#email-auth-section"); // 사용자가 입력한 6자리 번호
+const emailAuthTimer = document.querySelector("#emailAuthTimer");
+const emailAuthMessage = document.querySelector("#emailAuthMessage");
+const loginForm = document.querySelector("#loginForm");
+const savedIdInput = document.querySelector("#login-id");
+const rememberCheck = document.querySelector("#save-check");
 /*const withdrawBtn = document.querySelector("#withdrawBtn"); //*/
 
 /* 유효성 검사 */
@@ -21,6 +27,44 @@ let checkedMemberId = null;
 let checkedPwd = false;
 //이메일 인증 성공 확인값
 let isEmailVerified = false;
+let emailTimerId = null;
+let emailRemainingSeconds = 0;
+
+function formatEmailAuthTime(seconds) {
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const remainingSeconds = String(seconds % 60).padStart(2, "0");
+    return `${minutes}:${remainingSeconds}`;
+}
+
+function stopEmailAuthTimer() {
+    clearInterval(emailTimerId);
+    emailTimerId = null;
+}
+
+function startEmailAuthTimer() {
+    stopEmailAuthTimer();
+    emailRemainingSeconds = 180;
+    emailAuthTimer.textContent = formatEmailAuthTime(emailRemainingSeconds);
+    emailAuthTimer.classList.remove("is-expired");
+    emailAuthCode.disabled = false;
+    authConfirmBtn.disabled = false;
+    emailAuthCode.value = "";
+    emailAuthCode.focus();
+
+    emailTimerId = setInterval(function () {
+        emailRemainingSeconds -= 1;
+        emailAuthTimer.textContent = formatEmailAuthTime(Math.max(emailRemainingSeconds, 0));
+
+        if (emailRemainingSeconds <= 0) {
+            stopEmailAuthTimer();
+            emailAuthTimer.textContent = "만료";
+            emailAuthTimer.classList.add("is-expired");
+            emailAuthCode.disabled = true;
+            authConfirmBtn.disabled = true;
+            emailAuthMessage.textContent = "인증 시간이 만료되었습니다. 다시 인증해주세요.";
+        }
+    }, 1000);
+}
 
 /* 아이디 중복확인 */
 if(checkIdReult) {
@@ -209,33 +253,57 @@ if(emailInput) {
             emailResult.textContent = '';
         }
     });
+
+    emailInput.addEventListener("input", function () {
+        // 인증번호를 발송한 뒤 이메일을 바꾸면 기존 인증 상태를 사용할 수 없습니다.
+        if (emailTimerId || isEmailVerified) {
+            stopEmailAuthTimer();
+            isEmailVerified = false;
+            emailAuthCode.value = "";
+            emailAuthCode.disabled = true;
+            authConfirmBtn.disabled = true;
+            emailAuthTimer.textContent = "03:00";
+            emailAuthTimer.classList.remove("is-expired");
+            emailAuthMessage.textContent = "이메일이 변경되었습니다. 인증번호를 다시 발송해주세요.";
+        }
+    });
 }
 
 // 인증번호 요청
 const sendCodeBtn = document.querySelector("#sendCodeBtn");
 if(sendCodeBtn){
     sendCodeBtn.addEventListener("click", function(){
-        const email = document.querySelector("#signup-email").value;
+        const email = emailInput.value.trim();
         const authDiv = document.querySelector(".input-group.auth-email");
-        if(!email) {
-            alert("이메일을 입력해주세요.");
+        if(!emailRegex.test(email)) {
+            emailResult.textContent = "올바른 이메일 형식을 입력해주세요.";
             return;
         }
+
+        sendCodeBtn.disabled = true;
 
         // 서버로 이메일 전송 요청 (Ajax)
         fetch('/email/send?email=' + encodeURIComponent(email), {
             method: 'POST'
         })
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("인증번호 발송에 실패했습니다.");
+                }
+                return response.text();
+            })
             .then(result => {
-                alert(result); // "인증번호가 성공적으로 전송되었습니다."
-
-                // TODO: 인증번호 입력 칸을 화면에 보여주는 로직 추가
                 authDiv.classList.add("is-visible");
+                isEmailVerified = false;
+                emailAuthMessage.textContent = result + " 3분 안에 인증번호를 입력해주세요.";
+                startEmailAuthTimer();
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert("오류가 발생했습니다.");
+                emailAuthMessage.textContent = "인증번호 발송 중 오류가 발생했습니다.";
+            })
+            .finally(() => {
+                sendCodeBtn.disabled = false;
             });
     });
 }
@@ -245,11 +313,16 @@ const authConfirmBtn = document.querySelector("#authConfirmBtn");
 
 if(authConfirmBtn){
     authConfirmBtn.addEventListener("click", function(){
-        const email = document.querySelector("#signup-email").value;
-        const authCode = document.querySelector("#email-auth-section").value; // 사용자가 입력한 6자리 번호
+        const email = emailInput.value.trim();
+        const authCode = emailAuthCode.value.trim(); // 사용자가 입력한 6자리 번호
 
-        if(!authCode) {
-            alert("인증번호 6자리를 입력해주세요.");
+        if (emailRemainingSeconds <= 0) {
+            emailAuthMessage.textContent = "인증 시간이 만료되었습니다. 다시 인증해주세요.";
+            return;
+        }
+
+        if(!/^\d{6}$/.test(authCode)) {
+            emailAuthMessage.textContent = "인증번호 6자리를 입력해주세요.";
             return;
         }
 
@@ -261,16 +334,77 @@ if(authConfirmBtn){
             .then(result => {
                 // 서버에서 반환된 결과에 따른 처리 (예: "인증성공", "인증실패" 등)
                 if(result === "success") {
-                    alert("인증이 완료되었습니다.");
+                    stopEmailAuthTimer();
+                    emailAuthTimer.textContent = "완료";
+                    elementDisabled();
                     isEmailVerified = true;
-                    // TODO: 회원가입 버튼 활성화 또는 인증 완료 상태 표시
+                    emailAuthMessage.textContent = "이메일 인증이 완료되었습니다.";
                 } else {
-                    alert("인증번호가 일치하지 않거나 만료되었습니다.");
+                    emailAuthMessage.textContent = "인증번호가 일치하지 않거나 만료되었습니다.";
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert("오류가 발생했습니다.");
+                emailAuthMessage.textContent = "인증번호 확인 중 오류가 발생했습니다.";
             });
     });
+}
+
+// 이메일 인증은 1회만 처리하고 다시 인증하지 않도록 처리
+function elementDisabled(){
+    emailInput.disabled = true;
+    emailAuthCode.disabled = true;
+    authConfirmBtn.disabled = true;
+    sendCodeBtn.disabled = true;
+}
+
+if (emailAuthCode) {
+    emailAuthCode.addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, "").slice(0, 6);
+    });
+}
+
+// 1. 쿠키에 저장된 아이디가 있다면 가져와서 input에 넣고 체크박스 켜기
+const savedId = getCookie("savedId");
+if (savedId) {
+    savedIdInput.value = savedId;
+    rememberCheck.checked = true;
+}
+
+// 2. 로그인 폼을 제출할 때(로그인 버튼 누를 때) 처리
+loginForm.addEventListener("submit", function () {
+    if (rememberCheck.checked) {
+        // 체크되어 있으면 쿠키에 아이디 저장 (유효기간 7일 설정)
+        setCookie("savedId", savedIdInput.value, 7);
+    } else {
+        // 체크 해제되어 있으면 쿠키 삭제
+        deleteCookie("savedId");
+    }
+});
+
+// --- 쿠키 유틸리티 함수들 ---
+
+// 쿠키 설정 함수 (이름, 값, 만료일수)
+function setCookie(cookieName, value, exDays) {
+    const exDate = new Date();
+    exDate.setDate(exDate.getDate() + exDays);
+    const cookieValue = encodeURIComponent(value) + (exDays == null ? "" : "; expires=" + exDate.toUTCString()) + "; path=/";
+    document.cookie = cookieName + "=" + cookieValue;
+}
+
+// 쿠키 가져오는 함수
+function getCookie(cookieName) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i].trim();
+        if (cookie.indexOf(cookieName + "=") === 0) {
+            return decodeURIComponent(cookie.substring(cookieName.length + 1, cookie.length));
+        }
+    }
+    return "";
+}
+
+// 쿠키 삭제 함수 (만료일을 과거로 설정)
+function deleteCookie(cookieName) {
+    setCookie(cookieName, "", -1);
 }
