@@ -13,6 +13,23 @@
   
 </head>
 <body>
+
+<c:if test="${not empty message}">
+  <script>
+    // 서버에서 넘어온 메시지를 JS 변수에 담음
+    const msg = "${message}";
+
+    // 브라우저 sessionStorage에 저장된 값과 비교하거나,
+    // 페이지가 새로고침/재조회될 때 중복 실행을 막기 위해 플래그 활용
+    if (msg) {
+      alert(msg);
+      // 알림을 띄운 뒤 히스토리를 갱신하거나
+      history.replaceState;
+      //history.replaceState를 써서 새로고침 시 데이터 재요청 방지
+    }
+  </script>
+</c:if>
+
 <div class="zt-app">
   
 <header class="zt-mobile-header">
@@ -36,7 +53,7 @@
 </jsp:include>
 
     <main class="zt-content">
-      
+
 <header class="zt-page-header">
   <h1>내 정보</h1>
   <p>프로필과 계정 정보를 확인하고 수정합니다.</p>
@@ -44,7 +61,7 @@
 
 <section class="zt-panel zt-profile-card zt-panel-shadow">
   <div class="zt-profile-hero">
-    <img class="my-profile" src="${userInfo.profile}" alt="내 프로필">
+    <img id="my-profile" class="my-profile" src="${userInfo.profile}" alt="내 프로필">
     <div class="flex-grow-1">
       <div class="d-flex flex-wrap gap-2 align-items-center">
         <h2 class="h5 mb-0">${userInfo.userId}</h2>
@@ -65,10 +82,11 @@
     </div>
   </div>
 
-  <form action="/member/update" method="post">
+  <form action="/member/update" method="post" id="profileForm" class="row g-3" enctype="multipart/form-data">
     <div class="col-12">
-      <label for="profile-image" class="form-label">프로필 이미지</label>
-      <input id="profile-image" class="form-control" type="file" accept="image/*">
+      <label for="profile-image_update" class="form-label">수정할 프로필 이미지</label>
+      <input type="hidden" name="originProfileName" value="${userInfo.profile}">
+      <input id="profile-image-inputUpdate" name="profileImage" class="form-control" type="file" accept="image/*">
     </div>
     <div class="col-md-6">
       <label for="nickname" class="form-label">닉네임</label>
@@ -105,6 +123,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/member.js"></script>
 
 </body>
 </html>

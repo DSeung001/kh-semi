@@ -53,8 +53,8 @@
 
   <div class="tab-content">
     <div id="find-password" class="tab-pane fade show active">
-      <form class="row g-3" data-demo-form data-message="인증 메일 발송 데모입니다.">
-        <div class="col-md-3">
+      <form id="forgot-password" class="row g-3">
+        <%--<div class="col-md-3">
           <label for="find-email" class="col-form-label">이메일</label>
         </div>
         <div class="col-md-7">
@@ -62,12 +62,22 @@
         </div>
         <div class="col-md-2">
           <button class="btn btn-outline-secondary w-100" type="submit">인증</button>
+        </div>--%>
+        <div class="col-md-6">
+          <label class="form-label" for="signup-password">새 비밀번호</label>
+          <input id="signup-password" name="userPassword" class="form-control" type="password" required>
+          <p id="passwordValidationMessage" class="form-message" role="alert"></p>
+        </div>
+        <div class="col-md-7">
+          <label class="form-label" for="signup-password2">새 비밀번호 확인</label>
+          <input id="signup-password2" class="form-control" type="password" required>
+          <p id="passwordConfirmMessage" class="form-message" role="alert"></p>
         </div>
       </form>
     </div>
 
     <div id="find-id" class="tab-pane fade">
-      <form class="row g-3" data-demo-form data-message="아이디 찾기 인증 데모입니다.">
+      <form id="forgot-id" class="row g-3" action="post">
         <div class="col-md-3">
           <label for="find-name" class="col-form-label">이름</label>
         </div>

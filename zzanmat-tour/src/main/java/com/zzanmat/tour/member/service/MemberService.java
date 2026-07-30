@@ -13,7 +13,7 @@ public interface MemberService {
 
     MemberDto login(String userId, String userPassword) throws IllegalStateException;
 
-    boolean update(MemberDto memberDto);
+    boolean updateUser(MemberDto memberDto, MultipartFile profileImage, String originProfileName) throws IOException;
 
     MemberDto selectUser(MemberDto memberDto);
 

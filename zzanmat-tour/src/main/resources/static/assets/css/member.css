@@ -135,3 +135,26 @@ textarea {
     height: 100px;
     object-fit: cover;
 }
+
+/* 기본적으로 숨김 처리 */
+.auth-email-area {
+    display: none;
+}
+
+/* 보이게 할 때 적용할 클래스 (!important로 우선순위 확보) */
+.auth-email-area.is-visible {
+    display: flex;
+}
+
+/* input의 숫자타입 오른쪽 부분의 span버튼 안보이도록 설정 */
+/* 크롬, 사파리, 엣지, 오페라 등 웹킷 계열 브라우저의 스핀 버튼 제거 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 파이어폭스(Firefox) 브라우저의 화살표 제거 */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
