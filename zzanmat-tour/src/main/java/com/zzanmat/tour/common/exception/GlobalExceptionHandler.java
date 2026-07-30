@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+// RestController 에서 에러 발생시 핸들링, 뷰 에러 핸들링은 별도
 @RestControllerAdvice(annotations = RestController.class)
 public class GlobalExceptionHandler {
 
