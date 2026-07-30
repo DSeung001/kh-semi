@@ -24,25 +24,11 @@ public class UserMissionDto {
 
     private boolean completed;
 
-    private String title;
-
-    private String description;
-
     private String status;
 
-    private boolean rewardReceived;
+    private Boolean rewardReceived;
 
     private int rewardPoint;
 
-    private int currentCount;
-    private int progress;
-
-    public Boolean getRewardReceived() {
-        return this.rewardReceived;
-    }
-
-    public void setRewardReceived(Boolean rewardReceived) {
-        this.rewardReceived = rewardReceived;
-    }
     private LocalDateTime completedAt;
 }
