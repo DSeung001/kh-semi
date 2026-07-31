@@ -54,7 +54,7 @@
 <div class="zt-auth-wrap">
   <section class="zt-panel zt-auth-card zt-panel-shadow zt-signup-card">
     <h1 class="zt-auth-title">login</h1>
-    <form method="post" action="/member/login">
+    <form id="loginForm" method="post" action="/member/login">
       <div class="form-floating mb-3">
         <input id="login-id" name="userId" class="form-control" type="text" placeholder="아이디" required>
         <label for="login-id">아이디</label>
@@ -66,7 +66,7 @@
 
       <div class="d-flex flex-wrap gap-3 mb-3">
         <div class="form-check">
-          <input id="save-id" class="form-check-input" type="checkbox">
+          <input id="save-check" class="form-check-input" type="checkbox">
           <label class="form-check-label small" for="save-id">아이디 저장</label>
         </div>
         <div class="form-check">
@@ -103,6 +103,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/member.js"></script>
 
 </body>
 </html>

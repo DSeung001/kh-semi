@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -61,7 +62,21 @@
 
 <section class="zt-panel zt-profile-card zt-panel-shadow">
   <div class="zt-profile-hero">
-    <img id="my-profile" class="my-profile" src="${userInfo.profile}" alt="내 프로필">
+    <c:choose>
+      <c:when test="${not empty userInfo.profile}">
+        <img id="my-profile"
+              src="${pageContext.request.contextPath}${userInfo.profile}"
+              alt="프로필 이미지"
+              class="my-profile">
+      </c:when>
+
+      <c:otherwise>
+        <img id="my-profile"
+              src="${pageContext.request.contextPath}/assets/images/no-image.jpg"
+              alt="기본 프로필 이미지"
+              class="my-profile">
+      </c:otherwise>
+    </c:choose>
     <div class="flex-grow-1">
       <div class="d-flex flex-wrap gap-2 align-items-center">
         <h2 class="h5 mb-0">${userInfo.userId}</h2>
