@@ -19,6 +19,7 @@
         <result property="transportCost" column="TRANSPORT_COST"/>
         <result property="foodCost" column="FOOD_COST"/>
         <result property="otherCost" column="OTHER_COST"/>
+        <result property="thumbnailPath" column="THUMBNAIL_PATH"/>
 
 
 
@@ -75,7 +76,9 @@
         AND P.IS_BLOCK = FALSE
 </select>
     <insert id="save"
-            parameterType="PostDto">
+            parameterType="PostDto"
+            useGeneratedKeys="true"
+            keyProperty="postId">
 
         INSERT INTO POST (
             USER_ID,
@@ -108,11 +111,14 @@
     </update>
 
     <update id="update"
-            parameterType="PostDto">
+            parameterType="com.zzanmat.tour.post.dto.PostDto">
         UPDATE POST
         SET
             TITLE = #{title},
-            CONTENT = #{content}
+            CONTENT = #{content},
+            TRANSPORT_COST = #{transportCost},
+            FOOD_COST = #{foodCost},
+            OTHER_COST = #{otherCost}
         WHERE POST_ID = #{postId}
     </update>
 
@@ -130,7 +136,16 @@
             P.CONTENT,
             P.VIEW_COUNT,
             P.CREATE_AT,
-            P.IS_BLOCK
+            P.IS_BLOCK,
+            (
+                SELECT IU.UPLOAD_PATH
+                FROM POST_UPLOAD PU
+                JOIN IMAGE_UPLOAD IU
+                    ON IU.UPLOAD_ID = PU.UPLOAD_ID
+                WHERE PU.POST_ID = P.POST_ID
+                ORDER BY IU.IMAGE_ORDER ASC
+                LIMIT 1
+            ) AS THUMBNAIL_PATH
         FROM POST P
         WHERE P.IS_BLOCK = FALSE
 
@@ -156,5 +171,47 @@
         SELECT COUNT(*)
         FROM POST
         WHERE IS_BLOCK = FALSE
+    </select>
+
+    <insert id="saveImage"
+            parameterType="PostImageDto"
+            useGeneratedKeys="true"
+            keyProperty="uploadId">
+        INSERT INTO IMAGE_UPLOAD (
+            ORIGIN_NAME,
+            UPLOAD_PATH,
+            IMAGE_ORDER
+        )
+        VALUES (
+            #{originName},
+            #{uploadPath},
+            #{imageOrder}
+        )
+    </insert>
+
+    <insert id="savePostImage">
+        INSERT INTO POST_UPLOAD (
+            POST_ID,
+            UPLOAD_ID
+        )
+        VALUES (
+            #{postId},
+            #{uploadId}
+        )
+    </insert>
+
+    <select id="findImagesByPostId"
+            resultType="PostImageDto">
+        SELECT
+            IU.UPLOAD_ID,
+            PU.POST_ID,
+            IU.ORIGIN_NAME,
+            IU.UPLOAD_PATH,
+            IU.IMAGE_ORDER
+        FROM POST_UPLOAD PU
+        JOIN IMAGE_UPLOAD IU
+            ON IU.UPLOAD_ID = PU.UPLOAD_ID
+        WHERE PU.POST_ID = #{postId}
+        ORDER BY IU.IMAGE_ORDER ASC
     </select>
 </mapper>
