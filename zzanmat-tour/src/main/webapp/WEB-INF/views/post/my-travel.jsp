@@ -83,8 +83,17 @@
         <a class="zt-grid-card"
            href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
 
-            <img src="${pageContext.request.contextPath}/assets/images/seoul.svg"
-                 alt="${post.title}">
+            <c:choose>
+                <c:when test="${not empty post.thumbnailPath}">
+                    <img src="${pageContext.request.contextPath}${post.thumbnailPath}"
+                         alt="${post.title}">
+                </c:when>
+
+                <c:otherwise>
+                    <img src="${pageContext.request.contextPath}/assets/images/seoul.svg"
+                         alt="${post.title}">
+                </c:otherwise>
+            </c:choose>
 
             <span class="zt-grid-overlay">
                 ${post.title}
@@ -94,6 +103,9 @@
 
         </a>
     </c:forEach>
+
+
+
 </section>
         <div id="post-scroll-sentinel"
              class="text-center py-4">
