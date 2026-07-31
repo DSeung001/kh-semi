@@ -42,7 +42,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 채팅 내용 저장
-        chatMapper.insertMessage(loginMember.getId(), trimmed);
+        chatMapper.save(loginMember.getId(), trimmed);
 
         // 응답 생성
         ChatMessage response = new ChatMessage();
@@ -57,7 +57,7 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatMessage> listRecent(int limit) {
         // 최근 채팅 메시지 조회
         int safeLimit = Math.max(1, Math.min(limit, 50));
-        List<ChatMessage> messages = chatMapper.selectRecent(safeLimit);
+        List<ChatMessage> messages = chatMapper.findRecent(safeLimit);
         if (messages == null || messages.isEmpty()) {
             return Collections.emptyList();
         }

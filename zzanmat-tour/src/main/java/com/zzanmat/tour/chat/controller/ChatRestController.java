@@ -2,6 +2,7 @@ package com.zzanmat.tour.chat.controller;
 
 import com.zzanmat.tour.chat.dto.ChatMessage;
 import com.zzanmat.tour.chat.service.ChatService;
+import com.zzanmat.tour.common.dto.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +23,7 @@ public class ChatRestController {
 
     @GetMapping("/messages")
     // 최근 채팅 메시지 조회
-    public List<ChatMessage> messages(@RequestParam(defaultValue = "50") int limit) {
-        return chatService.listRecent(limit);
+    public ApiResponse<List<ChatMessage>> messages(@RequestParam(defaultValue = "50") int limit) {
+        return ApiResponse.success(chatService.listRecent(limit));
     }
 }

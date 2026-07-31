@@ -4,6 +4,7 @@ import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.dto.MissionDto;
 import com.zzanmat.tour.mission.dto.UserMissionDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -12,15 +13,15 @@ public interface MissionMapper {
 
     List<MissionResponseDto> findAll();
 
-    void insertMission(MissionDto mission);
+    void save(MissionDto mission);
 
-    void updateMission(MissionDto mission);
+    void update(MissionDto mission);
 
-    void deleteMission(Long missionId);
+    void deleteById(@Param("id") Long missionId);
 
-    void insertDefaultMissionsForUser(Long userId);
+    void saveDefaultMissionsForUser(@Param("userId") Long userId);
 
-    List<UserMissionDto> selectUserMissions(Long userId);
+    List<UserMissionDto> findUserMissionsByUserId(@Param("userId") Long userId);
 
-    void updateMissionStatus(UserMissionDto userMissionDto);
+    void updateStatus(UserMissionDto userMissionDto);
 }

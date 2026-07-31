@@ -283,24 +283,24 @@ if(sendCodeBtn){
         sendCodeBtn.disabled = true;
 
         // 서버로 이메일 전송 요청 (Ajax)
-        fetch('/email/send?email=' + encodeURIComponent(email), {
-            method: 'POST'
+        fetch('/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("인증번호 발송에 실패했습니다.");
-                }
-                return response.text();
-            })
+            .then(response => response.json())
             .then(result => {
+                if (!result.success) {
+                    throw new Error(result.message || "인증번호 발송에 실패했습니다.");
+                }
                 authDiv.classList.add("is-visible");
                 isEmailVerified = false;
-                emailAuthMessage.textContent = result + " 3분 안에 인증번호를 입력해주세요.";
+                emailAuthMessage.textContent = (result.message || "인증번호가 성공적으로 전송되었습니다.") + " 3분 안에 인증번호를 입력해주세요.";
                 startEmailAuthTimer();
             })
             .catch(error => {
                 console.error('Error:', error);
-                emailAuthMessage.textContent = "인증번호 발송 중 오류가 발생했습니다.";
+                emailAuthMessage.textContent = error.message || "인증번호 발송 중 오류가 발생했습니다.";
             })
             .finally(() => {
                 sendCodeBtn.disabled = false;
@@ -327,20 +327,21 @@ if(authConfirmBtn){
         }
 
         // 서버로 이메일과 인증번호를 함께 보내서 검증 요청
-        fetch('/email/verify?email=' + encodeURIComponent(email) + '&authCode=' + encodeURIComponent(authCode), {
-            method: 'POST'
+        fetch('/email/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, authCode: authCode })
         })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                // 서버에서 반환된 결과에 따른 처리 (예: "인증성공", "인증실패" 등)
-                if(result === "success") {
+                if(result.success) {
                     stopEmailAuthTimer();
                     emailAuthTimer.textContent = "완료";
                     elementDisabled();
                     isEmailVerified = true;
                     emailAuthMessage.textContent = "이메일 인증이 완료되었습니다.";
                 } else {
-                    emailAuthMessage.textContent = "인증번호가 일치하지 않거나 만료되었습니다.";
+                    emailAuthMessage.textContent = result.message || "인증번호가 일치하지 않거나 만료되었습니다.";
                 }
             })
             .catch(error => {
@@ -364,23 +365,25 @@ if (emailAuthCode) {
     });
 }
 
-// 1. 쿠키에 저장된 아이디가 있다면 가져와서 input에 넣고 체크박스 켜기
-const savedId = getCookie("savedId");
-if (savedId) {
-    savedIdInput.value = savedId;
-    rememberCheck.checked = true;
-}
-
-// 2. 로그인 폼을 제출할 때(로그인 버튼 누를 때) 처리
-loginForm.addEventListener("submit", function () {
-    if (rememberCheck.checked) {
-        // 체크되어 있으면 쿠키에 아이디 저장 (유효기간 7일 설정)
-        setCookie("savedId", savedIdInput.value, 7);
-    } else {
-        // 체크 해제되어 있으면 쿠키 삭제
-        deleteCookie("savedId");
+if (loginForm && savedIdInput && rememberCheck) {
+    // 1. 쿠키에 저장된 아이디가 있다면 가져와서 input에 넣고 체크박스 켜기
+    const savedId = getCookie("savedId");
+    if (savedId) {
+        savedIdInput.value = savedId;
+        rememberCheck.checked = true;
     }
-});
+
+    // 2. 로그인 폼을 제출할 때(로그인 버튼 누를 때) 처리
+    loginForm.addEventListener("submit", function () {
+        if (rememberCheck.checked) {
+            // 체크되어 있으면 쿠키에 아이디 저장 (유효기간 7일 설정)
+            setCookie("savedId", savedIdInput.value, 7);
+        } else {
+            // 체크 해제되어 있으면 쿠키 삭제
+            deleteCookie("savedId");
+        }
+    });
+}
 
 // --- 쿠키 유틸리티 함수들 ---
 
