@@ -66,7 +66,7 @@
          WHERE USER_ID = #{userId}
     </update>
 
-    <select id="findById" parameterType="MemberDto" resultType="MemberDto">
+    <select id="findById" parameterType="String" resultType="MemberDto">
         SELECT user_id
               ,nickname
               ,bio

@@ -1,10 +1,13 @@
 package com.zzanmat.tour.member.controller;
 
 import com.zzanmat.tour.common.dto.ApiResponse;
+import com.zzanmat.tour.common.util.CookieTokenUtils;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,7 +35,7 @@ public class MemberController {
         } catch (IOException e) {
 //             RedirectAttributes.addFlashAttribute
             // 리다이렉트 후 딱 한번 다음 요청에서만 살아있는 데이터
-            System.out.println(e.getMessage());
+
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/member/signup";
         }
@@ -53,13 +56,31 @@ public class MemberController {
     public String login(@RequestParam String userId,
                         @RequestParam String userPassword,
                         @RequestParam(required = false) String redirectURL,
+                        @RequestParam(required = false) boolean rememberMe,
                         RedirectAttributes redirectAttributes,
+                        HttpServletResponse response,
                         HttpSession session){
         try {
             MemberDto member = memberService.login(userId, userPassword);
 
             //로그인 성공 -> 세션에 로그인 정보 저장
-            session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+            if (member != null) {
+                session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+
+                // 2. 자동 로그인 체크 시
+                if (rememberMe) {
+                    long expireTime = System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000); // 7일 뒤
+
+                    // 아이디와 만료시간이 포함되고 위변조가 불가능한 토큰 생성
+                    String secureToken = CookieTokenUtils.createToken(member.getUserId(), expireTime);
+
+                    Cookie cookie = new Cookie("autoLoginToken", secureToken);
+                    cookie.setPath("/");
+                    cookie.setMaxAge(7 * 24 * 60 * 60); // 7일
+                    cookie.setHttpOnly(true); // 자바스크립트 탈취 방지
+                    response.addCookie(cookie);
+                }
+            }
         } catch(IllegalStateException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/member/login";
@@ -73,10 +94,23 @@ public class MemberController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpServletRequest request){
+    public String logout(HttpServletRequest request, HttpServletResponse response){
         HttpSession session = request.getSession(false);
         if(session != null){
             session.invalidate(); //세션자체를 만료
+
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("autoLoginToken".equals(cookie.getName())) {
+                        cookie.setValue(null);
+                        cookie.setPath("/");
+                        cookie.setMaxAge(0); // 쿠키 만료 소멸
+                        response.addCookie(cookie);
+                        break;
+                    }
+                }
+            }
         }
 
         return "redirect:/";
@@ -125,7 +159,7 @@ public class MemberController {
     public String profile(HttpServletRequest request, Model model){
         HttpSession session = request.getSession(false);
         MemberDto memberDto = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        MemberDto memberInfo = memberService.findById(memberDto);
+        MemberDto memberInfo = memberService.findById(memberDto.getUserId());
         model.addAttribute("userInfo", memberInfo);
         return "member/profile";
     }

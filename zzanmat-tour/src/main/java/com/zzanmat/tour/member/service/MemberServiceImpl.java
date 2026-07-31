@@ -87,8 +87,8 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberDto findById(MemberDto memberDto) {
-        return memberMapper.findById(memberDto);
+    public MemberDto findById(String userId) {
+        return memberMapper.findById(userId);
     }
 
     @Override

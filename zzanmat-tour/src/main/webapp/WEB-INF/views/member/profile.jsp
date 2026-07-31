@@ -115,8 +115,8 @@
     <div class="col-12">
       <label for="email" class="form-label">이메일</label>
       <div class="input-group">
-        <input id="email" name="email" class="form-control" type="email" value="${userInfo.email}">
-        <button class="btn btn-outline-secondary" type="button">인증</button>
+        <input disabled id="email" name="email" class="form-control" type="email" value="${userInfo.email}">
+        <%--<button class="btn btn-outline-secondary" type="button">인증</button>--%>
       </div>
     </div>
     <div class="col-12">

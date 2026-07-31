@@ -70,7 +70,7 @@
           <label class="form-check-label small" for="save-id">아이디 저장</label>
         </div>
         <div class="form-check">
-          <input id="auto-login" class="form-check-input" type="checkbox">
+          <input id="remember-me" name="rememberMe" class="form-check-input" type="checkbox">
           <label class="form-check-label small" for="auto-login">자동 로그인</label>
         </div>
       </div>

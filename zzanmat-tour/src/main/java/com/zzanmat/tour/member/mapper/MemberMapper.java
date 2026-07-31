@@ -15,7 +15,7 @@ public interface MemberMapper {
 
     int update(MemberDto memberDto);
 
-    MemberDto findById(MemberDto memberDto);
+    MemberDto findById(String userId);
 
     int deleteByMemberId(@Param("userId") String userId);
 

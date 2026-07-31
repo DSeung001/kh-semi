@@ -1,6 +1,9 @@
 package com.zzanmat.tour.common.config;
 
+import com.zzanmat.tour.common.interceptor.AutoLoginInterceptor;
 import com.zzanmat.tour.common.interceptor.LoginInterceptor;
+import com.zzanmat.tour.member.service.MemberService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -15,6 +18,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Autowired
+    private MemberService memberService;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String absoultePath = new File(uploadDir).getAbsolutePath();
@@ -25,6 +31,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+
+        registry.addInterceptor(new AutoLoginInterceptor(memberService))
+                .addPathPatterns("/**") // 웹사이트의 모든 경로에서 자동 로그인 체크를 실행합니다.
+                .excludePathPatterns("/login", "/logout", "/css/**", "/js/**", "/images/**");
+        // 단, 로그인, 로그아웃 페이지나 정적 파일(css, js, 이미지)은 무한 루프나 불필요한 동작을 막기 위해 제외합니다.
+
         registry.addInterceptor(new LoginInterceptor())
                 //로그인 해야만 접근 가능한 페이지 경로
                 .addPathPatterns(

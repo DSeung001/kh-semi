@@ -15,7 +15,7 @@ public interface MemberService {
 
     boolean update(MemberDto memberDto, MultipartFile profileImage, String originProfileName) throws IOException;
 
-    MemberDto findById(MemberDto memberDto);
+    MemberDto findById(String userId);
 
     void withdraw(String userId);
 }
