@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/member")
@@ -169,4 +172,20 @@ public class MemberController {
         return "member/signup";
     }
 
+    @GetMapping("/kakao-login")
+    @ResponseBody
+    public String loginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
+
+        String kakaoId = oAuth2User.getName();
+
+        Map<String, Object> properties = (Map<String, Object>) oAuth2User.getAttributes().get("properties");
+
+        String nickname = (String) properties.get("nickname");
+
+        if (oAuth2User == null) {
+            return "로그인 정보가 없습니다.";
+        }
+
+        return "카카오 로그인 성공";
+    }
 }

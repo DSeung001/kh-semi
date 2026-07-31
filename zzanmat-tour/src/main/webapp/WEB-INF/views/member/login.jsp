@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/member.css">
-  
+
 </head>
 <body>
 
@@ -88,11 +88,11 @@
 
     <div class="zt-divider">또는</div>
 
-    <button class="btn zt-social-kakao w-100 py-2 mb-3" type="button">
-      <i class="bi bi-chat-fill me-2"></i>카카오 로그인
-    </button>
+    <a href="/oauth2/authorization/kakao" class="btn zt-social-kakao w-100 py-2 mb-3 text-decoration-none">
+      <i class="bi bi-chat-fill me-2"></i>카카오로 시작하기
+    </a>
     <button class="btn zt-social-naver w-100 py-2" type="button">
-      <strong class="me-2">N</strong>네이버 로그인
+      <strong class="me-2">N</strong>네이버로 시작하기
     </button>
   </section>
 </div>
