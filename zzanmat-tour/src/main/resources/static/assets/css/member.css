@@ -146,6 +146,17 @@ textarea {
     display: flex;
 }
 
+.email-auth-timer {
+    color: #dc3545;
+    font-variant-numeric: tabular-nums;
+    min-width: 58px;
+    justify-content: center;
+}
+
+.email-auth-timer.is-expired {
+    color: #6c757d;
+}
+
 /* input의 숫자타입 오른쪽 부분의 span버튼 안보이도록 설정 */
 /* 크롬, 사파리, 엣지, 오페라 등 웹킷 계열 브라우저의 스핀 버튼 제거 */
 input[type="number"]::-webkit-outer-spin-button,
