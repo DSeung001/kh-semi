@@ -110,11 +110,14 @@ public class PostController {
             @RequestParam Long postId,
             @RequestParam String title,
             @RequestParam String content,
-            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-    ) {
+            @RequestParam Long transportCost,
+            @RequestParam Long foodCost,
+            @RequestParam Long otherCost,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto login_Member
+    ){
         PostDto savePost = postService.findById(postId);
 
-        if(!savePost.getUserId().equals(loginMember.getId())){
+        if(!savedPost.getUserID().equals(login_Member.getId())) {
             return "redirect:/post-detail?postId=" + postId;
         }
 
@@ -123,12 +126,15 @@ public class PostController {
         post.setPostId(postId);
         post.setTitle(title);
         post.setContent(content);
+        post.setTransportCost(transportCost);
+        post.setFoodCost(foodCost);
+        post.setOtherCost(otherCost);
 
         postService.update(post);
 
         return "redirect:/post-detail?postId=" + postId;
     }
-
+    
     @PostMapping("/delete-post")
     public String deletePost(
             @RequestParam Long postId,
