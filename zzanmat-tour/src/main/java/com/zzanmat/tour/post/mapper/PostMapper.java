@@ -19,7 +19,7 @@ public interface PostMapper {
     
     PostDto findById(@Param("postId") Long postId);
     void save(PostDto post);
-    void increaseViewCount(@Param("postId") Long postID);
+    void increaseViewCount(@Param("postId") Long postId);
     void update(PostDto post);
     void deleteById(@Param("postId") Long postId);
 }

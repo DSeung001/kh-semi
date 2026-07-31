@@ -43,34 +43,6 @@
   <button class="btn btn-outline-secondary" type="submit">검색</button>
 </form>
 
-<section class="zt-panel zt-story-strip" aria-label="여행 스토리">
-  <a class="zt-story" href="#">
-  <div class="zt-story-ring"><img src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="서울여행 스토리"></div>
-  <span>서울여행</span>
-</a>
-  <a class="zt-story" href="#">
-  <div class="zt-story-ring"><img src="${pageContext.request.contextPath}/assets/images/busan.svg" alt="부산맛집 스토리"></div>
-  <span>부산맛집</span>
-</a>
-  <a class="zt-story" href="#">
-  <div class="zt-story-ring"><img src="${pageContext.request.contextPath}/assets/images/jeju.svg" alt="제주한달 스토리"></div>
-  <span>제주한달</span>
-</a>
-  <a class="zt-story" href="#">
-  <div class="zt-story-ring"><img src="${pageContext.request.contextPath}/assets/images/gangneung.svg" alt="바다여행 스토리"></div>
-  <span>바다여행</span>
-</a>
-  <a class="zt-story" href="#">
-  <div class="zt-story-ring"><img src="${pageContext.request.contextPath}/assets/images/gyeongju.svg" alt="역사산책 스토리"></div>
-  <span>역사산책</span>
-</a>
-  <a class="zt-story" href="#">
-  <div class="zt-story-ring"><img src="${pageContext.request.contextPath}/assets/images/sokcho.svg" alt="혼행러 스토리"></div>
-  <span>혼행러</span>
-</a>
-</section>
-
-
 <article class="zt-panel zt-post">
   <header class="zt-post-header">
     <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">
@@ -143,37 +115,6 @@
 
 
     </main>
-    
-<aside class="zt-right-rail">
-  <section class="zt-login-card">
-    <h2>로그인</h2>
-    <p class="zt-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
-    <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
-      <input class="form-control form-control-sm mb-2" type="text" placeholder="아이디" aria-label="아이디">
-      <input class="form-control form-control-sm mb-2" type="password" placeholder="비밀번호" aria-label="비밀번호">
-      <button class="btn btn-primary zt-primary-btn btn-sm w-100" type="submit">로그인</button>
-    </form>
-    <div class="d-flex justify-content-between mt-3 zt-right-note">
-      <a href="${pageContext.request.contextPath}/member/signup">회원가입</a>
-      <a href="${pageContext.request.contextPath}/member/forgot-password">비밀번호 찾기</a>
-    </div>
-  </section>
-
-  <section class="zt-suggestion-card">
-    <h2>추천 여행자</h2>
-    <div class="zt-user-row">
-      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
-      <div class="zt-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
-      <button class="zt-link-button" data-follow-button>팔로우</button>
-    </div>
-    <div class="zt-user-row">
-      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
-      <div class="zt-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
-      <button class="zt-link-button" data-follow-button>팔로우</button>
-    </div>
-    <p class="zt-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
-  </section>
-</aside>
 
   </div>
 </div>

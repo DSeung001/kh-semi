@@ -39,7 +39,7 @@ public class PostService {
         return postMapper.findPage(sort, offset, size);
     }
 
-    public int countALL() {
+    public int countAll() {
         return postMapper.countAll();
     }
 }

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
-<!-- namespace에는 연결될 자바 인터페이스의 경로를 정확히 적어줍니다 -->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zzanmat.tour.mission.mapper.MissionMapper">
 
-    <!-- 0. 전체 미션 목록 조회 -->
-    <select id="findAll" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto">
+    <select id="findAll" resultType="MissionResponseDto">
         SELECT
             mission_id AS id,
             title,
@@ -20,14 +18,12 @@
         FROM mission
     </select>
 
-    <!-- 1. 미션 등록 -->
-    <insert id="insertMission" useGeneratedKeys="true" keyProperty="id" keyColumn="mission_id">
+    <insert id="save" parameterType="MissionDto" useGeneratedKeys="true" keyProperty="id" keyColumn="mission_id">
         INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_points, auto_complete)
         VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint}, #{autoComplete})
     </insert>
 
-    <!-- 2. 미션 업데이트 -->
-    <update id="updateMission">
+    <update id="update" parameterType="MissionDto">
         UPDATE mission
         SET title = #{title},
             description = #{description},
@@ -39,14 +35,12 @@
         WHERE mission_id = #{id}
     </update>
 
-    <!-- 3. 미션 삭제 -->
-    <delete id="deleteMission">
+    <delete id="deleteById">
         DELETE FROM mission
         WHERE mission_id = #{id}
     </delete>
 
-    <!-- 4. 미션 이미지 여러 장 등록 -->
-    <insert id="insertMissionImages">
+    <insert id="saveMissionImages">
         INSERT INTO mission_image (mission_id, origin_name, saved_name, file_path)
         VALUES
         <foreach collection="list" item="image" separator=",">
@@ -54,14 +48,13 @@
         </foreach>
     </insert>
 
-    <!-- 5. 회원가입 시 기본 미션 자동 생성 (mission_progress 테이블 활용) -->
-    <insert id="insertDefaultMissionsForUser">
+    <!-- 5. 회원가입 시 기본 미션 자동 생성 -->
+    <insert id="saveDefaultMissionsForUser">
         INSERT INTO mission_progress (user_id, mission_id, status, current_count, progress)
         SELECT #{userId}, mission_id, 'READY', 0, 0 FROM mission;
     </insert>
 
-    <!-- 6. 유저 미션 목록 조회 -->
-    <select id="selectUserMissions" resultType="com.zzanmat.tour.mission.dto.UserMissionDto">
+    <select id="findUserMissionsByUserId" resultType="UserMissionDto">
         SELECT mp.id AS userMissionId,
                mp.user_id AS memberId,
                mp.mission_id AS missionId,
@@ -78,23 +71,20 @@
         WHERE mp.user_id = #{userId}
     </select>
 
-    <!-- 7. 미션 수락 시 상태 변경 -->
-    <update id="updateMissionToInProgress">
+    <update id="updateToInProgress">
         UPDATE mission_progress
         SET status = 'IN_PROGRESS'
         WHERE id = #{userMissionId}
     </update>
 
-    <!-- 8. 미션 진행도 및 상태 업데이트 -->
-    <update id="updateMissionProgress">
+    <update id="updateStatus" parameterType="UserMissionDto">
         UPDATE mission_progress
         SET current_count = #{progressCount},
             status = #{status}
         WHERE id = #{userMissionId}
     </update>
 
-    <!-- 9. 미션 인증 게시글 등록 -->
-    <insert id="insertMissionPost" useGeneratedKeys="true" keyProperty="postId">
+    <insert id="saveMissionPost" useGeneratedKeys="true" keyProperty="postId">
         INSERT INTO mission_post (user_mission_id, title, content, created_at)
         VALUES (#{userMissionId}, #{title}, #{content}, NOW())
     </insert>

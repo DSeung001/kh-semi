@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class MemberServiceImpl implements MemberService{
             memberDto.setProfile(saved.getPath());
         }
 
-        memberMapper.insertMember(memberDto);
+        memberMapper.save(memberDto);
     }
 
     @Override
@@ -55,7 +54,7 @@ public class MemberServiceImpl implements MemberService{
 
     @Override
     public MemberDto login(String memberId, String memberPwd) throws IllegalStateException{
-        MemberDto member = memberMapper.selectByMemberId(memberId);
+        MemberDto member = memberMapper.findByMemberId(memberId);
 
         // member.getMemberPwd(); 암호화된 비밀번호
         // memberPwd 평문의 비밀번호
@@ -70,7 +69,7 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public boolean updateUser(MemberDto memberDto, MultipartFile newprofileImage, String originProfileName) throws IOException {
+    public boolean update(MemberDto memberDto, MultipartFile newprofileImage, String originProfileName) throws IOException {
 
         //사용자가 새로운 프로필을 등록한다면 기존에 등록되어 있던 프로필 삭제 후
         //새로운 프로필 이미지 등록
@@ -84,16 +83,16 @@ public class MemberServiceImpl implements MemberService{
             }
         }
 
-        return memberMapper.updateUser(memberDto) > 0;
+        return memberMapper.update(memberDto) > 0;
     }
 
     @Override
-    public MemberDto selectUser(MemberDto memberDto) {
-        return memberMapper.selectUser(memberDto);
+    public MemberDto findById(MemberDto memberDto) {
+        return memberMapper.findById(memberDto);
     }
 
     @Override
     public void withdraw(String userId) {
-        memberMapper.deleteMember(userId);
+        memberMapper.deleteByMemberId(userId);
     }
 }

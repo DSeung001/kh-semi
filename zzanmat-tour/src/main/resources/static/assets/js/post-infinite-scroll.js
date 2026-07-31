@@ -75,12 +75,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const data = await response.json();
+            const pageData = data.data ?? data;
 
-            data.posts.forEach(appendPost);
+            pageData.posts.forEach(appendPost);
 
             nextPage++;
 
-            if (!data.hasNext) {
+            if (!pageData.hasNext) {
                 observer.disconnect();
                 sentinel.hidden = true;
             }

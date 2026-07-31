@@ -10,9 +10,9 @@ import java.util.List;
 public interface ChatMapper {
 
     // 채팅 메시지 저장
-    int insertMessage(@Param("userId") Long userId,
-                       @Param("content") String content);
+    int save(@Param("userId") Long userId,
+             @Param("content") String content);
 
     // 최근 채팅 메시지 조회
-    List<ChatMessage> selectRecent(@Param("limit") int limit);
+    List<ChatMessage> findRecent(@Param("limit") int limit);
 }

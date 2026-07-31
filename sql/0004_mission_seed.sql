@@ -3,10 +3,13 @@ SET NAMES utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 0001에서 만든 대문자 테이블 + 재실행 대비 소문자 테이블 모두 정리
 DROP TABLE IF EXISTS point_history;
 DROP TABLE IF EXISTS mission_history;
 DROP TABLE IF EXISTS mission_progress;
+DROP TABLE IF EXISTS MISSION_PROGRESS;
 DROP TABLE IF EXISTS mission;
+DROP TABLE IF EXISTS MISSION;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -26,7 +29,7 @@ CREATE TABLE mission (
 );
 
 -- 2. 회원별 미션 진행 상태 --
--- users(id) 를 외래 키로 참조만 합니다)
+-- 0001의 `USER`(ID)를 외래 키로 참조
 
 CREATE TABLE mission_progress (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -40,24 +43,24 @@ CREATE TABLE mission_progress (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE(user_id, mission_id),
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES `USER`(ID) ON DELETE CASCADE,
     FOREIGN KEY(mission_id) REFERENCES mission(id) ON DELETE CASCADE
 );
 
--- 3. 미션 기록 -- 
+-- 3. 미션 기록 --
 CREATE TABLE mission_history (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     mission_id BIGINT NOT NULL,
     post_id BIGINT COMMENT '게시글 ID',
     action_type VARCHAR(50) COMMENT 'CREATE_POST 등',
-    completed_at DATETIME NOT NULL, 
+    completed_at DATETIME NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES `USER`(ID) ON DELETE CASCADE,
     FOREIGN KEY(mission_id) REFERENCES mission(id) ON DELETE CASCADE
 );
 
--- 4. 포인트 내역 -- 
+-- 4. 포인트 내역 --
 CREATE TABLE point_history (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -65,7 +68,7 @@ CREATE TABLE point_history (
     point INT NOT NULL,
     reason ENUM('MISSION', 'EVENT', 'ADMIN', 'PURCHASE'),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES `USER`(ID) ON DELETE CASCADE,
     FOREIGN KEY(mission_id) REFERENCES mission(id)
 );
 
@@ -76,11 +79,11 @@ CREATE INDEX idx_mission_trigger ON mission(trigger_event);
 CREATE INDEX idx_history_user_mission ON mission_history(user_id, mission_id);
 CREATE INDEX idx_point_history_user ON point_history(user_id);
 
--- 6. 기본 미션 데이터 등록 -- 
-START TRANSACTION; 
+-- 6. 기본 미션 데이터 등록 --
+START TRANSACTION;
 
 INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point)
-VALUES 
+VALUES
 ('첫 여행 게시글 작성', '여행 게시글 1개 작성하기', 'POST', 'CREATE_POST', 1, 2000),
 ('여행 사진 업로드', '사진이 포함된 게시글 작성', 'PHOTO', 'UPLOAD_IMAGE', 1, 500),
 ('여행 영상 업로드', '영상 게시글 작성', 'VIDEO', 'UPLOAD_VIDEO', 1, 1000),

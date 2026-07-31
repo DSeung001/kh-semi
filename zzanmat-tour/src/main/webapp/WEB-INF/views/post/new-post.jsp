@@ -128,37 +128,6 @@
 
     </main>
     
-<aside class="zt-right-rail">
-  <section class="zt-login-card">
-    <h2>로그인</h2>
-    <p class="zt-right-note mb-3">여행 기록을 남기고 다른 여행자와 정보를 나눠보세요.</p>
-    <form data-demo-form data-message="로그인 데모입니다." data-redirect="${pageContext.request.contextPath}/home">
-      <input class="form-control form-control-sm mb-2" type="text" placeholder="아이디" aria-label="아이디">
-      <input class="form-control form-control-sm mb-2" type="password" placeholder="비밀번호" aria-label="비밀번호">
-      <button class="btn btn-primary zt-primary-btn btn-sm w-100" type="submit">로그인</button>
-    </form>
-    <div class="d-flex justify-content-between mt-3 zt-right-note">
-      <a href="${pageContext.request.contextPath}/signup">회원가입</a>
-      <a href="${pageContext.request.contextPath}/forgot-password">비밀번호 찾기</a>
-    </div>
-  </section>
-
-  <section class="zt-suggestion-card">
-    <h2>추천 여행자</h2>
-    <div class="zt-user-row">
-      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="소라 프로필">
-      <div class="zt-user-meta"><strong>travel_sora</strong><span>서울 골목 여행</span></div>
-      <button class="zt-link-button" data-follow-button>팔로우</button>
-    </div>
-    <div class="zt-user-row">
-      <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="민 프로필">
-      <div class="zt-user-meta"><strong>budget_min</strong><span>가성비 여행</span></div>
-      <button class="zt-link-button" data-follow-button>팔로우</button>
-    </div>
-    <p class="zt-right-note mb-0">이 화면은 정적 프론트엔드 시안입니다. 로그인과 데이터 저장은 서버 연결 후 동작합니다.</p>
-  </section>
-</aside>
-
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>

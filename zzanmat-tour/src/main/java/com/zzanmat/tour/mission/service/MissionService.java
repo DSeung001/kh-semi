@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface MissionService {
 
-    // 사용자가 미션 완료 버튼을 클릭했을 때 호출 (포인트 지급, 상태 변경, 진척도 계산)
 
     UserMissionResponseDto completeMission(Long userId, Long missionId);
 
@@ -20,7 +19,7 @@ public interface MissionService {
 
     //새로운 미션 등록
 
-    void insertMission(MissionDto mission);
+    void createMission(MissionDto mission);
 
 
     // 미션 정보 수정

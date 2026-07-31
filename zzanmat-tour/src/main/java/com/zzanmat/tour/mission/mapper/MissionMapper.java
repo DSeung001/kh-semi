@@ -17,28 +17,18 @@ public interface MissionMapper {
 
     List<MissionResponseDto> findAll();
 
-    // 미션 등록
+    void save(MissionDto mission);
 
-    void insertMission(MissionDto mission);
+    void update(MissionDto mission);
 
+    void deleteById(@Param("id") Long missionId);
 
-    // 미션 수정
+    void saveDefaultMissionsForUser(@Param("userId") Long userId);
 
-    void updateMission(MissionDto mission);
+    List<UserMissionDto> findUserMissionsByUserId(@Param("userId") Long userId);
 
-    // 미션 삭제
-
-    void deleteMission(Long missionId);
-
-
-    // 회원가입 시 기본 미션 자동 생성
-
-    void insertDefaultMissionsForUser(Long userId);
-
-    // 특정 유저의 미션 진행 상태 목록 조회
-
-    List<UserMissionDto> selectUserMissions(Long userId);
-
+    // Todo: 아래 함수들 네이밍 readmd.md 보고 맞추기
+    void updateStatus(UserMissionDto userMissionDto);
 
     // 미션 상태 업데이트 (완료 처리 등)
 

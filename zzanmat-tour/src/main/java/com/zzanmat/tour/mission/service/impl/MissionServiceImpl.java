@@ -29,8 +29,8 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void insertMission(MissionDto mission) {
-        missionMapper.insertMission(mission);
+    public void createMission(MissionDto mission) {
+        missionMapper.save(mission);
     }
 
 
@@ -60,22 +60,22 @@ public class MissionServiceImpl implements MissionService {
     }
     @Override
     public void updateMission(MissionDto mission) {
-        missionMapper.updateMission(mission);
+        missionMapper.update(mission);
     }
 
     @Override
     public void deleteMission(Long missionId) {
-        missionMapper.deleteMission(missionId);
+        missionMapper.deleteById(missionId);
     }
 
     @Override
     public void createDefaultMissions(Long userId) {
-        missionMapper.insertDefaultMissionsForUser(userId);
+        missionMapper.saveDefaultMissionsForUser(userId);
     }
 
     @Override
     public List<UserMissionDto> getUserMissions(Long userId) {
-        return missionMapper.selectUserMissions(userId);
+        return missionMapper.findUserMissionsByUserId(userId);
     }
 
     @Override
@@ -94,9 +94,9 @@ public class MissionServiceImpl implements MissionService {
         userMissionDto.setMissionId(missionId);
         userMissionDto.setStatus("DONE");
 
-        missionMapper.updateMissionStatus(userMissionDto);
+        missionMapper.updateStatus(userMissionDto);
 
-        List<UserMissionDto> userMissions = missionMapper.selectUserMissions(userId);
+        List<UserMissionDto> userMissions = missionMapper.findUserMissionsByUserId(userId);
         UserMissionDto updated = userMissions.stream()
                 .filter(m -> m.getMissionId().equals(missionId))
                 .findFirst()

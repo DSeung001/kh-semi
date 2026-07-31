@@ -13,9 +13,9 @@ public interface MemberService {
 
     MemberDto login(String userId, String userPassword) throws IllegalStateException;
 
-    boolean updateUser(MemberDto memberDto, MultipartFile profileImage, String originProfileName) throws IOException;
+    boolean update(MemberDto memberDto, MultipartFile profileImage, String originProfileName) throws IOException;
 
-    MemberDto selectUser(MemberDto memberDto);
+    MemberDto findById(MemberDto memberDto);
 
     void withdraw(String userId);
 }

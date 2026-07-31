@@ -2,12 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!--
-    namespace : 해당 XML파일을 어떤 Mapper 인터페이스와 연결할지를 정해주는 속성.
--->
 <mapper namespace="com.zzanmat.tour.member.mapper.MemberMapper">
 
-    <insert id="insertMember" parameterType="MemberDto">
+    <insert id="save" parameterType="MemberDto">
         INSERT INTO
         `USER`
         (
@@ -31,24 +28,23 @@
         )
     </insert>
 
-    <select id="countByMemberId" parameterType="string" resultType="int">
+    <select id="countByMemberId" resultType="int">
         SELECT COUNT(*)
           FROM `USER`
          WHERE USER_ID = #{userId}
     </select>
 
-    <select id="selectByMemberId" parameterType="string" resultType="MemberDto">
+    <select id="findByMemberId" resultType="MemberDto">
         SELECT id
               ,user_id
               ,user_password
               ,nickname
               ,email
-              <!--,DATE_FORMAT(create_at, '%Y-%M-%d %H:%i') as create_at_str-->
           FROM `USER`
          WHERE user_id = #{userId}
     </select>
 
-    <update id="updateUser">
+    <update id="update" parameterType="MemberDto">
         UPDATE `USER`
         <set>
             <if test="nickname != null">
@@ -70,7 +66,7 @@
          WHERE USER_ID = #{userId}
     </update>
 
-    <select id="selectUser" parameterType="MemberDto" resultType="MemberDto">
+    <select id="findById" parameterType="MemberDto" resultType="MemberDto">
         SELECT user_id
               ,nickname
               ,bio
@@ -81,7 +77,7 @@
          WHERE USER_ID = #{userId}
     </select>
 
-    <delete id="deleteMember">
+    <delete id="deleteByMemberId">
         DELETE FROM user
          WHERE user_id = #{userId}
     </delete>

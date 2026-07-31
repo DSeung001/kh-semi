@@ -11,11 +11,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/member.css">
-
 </head>
 <body>
 <div class="zt-app">
-
   <header class="zt-mobile-header">
     <a class="zt-brand" href="${pageContext.request.contextPath}/home">
       <span>짠맛투어</span>
@@ -30,12 +28,10 @@
     <a href="${pageContext.request.contextPath}/profile" class="active" aria-label="profile"><i class="bi bi-person-circle"></i></a>
   </nav>
   <div class="zt-layout">
-
     <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
       <jsp:param name="activePage" value="profile" />
     </jsp:include>
     <main class="zt-content">
-
       <header class="zt-page-header">
         <h1>회원가입</h1>
         <p>프로필을 설정하고 짠맛투어의 여행 기록을 시작해 보세요.</p>
@@ -79,10 +75,11 @@
           <div class="col-12">
             <%--<label class="form-label" for="signup-email"></label>--%>
             <div class="input-group auth-email auth-email-area">
-              <input id="email-auth-section" name="email" class="form-control" type="number" maxlength="6">
+              <input id="email-auth-section" name="auth-email" class="form-control" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="인증번호 6자리 입력" disabled>
+              <span id="emailAuthTimer" class="input-group-text email-auth-timer" aria-live="polite">03:00</span>
               <button id="authConfirmBtn" class="btn btn-outline-secondary" type="button">인증 확인</button>
             </div>
-            <p id="signupEmailMessage" class="signup-message" role="alert"></p>
+            <p id="emailAuthMessage" class="signup-message" role="alert"></p>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="signup-password">비밀번호</label>
