@@ -126,7 +126,7 @@ public class MissionApiController {
     // 6. 미션 등록 API
     @PostMapping
     public ResponseEntity<String> createMission(@RequestBody @Valid MissionDto missionDto) {
-        missionService.insertMission(missionDto);
+        missionService.updateMission(missionDto);
         return ResponseEntity.status(HttpStatus.CREATED).body("Mission registered successfully!");
     }
 

@@ -155,18 +155,29 @@
         WHERE id = #{userMissionId}
     </update>
 
-    <!-- 17. 대중교통 권한 존재 여부 확인 -->
-    <select id="existsTransitAuth" parameterType="long" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM transit_auth
-        WHERE user_id = #{userId}
-    </select>
+        <!-- 1. 대중교통 인증 여부 확인 (실제 테이블명: transit_auth) -->
+        <select id="existsTransitAuth" parameterType="long" resultType="boolean">
+            SELECT COUNT(*) > 0 FROM transit_auth WHERE user_id = #{userId}
+        </select>
 
-    <!-- 18. 랜드마크 권한 존재 여부 확인 -->
-    <select id="existsLandmarkAuth" parameterType="long" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM landmark_auth
-        WHERE user_id = #{userId}
-    </select>
+        <!-- 2. 랜드마크 인증 여부 확인 (실제 테이블명: landmark_auth) -->
+        <select id="existsLandmarkAuth" parameterType="long" resultType="boolean">
+            SELECT COUNT(*) > 0 FROM landmark_auth WHERE user_id = #{userId}
+        </select>
 
-</mapper>
+        <!-- 3. 식사 인증 여부 (식사 테이블이 따로 없다면 landmark_auth나 transit_auth 또는 mission_progress 상태로 체크) -->
+        <select id="existsMealAuth" parameterType="long" resultType="boolean">
+            SELECT COUNT(*) > 0 FROM mission_progress mp
+            JOIN mission m ON mp.mission_id = m.mission_id
+            WHERE mp.user_id = #{userId} AND m.title LIKE '%식사%' AND mp.status = 'DONE'
+        </select>
+
+        <!-- 4. 유저가 작성한 미션 인증 게시글 개수 조회 (실제 테이블명: mission_post, mission_progress 조인) -->
+        <select id="countUserPosts" parameterType="long" resultType="int">
+            SELECT COUNT(*)
+            FROM mission_post mp
+            JOIN mission_progress mprog ON mp.user_mission_id = mprog.id
+            WHERE mprog.user_id = #{userId}
+        </select>
+
+    </mapper>

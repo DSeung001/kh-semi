@@ -1,4 +1,5 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -19,7 +20,6 @@
             <span>짠맛투어</span>
         </a>
         <div class="d-flex align-items-center gap-3">
-            <!-- 실시간 보유 포인트 표시 -->
             <span class="badge bg-warning text-dark fw-bold px-3 py-2">
                 <i class="bi bi-coin me-1"></i> <span id="headerPoint">1,000</span> P
             </span>
@@ -45,9 +45,8 @@
         <main class="zt-content p-4">
 
             <header class="zt-page-header mb-4">
-                <!-- 동적으로 바뀔 미션 제목 및 설명 영역 -->
                 <h1 class="fw-bold" id="missionTitle">미션 정보를 불러오는 중...</h1>
-                <p class="text-muted" id="missionDesc">사용자의 미션 수행 상태를 실시간으로 확인하고 있습니다.</p>
+                <p class="text-muted" id="missionDesc">수행 중인 미션의 상세 항목을 확인하세요.</p>
             </header>
 
             <section class="zt-panel zt-profile-card card p-4 shadow-sm border-0 bg-white rounded-3">
@@ -55,23 +54,25 @@
                     <img src="${pageContext.request.contextPath}/assets/images/seoul.svg" class="object-fit-cover" alt="진행 중인 여행 미션" onerror="this.src='https://via.placeholder.com/800x300?text=Zzanmat+Tour'">
                 </div>
 
-                <!-- 실시간 프로그레스바 영역 -->
+                <!-- 프로그레스바 영역 -->
+
                 <div class="mb-4">
                     <div class="d-flex justify-content-between mb-2">
                         <strong class="text-dark">전체 진행률</strong>
-                        <span class="text-muted fw-bold" id="progressText">0 / 4 (0%)</span>
+                        <span class="text-muted fw-bold" id="progressText">${mission.completedCount} / ${mission.totalCount} (${mission.progressPercent}%)</span>
                     </div>
 
-                    <div class="progress zt-mission-progress" role="progressbar" aria-label="미션 진행률" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 12px; border-radius: 6px;">
-                        <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" id="progressBar" style="width: 0%"></div>
+                    <div class="progress zt-mission-progress" role="progressbar" aria-label="미션 진행률" aria-valuenow="${mission.progressPercent}" aria-valuemin="0" aria-valuemax="100" style="height: 12px; border-radius: 6px;">
+                        <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" id="progressBar" style="width: ${mission.progressPercent}%"></div>
                     </div>
                 </div>
 
                 <!-- 항목 1: 여행 후기 작성 -->
+
                 <div class="card mb-2 p-3 border rounded-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkReview" data-task-key="review" disabled>
+                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkReview" data-task-key="review" ${checklist['review'] ? 'checked' : ''} disabled>
                             <label class="form-check-label fw-semibold" for="checkReview">
                                 여행 후기 작성하기
                             </label>
@@ -84,10 +85,11 @@
                 </div>
 
                 <!-- 항목 2: 맛집 방문/인증 -->
+
                 <div class="card mb-2 p-3 border rounded-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkMeal" data-task-key="meal" disabled>
+                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkMeal" data-task-key="meal" ${checklist['meal'] ? 'checked' : ''} disabled>
                             <label class="form-check-label fw-semibold" for="checkMeal">
                                 짠맛투어 맛집 방문 인증
                             </label>
@@ -103,7 +105,7 @@
                 <div class="card mb-2 p-3 border rounded-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkLandmark" data-task-key="landmark" disabled>
+                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkLandmark" data-task-key="landmark" ${checklist['landmark'] ? 'checked' : ''} disabled>
                             <label class="form-check-label fw-semibold" for="checkLandmark">
                                 여행지에서 셀카 찍어 업로드
                             </label>
@@ -119,7 +121,7 @@
                 <div class="card mb-2 p-3 border rounded-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkTransit" data-task-key="transit" disabled>
+                            <input class="form-check-input mission-checkbox" type="checkbox" id="checkTransit" data-task-key="transit" ${checklist['transit'] ? 'checked' : ''} disabled>
                             <label class="form-check-label fw-semibold" for="checkTransit">
                                 회원가입 후 게시글 1회 작성하기
                             </label>
@@ -145,11 +147,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 
-<!-- 💡 서버 액션 기반 실시간 자동 인증 및 프로그레스바 동기화 스크립트 -->
+<!-- 사용자 액션 기반 상태 동기화 스크립트 (폴링 제거됨) -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const contextPath = "${pageContext.request.contextPath}";
-        const currentUserId = 1; // 실제 로그인한 유저 ID 연동 구간
+        const currentUserId = 1;
 
         const urlParams = new URLSearchParams(window.location.search);
         const missionId = urlParams.get("missionId") || 1;
@@ -158,11 +160,10 @@
         const missionDescEl = document.getElementById("missionDesc");
         const progressBar = document.getElementById("progressBar");
         const progressText = document.getElementById("progressText");
-        const headerPoint = document.getElementById("headerPoint");
         const completeBtn = document.getElementById("completeBtn");
         const checkboxes = document.querySelectorAll(".mission-checkbox");
 
-        // 1. 미션 기본 정보 불러오기 (유저 API 호출 제거로 404 에러 방지)
+        // 1. 미션 메타 정보 불러오기
         function loadMissionMeta() {
             fetch(contextPath + "/api/mission")
                 .then(res => res.ok ? res.json() : [])
@@ -185,8 +186,8 @@
                 });
         }
 
-        // 2. 서버에서 유저의 행동/인증 상태를 조회하여 체크박스와 프로그레스바 자동 동기화
-        function fetchAndUpdateAutoProgress() {
+        // 2. 페이지 진입 시 단 한 번 서버에서 최신 상태를 조회하여 동기화
+        function fetchAndUpdateProgressOnce() {
             fetch(contextPath + `/api/mission/progress?userId=\${currentUserId}&missionId=\${missionId}`)
                 .then(res => res.ok ? res.json() : {})
                 .then(statusMap => {
@@ -194,9 +195,9 @@
                     const totalCount = checkboxes.length;
 
                     checkboxes.forEach(cb => {
-                        const taskKey = cb.getAttribute("data-task-key"); // review, meal, landmark, transit
+                        const taskKey = cb.getAttribute("data-task-key");
                         if (statusMap && statusMap[taskKey] === true) {
-                            cb.checked = true; // 서버 행동 감지 시 자동 체크!
+                            cb.checked = true;
                         } else {
                             cb.checked = false;
                         }
@@ -204,13 +205,12 @@
                         if (cb.checked) checkedCount++;
                     });
 
-                    // 프로그레스바 및 버튼 UI 업데이트
                     updateProgressBarUI(checkedCount, totalCount);
                 })
-                .catch(err => console.error("자동 인증 상태 동기화 실패:", err));
+                .catch(err => console.error("인증 상태 조회 실패:", err));
         }
 
-        // 3. 프로그레스바 및 완료 버튼 상태 제어 함수
+        // 3. 프로그레스바 및 버튼 UI 업데이트
         function updateProgressBarUI(checkedCount, totalCount) {
             let percent = Math.floor((checkedCount / totalCount) * 100);
 
@@ -237,14 +237,13 @@
             }
         }
 
-        // 초기 실행
+        // 초기 실행 (페이지 로드 시점에만 체크 상태 반영)
         loadMissionMeta();
-        fetchAndUpdateAutoProgress();
+        fetchAndUpdateProgressOnce();
 
-        // 💡 4. 실시간 동기화: 3초마다 서버 상태 자동 확인
-        setInterval(fetchAndUpdateAutoProgress, 3000);
+        // 💡 3초마다 돌던 setInterval 폴링 코드를 완전히 제거했습니다.
 
-        // 5. '미션 인증 완료 및 보상 받기' 버튼 클릭 이벤트
+        // 4. '미션 인증 완료 및 보상 받기' 버튼 클릭 이벤트
         completeBtn.addEventListener("click", function () {
             fetch(contextPath + "/api/mission/complete", {
                 method: "POST",

@@ -10,9 +10,9 @@ import com.zzanmat.tour.mission.service.MissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 import java.util.Map;
 import java.util.HashMap;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +24,17 @@ public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
 
     @Override
+    public UserMissionResponseDto getUserMissionProgress(Long missionId) {
+        return UserMissionResponseDto.builder()
+                .missionId(missionId)
+                .status("IN_PROGRESS")
+                .completedCount(0)
+                .totalCount(4)
+                .progressPercent(0.0)
+                .build();
+    }
+
+    @Override
     public List<MissionResponseDto> getAllMissions() {
         return missionMapper.findAll();
     }
@@ -33,31 +44,29 @@ public class MissionServiceImpl implements MissionService {
         missionMapper.save(mission);
     }
 
+    @Override
+    public void saveMission(MissionDto mission) {
+        missionMapper.save(mission);
+    }
 
     @Override
     public Map<String, Boolean> getUserChecklistStatus(Long userId, Long missionId) {
         Map<String, Boolean> statusMap = new HashMap<>();
 
-        // 1. 대중교통 인증 여부 (예: 사용자의 대중교통 결제 내역이나 인증 테이블 조회)
         boolean hasTransitAuth = missionMapper.existsTransitAuth(userId);
-
-        // 2. 무료 명소 방문 인증 여부 (예: 사진 업로드 내역 조회)
         boolean hasLandmarkAuth = missionMapper.existsLandmarkAuth(userId);
-
-        // 3. 만원 이하 식사 영수증 인증 여부
         boolean hasMealAuth = missionMapper.existsMealAuth(userId);
-
-        // 4. 여행 후기 작성 여부 (예: 게시판(Post) 테이블에 해당 유저가 작성한 글이 있는지 조회)
         int postCount = missionMapper.countUserPosts(userId);
-        boolean hasReviewAuth = (postCount > 0); // 글을 1개 이상 작성했다면 true!
+        boolean hasReviewAuth = (postCount > 0);
 
         statusMap.put("transit", hasTransitAuth);
         statusMap.put("landmark", hasLandmarkAuth);
         statusMap.put("meal", hasMealAuth);
-        statusMap.put("review", hasReviewAuth); // 👈 사용자가 게시글을 작성하고 오면 자동으로 true로 바뀜!
+        statusMap.put("review", hasReviewAuth);
 
         return statusMap;
     }
+
     @Override
     public void updateMission(MissionDto mission) {
         missionMapper.update(mission);
@@ -79,13 +88,10 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public void updateMissionStatus(UserMissionDto userMissionDto) {
-        missionMapper.updateMissionStatus(userMissionDto);
+    public void updateStatus(UserMissionDto userMissionDto) {
+        missionMapper.updateStatus(userMissionDto);
     }
 
-    /**
-     * 미션 완료 및 보상 포인트 지급, 전체 진척도 계산 서비스 로직
-     */
     @Override
     @Transactional
     public UserMissionResponseDto completeMission(Long userId, Long missionId) {
@@ -108,9 +114,9 @@ public class MissionServiceImpl implements MissionService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 미션 정보입니다."));
 
+        // 보상 지급 중복 방지 체크
         if (updated.getRewardReceived() == null || !updated.getRewardReceived()) {
             missionMapper.addPointToUser(userId, missionInfo.getRewardPoint());
-            missionMapper.insertPointHistory(userId, missionId, missionInfo.getRewardPoint(), "MISSION");
             missionMapper.updateRewardReceived(updated.getUserMissionId());
 
             log.info("미션 완료 보상 지급 성공: userId={}, missionId={}, rewardPoint={}",
@@ -140,9 +146,6 @@ public class MissionServiceImpl implements MissionService {
                 .build();
     }
 
-    /**
-     * 특정 이벤트 발생 시 트리거 연동 미션 자동 진행 처리
-     */
     @Override
     @Transactional
     public void processMissionOnAction(Long userId, String triggerEvent, Long postId) {
@@ -155,7 +158,6 @@ public class MissionServiceImpl implements MissionService {
 
             UserMissionDto progress = missionMapper.findProgress(userId, mission.getId());
             if (progress != null && !"DONE".equals(progress.getStatus())) {
-                // 💡 UserMissionDto의 필드명에 맞게 getCurrentCount()로 수정 완료
                 int newCurrentCount = progress.getCurrentCount() + 1;
                 int targetCount = mission.getTargetCount();
                 int calculatedProgress = (int) Math.min(100, ((double) newCurrentCount / targetCount) * 100);
@@ -176,11 +178,8 @@ public class MissionServiceImpl implements MissionService {
                         isCompleted ? LocalDateTime.now() : null
                 );
 
-                missionMapper.insertHistory(userId, mission.getId(), postId, triggerEvent);
-
                 if (isCompleted && (progress.getRewardReceived() == null || !progress.getRewardReceived())) {
                     missionMapper.addPointToUser(userId, mission.getRewardPoint());
-                    missionMapper.insertPointHistory(userId, mission.getId(), mission.getRewardPoint(), "MISSION");
                     missionMapper.updateRewardReceived(progress.getUserMissionId());
                 }
             }
@@ -194,7 +193,7 @@ public class MissionServiceImpl implements MissionService {
         userMissionDto.setMemberId(userId);
         userMissionDto.setMissionId(missionId);
         userMissionDto.setStatus("IN_PROGRESS");
-        missionMapper.updateMissionStatus(userMissionDto);
+        missionMapper.updateStatus(userMissionDto);
     }
 
     @Override
@@ -203,6 +202,6 @@ public class MissionServiceImpl implements MissionService {
         UserMissionDto userMissionDto = new UserMissionDto();
         userMissionDto.setUserMissionId(userMissionId);
         userMissionDto.setStatus("DONE");
-        missionMapper.updateMissionStatus(userMissionDto);
+        missionMapper.updateStatus(userMissionDto);
     }
 }

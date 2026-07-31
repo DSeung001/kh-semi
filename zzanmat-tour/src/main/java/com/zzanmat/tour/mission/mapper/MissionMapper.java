@@ -30,10 +30,6 @@ public interface MissionMapper {
     // Todo: 아래 함수들 네이밍 readmd.md 보고 맞추기
     void updateStatus(UserMissionDto userMissionDto);
 
-    // 미션 상태 업데이트 (완료 처리 등)
-
-    void updateMissionStatus(UserMissionDto userMissionDto);
-
     // 특정 트리거 이벤트(게시글 작성 등)와 연관된 미션 목록 조회
 
     List<MissionResponseDto> findByTriggerEvent(@Param("triggerEvent") String triggerEvent);
@@ -61,7 +57,7 @@ public interface MissionMapper {
 
     // 미션 수행 히스토리 기록 추가
 
-    void insertHistory(@Param("userId") Long userId,
+    void save (@Param("userId") Long userId,
                        @Param("missionId") Long missionId,
                        @Param("postId") Long postId,
                        @Param("actionType") String actionType);
@@ -75,7 +71,7 @@ public interface MissionMapper {
 
     // 포인트 적립 이력(point_history) 추가
 
-    void insertPointHistory(@Param("userId") Long userId,
+    void save (@Param("userId") Long userId,
                             @Param("missionId") Long missionId,
                             @Param("point") int point,
                             @Param("reason") String reason);
