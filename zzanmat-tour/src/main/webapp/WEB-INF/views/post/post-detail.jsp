@@ -72,7 +72,19 @@
 
   </c:if>
 
-  <img class="zt-detail-image" src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="서울 여행 사진">
+  <c:choose>
+    <c:when test="${not empty post.images}">
+      <img class="zt-detail-image"
+           src="${pageContext.request.contextPath}${post.images[0].uploadPath}"
+           alt="${post.images[0].originName}">
+    </c:when>
+
+    <c:otherwise>
+      <img class="zt-detail-image"
+           src="${pageContext.request.contextPath}/assets/images/seoul.svg"
+           alt="등록된 사진이 없습니다">
+    </c:otherwise>
+  </c:choose>
 
   <div class="zt-post-actions">
     <button class="zt-icon-btn" data-like-button data-like-target="#detail-likes"><i class="bi bi-heart"></i></button>

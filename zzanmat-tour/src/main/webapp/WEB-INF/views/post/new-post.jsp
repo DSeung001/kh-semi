@@ -44,16 +44,55 @@
 <section class="zt-panel zt-profile-card">
   <form class="row g-4"
         action="${pageContext.request.contextPath}/new-post"
-        method="post">
+        method="post"
+        enctype="multipart/form-data">
+
   <div class="col-lg-6">
-      <label class="zt-upload-zone p-3" for="new-post-image" data-upload-preview>
-        <span>
-          <i class="bi bi-images display-5 d-block mb-3"></i>
-          <strong class="d-block mb-1">사진을 선택하세요</strong>
-          <small class="zt-muted">JPG, PNG 파일을 업로드할 수 있습니다.</small>
-        </span>
-      </label>
+    <div class="zt-post-image-uploader"
+         data-post-image-uploader>
+
+      <div class="zt-post-main-preview">
+        <div id="post-image-empty"
+            class="zt-post-image-empty">
+          <i class="bi bi-images display-5"></i>
+          <strong>사진을 선택하세요</strong>
+          <small>JPG, PNG 파일을 최대 5장까지 선택할 수 있습니다.</small>
+        </div>
+
+        <img id="post-main-preview"
+             class="zt-post-main-image"
+             src=""
+             alt="선택한 사진 미리보기"
+             hidden>
+      </div>
+
+      <div class="zt-post-thumbnail-row">
+        <div id="post-thumbnail-list"
+             class="zt-post-thumbnail-list">
+        </div>
+
+        <label class="zt-post-add-image"
+               for="new-post-image">
+          <i class="bi bi-plus-lg"></i>
+          <span>사진</span>
+
+          <input id="new-post-image"
+                 name="imageFiles"
+                 type="file"
+                 accept="image/jpeg,image/png"
+                 multiple
+                 hidden>
+        </label>
+      </div>
+
+      <p class="zt-post-image-count">
+        선택한 사진
+        <strong id="post-image-count">0</strong>
+        / 5
+      </p>
+
     </div>
+  </div>
 
     <div class="col-lg-6">
       <div class="mb-3">
@@ -132,6 +171,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js"></script>
 
 </body>
 </html>

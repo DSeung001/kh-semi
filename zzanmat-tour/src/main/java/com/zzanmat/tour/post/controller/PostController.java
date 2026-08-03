@@ -8,9 +8,12 @@ import com.zzanmat.tour.post.service.PostService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Controller
 public class PostController {
@@ -64,10 +67,17 @@ public class PostController {
     @PostMapping("/new-post")
     public String createPost(
             PostDto post,
-            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-    ) {
+            @RequestParam(
+                    name = "imageFiles",
+                    required = false
+            ) List<MultipartFile> imageFiles,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER)
+            MemberDto loginMember
+    ) throws IOException {
         post.setUserId(loginMember.getId());
-        postService.save(post);
+
+        postService.save(post, imageFiles);
+        
         return "redirect:/my-travel";
     }
 
