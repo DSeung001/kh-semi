@@ -31,11 +31,54 @@ public class PostController {
     @GetMapping("/post-detail")
     public String postDetail(
             @RequestParam Long postId,
+            @SessionAttribute(
+                    value = SessionConst.LOGIN_MEMBER,
+                    required = false
+            ) MemberDto loginMember,
             Model model
     ) {
         postService.increaseViewCount(postId);
-        model.addAttribute("post", postService.findById(postId));
+
+        model.addAttribute(
+                "post",
+                postService.findById(postId)
+        );
+
+        model.addAttribute(
+                "likeCount",
+                postService.countLikes(postId)
+        );
+
+        boolean liked = loginMember != null
+                && postService.isLiked(postId, loginMember.getId());
+
+        model.addAttribute("liked", liked);
+
         return "post/post-detail";
+    }
+
+    @PostMapping("/post-like")
+    @ResponseBody
+    public Map<String, Object> toggleLike(
+            @RequestParam Long postId,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER)
+            MemberDto loginMember
+    ) {
+        postService.toggleLike(postId, loginMember.getId());
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put(
+                "liked",
+                postService.isLiked(postId, loginMember.getId())
+        );
+
+        result.put(
+                "likeCount",
+                postService.countLikes(postId)
+        );
+
+        return result;
     }
 
     @GetMapping("/my-travel")
@@ -101,17 +144,34 @@ public class PostController {
     @PostMapping("/edit-post")
     public String updatePost(
             PostDto post,
-            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-    ) {
-        PostDto savePost = postService.findById(post.getPostId());
+            @RequestParam(
+                    name = "deleteImageIds",
+                    required = false
+            ) List<Long> deleteImageIds,
+            @RequestParam(
+                    name = "imageFiles",
+                    required = false
+            ) List<MultipartFile> imageFiles,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER)
+            MemberDto loginMember
+    ) throws IOException {
 
-        if(!savePost.getUserId().equals(loginMember.getId())){
-            return "redirect:/post-detail?postId=" + post.getPostId();
+        PostDto savedPost =
+                postService.findById(post.getPostId());
+
+        if (!savedPost.getUserId().equals(loginMember.getId())) {
+            return "redirect:/post-detail?postId="
+                    +post.getPostId();
         }
 
-        postService.update(post);
+        postService.update(
+                post,
+                deleteImageIds,
+                imageFiles
+        );
 
-        return "redirect:/post-detail?postId=" + post.getPostId();
+        return "redirect:/post-detail?postId="
+                + post.getPostId();
     }
 
     @PostMapping("/delete-post")

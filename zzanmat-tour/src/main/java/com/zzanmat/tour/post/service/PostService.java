@@ -59,8 +59,8 @@ public class PostService {
         long imageCount = imageFiles == null
                 ? 0
                 : imageFiles.stream()
-                        .filter(file -> !file.isEmpty())
-                                .count();
+                .filter(file -> !file.isEmpty())
+                .count();
 
         if (imageCount > MAX_IMAGE_COUNT) {
             throw new IllegalArgumentException(
@@ -77,14 +77,14 @@ public class PostService {
         int imageOrder = 1;
 
         for (MultipartFile imageFile : imageFiles) {
-            if(imageFile.isEmpty()) {
+            if (imageFile.isEmpty()) {
                 continue;
             }
 
             String contentType = imageFile.getContentType();
 
             if (!"image/jpeg".equals(contentType)
-                && !"image/png".equals(contentType)) {
+                    && !"image/png".equals(contentType)) {
                 throw new IllegalArgumentException(
                         "JPG 또는 PNG 이미지만 등록할 수 있습니다."
                 );
@@ -112,22 +112,158 @@ public class PostService {
         }
 
     }
-    public void increaseViewCount(Long postId){
+
+    public void increaseViewCount(Long postId) {
         postMapper.increaseViewCount(postId);
     }
+
     public void update(PostDto post) {
         postMapper.update(post);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void update(
+            PostDto post,
+            List<Long> deleteImageIds,
+            List<MultipartFile> imageFiles
+    ) throws IOException {
+
+        List<PostImageDto> existingImages =
+                postMapper.findImagesByPostId(post.getPostId());
+
+        List<PostImageDto> imagesToDelete = existingImages.stream()
+                .filter(image ->
+                        deleteImageIds != null
+                                && deleteImageIds.contains(image.getUploadId())
+                )
+                .toList();
+
+        long newImageCount = imageFiles == null
+                ? 0
+                : imageFiles.stream()
+                .filter(file -> !file.isEmpty())
+                .count();
+
+        int remainingImageCount =
+                existingImages.size() - imagesToDelete.size();
+
+        if (remainingImageCount + newImageCount > MAX_IMAGE_COUNT) {
+            throw new IllegalArgumentException(
+                    "이미지는 최대 5장까지 등록할 수 있습니다."
+            );
+        }
+
+        postMapper.update(post);
+
+        for (PostImageDto image : imagesToDelete) {
+
+            postMapper.deletePostImage(
+                    post.getPostId(),
+                    image.getUploadId()
+            );
+
+            postMapper.deleteImage(image.getUploadId());
+
+            fileUploadUtil.delete(
+                    image.getUploadPath(),
+                    postUploadDir
+            );
+        }
+
+        List<PostImageDto> remainingImages =
+                postMapper.findImagesByPostId(post.getPostId());
+
+        int imageOrder = 1;
+
+        for (PostImageDto image : remainingImages) {
+            postMapper.updateImageOrder(
+                    image.getUploadId(),
+                    imageOrder
+            );
+
+            imageOrder++;
+        }
+
+        if (imageFiles == null) {
+            return;
+        }
+
+        for (MultipartFile imageFile : imageFiles) {
+            if (imageFile.isEmpty()) {
+                continue;
+            }
+
+            String contentType = imageFile.getContentType();
+
+            if (!"image/jpeg".equals(contentType)
+                    && !"image/png".equals(contentType)) {
+                throw new IllegalArgumentException(
+                        "JPG 또는 PNG 이미지만 등록할 수 있습니다."
+                );
+            }
+
+            SavedFile savedFile = fileUploadUtil.save(
+                    imageFile,
+                    postUploadDir,
+                    "/uploads/post"
+            );
+
+            PostImageDto postImage = new PostImageDto();
+            postImage.setPostId(post.getPostId());
+            postImage.setOriginName(savedFile.getOriginalName());
+            postImage.setUploadPath(savedFile.getPath());
+            postImage.setImageOrder(imageOrder);
+
+            postMapper.saveImage(postImage);
+
+            postMapper.savePostImage(
+                    post.getPostId(),
+                    postImage.getUploadId()
+            );
+
+            imageOrder++;
+        }
+    }
+
     public void deleteById(Long postId) {
         postMapper.deleteById(postId);
     }
 
-    public List<PostDto> findPage(String sort, int page, int size) {
+    public List<PostDto> findPage(
+            String sort,
+            int page,
+            int size
+    ) {
         int offset = (page - 1) * size;
+
         return postMapper.findPage(sort, offset, size);
     }
 
     public int countAll() {
         return postMapper.countAll();
+    }
+
+    public int countLikes(Long postId) {
+        return postMapper.countLikes(postId);
+    }
+
+    public boolean isLiked(
+            Long postId,
+            Long userId
+    ) {
+        return postMapper.countUserLike(postId, userId) > 0;
+    }
+
+    @Transactional
+    public void toggleLike(
+            Long postId,
+            Long userId
+    ) {
+        if (isLiked(postId, userId)) {
+            postMapper.deleteLike(postId, userId);
+            return;
+        }
+
+        postMapper.saveLike(postId, userId);
     }
 }

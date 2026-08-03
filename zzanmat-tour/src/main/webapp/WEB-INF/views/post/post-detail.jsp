@@ -74,9 +74,43 @@
 
   <c:choose>
     <c:when test="${not empty post.images}">
-      <img class="zt-detail-image"
-           src="${pageContext.request.contextPath}${post.images[0].uploadPath}"
-           alt="${post.images[0].originName}">
+      <div class="zt-detail-carousel"
+           data-detail-carousel>
+
+        <div class="zt-detail-slides">
+          <c:forEach var="image"
+                     items="${post.images}"
+                     varStatus="status">
+
+            <img class="zt-detail-image zt-detail-slide ${status.first ? 'is-active' : ''}"
+                 src="${pageContext.request.contextPath}${image.uploadPath}"
+                 alt="${image.originName}"
+                 data-slide-index="${status.index}">
+          </c:forEach>
+        </div>
+
+        <c:if test="${post.images.size() > 1}">
+          <button type="button"
+                  class="zt-detail-carousel-button zt-detail-carousel-prev"
+                  data-carousel-prev
+                  aria-label="이전 사진">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <button type="button"
+                  class="zt-detail-carousel-button zt-detail-carousel-next"
+                  data-carousel-next
+                  aria-label="다음 사진">
+              <i class="bi bi-chevron-right"></i>
+          </button>
+
+          <div class="zt-detail-carousel-count">
+            <span data-carousel-current>1</span>
+            /
+            <span data-carousel-total>${post.images.size()}</span>
+          </div>
+        </c:if>
+      </div>
     </c:when>
 
     <c:otherwise>
@@ -87,11 +121,58 @@
   </c:choose>
 
   <div class="zt-post-actions">
-    <button class="zt-icon-btn" data-like-button data-like-target="#detail-likes"><i class="bi bi-heart"></i></button>
-    <button class="zt-icon-btn"><i class="bi bi-chat"></i></button>
-    <button class="zt-icon-btn"><i class="bi bi-send"></i></button>
-    <button class="zt-icon-btn zt-save-btn"><i class="bi bi-bookmark"></i></button>
+    <c:choose>
+      <c:when test="${not empty sessionScope.loginMember}">
+        <form action="${pageContext.request.contextPath}/post-like"
+              method="post"
+              class="d-inline">
+
+          <input type="hidden"
+                 name="postId"
+                 value="${post.postId}">
+
+          <button type="submit"
+                  class="zt-icon-btn"
+                  aria-label="좋아요">
+            <c:choose>
+              <c:when test="${liked}">
+                <i class="bi bi-heart-fill text-danger"></i>
+              </c:when>
+
+              <c:otherwise>
+                <i class="bi bi-heart"></i>
+              </c:otherwise>
+            </c:choose>
+          </button>
+        </form>
+      </c:when>
+
+      <c:otherwise>
+        <a class="zt-icon-btn"
+           href="${pageContext.request.contextPath}/member/login"
+           aria-label="로그인 후 좋아요">
+          <i class="bi bi-heart"></i>
+        </a>
+      </c:otherwise>
+    </c:choose>
+
+    <button class="zt-icon-btn" type="button">
+      <i class="bi bi-chat"></i>
+    </button>
+
+    <button class="zt-icon-btn" type="button">
+      <i class="bi bi-send"></i>
+    </button>
+
+    <button class="zt-icon-btn zt-save-btn" type="button">
+      <i class="bi bi-bookmark"></i>
+    </button>
   </div>
+
+  <p id="detail-likes" class="fw-bold px-3 mb-2">
+    좋아요 <c:out value="${likeCount}"/>개
+
+  </p>
 
   <div class="zt-post-body">
    <p class="fw-bold">
@@ -175,6 +256,8 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-detail-carousel.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
 
 </body>
 </html>
