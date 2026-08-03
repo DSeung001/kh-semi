@@ -30,7 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const image = document.createElement("img");
 
-        image.src = contextPath + "/assets/images/seoul.svg";
+        if (post.thumbnailPath) {
+            image.src = contextPath + post.thumbnailPath;
+        } else {
+            image.src = contextPath + "/assets/images/seoul.svg";
+        }
+        
         image.alt = post.title ?? "";
 
         const overlay = document.createElement("span");

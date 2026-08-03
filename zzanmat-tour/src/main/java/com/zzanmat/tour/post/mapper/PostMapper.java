@@ -1,6 +1,7 @@
 package com.zzanmat.tour.post.mapper;
 
 import com.zzanmat.tour.post.dto.PostDto;
+import com.zzanmat.tour.post.dto.PostImageDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,8 +19,19 @@ public interface PostMapper {
     int countAll();
     
     PostDto findById(@Param("postId") Long postId);
+
+    List<PostImageDto> findImagesByPostId(
+            @Param("postId") Long postId
+    );
+    
     void save(PostDto post);
     void increaseViewCount(@Param("postId") Long postId);
     void update(PostDto post);
     void deleteById(@Param("postId") Long postId);
+    void saveImage(PostImageDto postImage);
+
+    void savePostImage(
+            @Param("postId") Long postId,
+            @Param("uploadId") Long uploadId
+    );
 }
