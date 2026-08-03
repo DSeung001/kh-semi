@@ -15,22 +15,6 @@
 </head>
 <body>
 
-<c:if test="${not empty message}">
-  <script>
-    // 서버에서 넘어온 메시지를 JS 변수에 담음
-    const msg = "${message}";
-
-    // 브라우저 sessionStorage에 저장된 값과 비교하거나,
-    // 페이지가 새로고침/재조회될 때 중복 실행을 막기 위해 플래그 활용
-    if (msg) {
-      alert(msg);
-      // 알림을 띄운 뒤 히스토리를 갱신하거나
-      history.replaceState;
-      //history.replaceState를 써서 새로고침 시 데이터 재요청 방지
-    }
-  </script>
-</c:if>
-
 <div class="zt-app">
   
 <header class="zt-mobile-header">
@@ -54,7 +38,41 @@
 </jsp:include>
 
     <main class="zt-content">
+      <c:if test="${not empty message}">
+        <script>
+          alert("${message}");
+        </script>
+      </c:if>
 
+      <c:if test="${not empty error}">
+        <script>
+          alert("${error}");
+        </script>
+      </c:if>
+      <%--<c:if test="${not empty kakaoError}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <c:out value="${kakaoError}" />
+
+          <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="alert"
+                  aria-label="닫기">
+          </button>
+        </div>
+      </c:if>
+      <c:if test="${not empty message}">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <c:out value="${message}" />
+
+          <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="alert"
+                  aria-label="닫기">
+          </button>
+        </div>
+      </c:if>--%>
 <header class="zt-page-header">
   <h1>내 정보</h1>
   <p>프로필과 계정 정보를 확인하고 수정합니다.</p>

@@ -1,6 +1,7 @@
 package com.zzanmat.tour.common.config;
 
 import com.zzanmat.tour.common.interceptor.AutoLoginInterceptor;
+import com.zzanmat.tour.common.interceptor.CacheControlInterceptor;
 import com.zzanmat.tour.common.interceptor.LoginInterceptor;
 import com.zzanmat.tour.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,17 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+
+        // JSP/컨트롤러 응답은 캐시하지 않음.
+        // CSS, JS, 이미지, 업로드 파일은 성능을 위해 제외.
+        registry.addInterceptor(new CacheControlInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/assets/**",
+                        "/uploads/**",
+                        "/webjars/**",
+                        "/favicon.ico"
+                );
 
         registry.addInterceptor(new AutoLoginInterceptor(memberService))
                 .addPathPatterns("/**") // 웹사이트의 모든 경로에서 자동 로그인 체크를 실행합니다.

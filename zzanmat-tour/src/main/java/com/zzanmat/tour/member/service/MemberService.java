@@ -17,5 +17,15 @@ public interface MemberService {
 
     MemberDto findById(String userId);
 
+    MemberDto findByEmail(String email);
+
+    MemberDto findByUserIdAndEmail(String userId, String email);
+
+    boolean resetPasswordByEmail(String email, String newPassword);
+
     void withdraw(String userId);
+
+    MemberDto kakaoJoin(String kakaoId, String nickname);
+
+    void unlink(String accessToken);
 }

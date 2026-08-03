@@ -146,6 +146,14 @@ textarea {
     display: flex;
 }
 
+.account-auth-area {
+    display: none;
+}
+
+.account-auth-area.is-visible {
+    display: flex;
+}
+
 .email-auth-timer {
     color: #dc3545;
     font-variant-numeric: tabular-nums;

@@ -1,6 +1,7 @@
 package com.zzanmat.tour.member.controller;
 
 import com.zzanmat.tour.common.dto.ApiResponse;
+import com.zzanmat.tour.common.dto.PasswordChangeRequest;
 import com.zzanmat.tour.common.util.CookieTokenUtils;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
@@ -11,6 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("/member")
@@ -139,18 +143,64 @@ public class MemberController {
 
     // 탈퇴하기
     @PostMapping("/withdraw")
-    public String withdraw(HttpSession session){
+    public String withdraw(@AuthenticationPrincipal OAuth2User oAuth2User,
+                            @RegisteredOAuth2AuthorizedClient("kakao")
+                            OAuth2AuthorizedClient authorizedClient,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
         MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        memberService.withdraw(loginMember.getUserId());
 
-        session.invalidate();
-        return "redirect:/";
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
+        try {
+            // 카카오 로그인 사용자일 때만 카카오 앱 연결 해제
+            if (oAuth2User != null && authorizedClient != null) {
+                String accessToken = authorizedClient.getAccessToken().getTokenValue();
+
+                memberService.unlink(accessToken);
+            }
+
+            // 카카오 연결 해제가 성공한 뒤 로컬 회원 삭제
+            memberService.withdraw(loginMember.getUserId());
+            session.invalidate();
+
+            redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
+            return "redirect:/";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("kakaoError","카카오 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
+            return "redirect:/member/profile";
+        }
     }
 
     // 페이지 이동
     @GetMapping("/forgot-password")
     public String forgotPassword(){
         return "member/forgot-password";
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseBody
+    public ApiResponse<Void> resetPassword(@RequestBody PasswordChangeRequest request,
+                                           HttpSession session) {
+        String verifiedEmail = (String) session.getAttribute("verifiedEmailForPasswordReset");
+        Long expiresAt = (Long) session.getAttribute("verifiedEmailForPasswordResetExpiresAt");
+        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+        String newPassword = request.getNewPassword();
+
+        if (verifiedEmail == null || expiresAt == null || System.currentTimeMillis() > expiresAt
+                || !verifiedEmail.equals(email)) {
+            return ApiResponse.fail("이메일 인증이 만료되었습니다. 다시 인증해주세요.");
+        }
+        if (!memberService.resetPasswordByEmail(email, newPassword)) {
+            return ApiResponse.fail("가입 정보를 찾을 수 없습니다.");
+        }
+
+        session.removeAttribute("verifiedEmailForPasswordReset");
+        session.removeAttribute("verifiedEmailForPasswordResetExpiresAt");
+        return ApiResponse.success("비밀번호가 변경되었습니다. 로그인해주세요.", null);
     }
 
     @GetMapping("/login")
@@ -173,19 +223,33 @@ public class MemberController {
     }
 
     @GetMapping("/kakao-login")
-    @ResponseBody
-    public String loginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User) {
+    public String loginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User
+                                ,HttpSession session
+                                ,RedirectAttributes redirectAttributes) throws IOException {
 
-        String kakaoId = oAuth2User.getName();
+        if (oAuth2User == null) {
+            redirectAttributes.addFlashAttribute("error","카카오 로그인 정보를 가져오지 못했습니다. 다시 시도해주세요.");
+            return "redirect:/member/login";
+        }
 
         Map<String, Object> properties = (Map<String, Object>) oAuth2User.getAttributes().get("properties");
 
-        String nickname = (String) properties.get("nickname");
-
-        if (oAuth2User == null) {
-            return "로그인 정보가 없습니다.";
+        if (properties == null || properties.get("nickname") == null) {
+            redirectAttributes.addFlashAttribute("error","카카오 계정의 닉네임 정보를 가져오지 못했습니다.");
+            return "redirect:/member/login";
         }
 
-        return "카카오 로그인 성공";
+        String kakaoId = oAuth2User.getName();
+        String nickname = String.valueOf(properties.get("nickname"));
+
+        MemberDto member = memberService.kakaoJoin(kakaoId, nickname);
+
+        if (member == null) {
+            redirectAttributes.addFlashAttribute("error","카카오 회원 정보 처리 중 오류가 발생했습니다.");
+            return "redirect:/member/login";
+        }
+
+        session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+        return "redirect:/";
     }
 }

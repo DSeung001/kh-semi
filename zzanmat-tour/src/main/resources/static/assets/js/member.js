@@ -291,10 +291,15 @@ if(sendCodeBtn){
             .then(response => response.json())
             .then(result => {
                 if (!result.success) {
-                    throw new Error(result.message || "인증번호 발송에 실패했습니다.");
+                    // 중복 이메일 등은 서버 오류가 아닌 입력값 검증 결과입니다.
+                    emailResult.textContent = result.message || "인증번호를 발송할 수 없습니다.";
+                    emailResult.className = "signup-message is-visible";
+                    return;
                 }
                 authDiv.classList.add("is-visible");
                 isEmailVerified = false;
+                emailResult.textContent = "";
+                emailResult.className = "signup-message";
                 emailAuthMessage.textContent = (result.message || "인증번호가 성공적으로 전송되었습니다.") + " 3분 안에 인증번호를 입력해주세요.";
                 startEmailAuthTimer();
             })
@@ -410,4 +415,270 @@ function getCookie(cookieName) {
 // 쿠키 삭제 함수 (만료일을 과거로 설정)
 function deleteCookie(cookieName) {
     setCookie(cookieName, "", -1);
+}
+
+/* 계정찾기 이메일 인증: 회원가입과 동일한 이메일 API와 3분 제한을 사용합니다. */
+const accountEmailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+function formatAccountAuthTime(seconds) {
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const remaining = String(seconds % 60).padStart(2, "0");
+    return `${minutes}:${remaining}`;
+}
+
+document.querySelectorAll("[data-email-verification]").forEach((container) => {
+    const accountEmailInput = container.querySelector("[data-email-input]");
+    const accountUserIdInput = container.querySelector("[data-user-id]");
+    const accountSendButton = container.querySelector("[data-send-code]");
+    const accountAuthArea = container.querySelector("[data-auth-area]");
+    const accountAuthCodeInput = container.querySelector("[data-auth-code]");
+    const accountVerifyButton = container.querySelector("[data-verify-code]");
+    const accountTimerElement = container.querySelector("[data-auth-timer]");
+    const accountMessageElement = container.querySelector("[data-auth-message]");
+    const accountForm = container.closest("form");
+    const accountSendUrl = container.dataset.sendUrl || "/email/send";
+
+    let accountTimerId = null;
+    let accountRemainingSeconds = 0;
+    let accountIsVerified = false;
+
+    const setAccountMessage = (message, isError = false) => {
+        accountMessageElement.textContent = message;
+        accountMessageElement.className = isError
+            ? "form-message mt-2 mb-0 is-visible is-erro"
+            : "form-message mt-2 mb-0 is-visible is-success";
+    };
+
+    const stopAccountTimer = () => {
+        clearInterval(accountTimerId);
+        accountTimerId = null;
+    };
+
+    const resetAccountVerification = () => {
+        stopAccountTimer();
+        accountRemainingSeconds = 0;
+        accountIsVerified = false;
+        accountAuthCodeInput.value = "";
+        accountAuthCodeInput.disabled = true;
+        accountVerifyButton.disabled = true;
+        accountTimerElement.textContent = "03:00";
+        accountTimerElement.classList.remove("is-expired");
+        accountForm.querySelectorAll("[data-password-field]").forEach((field) => {
+            field.disabled = true;
+        });
+    };
+
+    const startAccountTimer = () => {
+        stopAccountTimer();
+        accountRemainingSeconds = 180;
+        accountAuthCodeInput.value = "";
+        accountAuthCodeInput.disabled = false;
+        accountVerifyButton.disabled = false;
+        accountTimerElement.textContent = formatAccountAuthTime(accountRemainingSeconds);
+        accountTimerElement.classList.remove("is-expired");
+        accountAuthCodeInput.focus();
+
+        accountTimerId = setInterval(() => {
+            accountRemainingSeconds -= 1;
+            accountTimerElement.textContent = formatAccountAuthTime(Math.max(accountRemainingSeconds, 0));
+
+            if (accountRemainingSeconds <= 0) {
+                stopAccountTimer();
+                accountTimerElement.textContent = "만료";
+                accountTimerElement.classList.add("is-expired");
+                accountAuthCodeInput.disabled = true;
+                accountVerifyButton.disabled = true;
+                setAccountMessage("인증 시간이 만료되었습니다. 다시 인증해주세요.", true);
+            }
+        }, 1000);
+    };
+
+    accountEmailInput.addEventListener("input", () => {
+        if (accountTimerId || accountIsVerified) {
+            resetAccountVerification();
+            setAccountMessage("이메일이 변경되었습니다. 인증번호를 다시 발송해주세요.", true);
+        }
+    });
+
+    if (accountUserIdInput) {
+        accountUserIdInput.addEventListener("input", () => {
+            if (accountTimerId || accountIsVerified) {
+                resetAccountVerification();
+                setAccountMessage("아이디가 변경되었습니다. 인증번호를 다시 발송해주세요.", true);
+            }
+        });
+    }
+
+    accountAuthCodeInput.addEventListener("input", () => {
+        accountAuthCodeInput.value = accountAuthCodeInput.value.replace(/\D/g, "").slice(0, 6);
+    });
+
+    accountSendButton.addEventListener("click", async () => {
+        const email = accountEmailInput.value.trim();
+        if (!accountEmailRegex.test(email)) {
+            setAccountMessage("올바른 이메일 형식을 입력해주세요.", true);
+            return;
+        }
+
+        if (accountUserIdInput && !accountUserIdInput.value.trim()) {
+            setAccountMessage("아이디를 입력해주세요.", true);
+            return;
+        }
+
+        accountSendButton.disabled = true;
+        try {
+            const response = await fetch(accountSendUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email,
+                    userId: accountUserIdInput ? accountUserIdInput.value.trim() : null
+                })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "인증번호 발송에 실패했습니다.");
+            }
+
+            accountAuthArea.classList.add("is-visible");
+            setAccountMessage(`${result.message} 3분 안에 인증번호를 입력해주세요.`);
+            startAccountTimer();
+        } catch (error) {
+            setAccountMessage(error.message || "인증번호 발송 중 오류가 발생했습니다.", true);
+        } finally {
+            accountSendButton.disabled = false;
+        }
+    });
+
+    accountVerifyButton.addEventListener("click", async () => {
+        const email = accountEmailInput.value.trim();
+        const authCode = accountAuthCodeInput.value.trim();
+        if (accountRemainingSeconds <= 0) {
+            setAccountMessage("인증 시간이 만료되었습니다. 다시 인증해주세요.", true);
+            return;
+        }
+        if (!/^\d{6}$/.test(authCode)) {
+            setAccountMessage("인증번호 6자리를 입력해주세요.", true);
+            return;
+        }
+
+        accountVerifyButton.disabled = true;
+        try {
+            const response = await fetch("/email/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, authCode })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "인증번호가 일치하지 않거나 만료되었습니다.");
+            }
+
+            stopAccountTimer();
+            accountIsVerified = true;
+            accountTimerElement.textContent = "완료";
+            accountAuthCodeInput.disabled = true;
+            accountEmailInput.disabled = true;
+            accountSendButton.disabled = true;
+            setAccountMessage("이메일 인증이 완료되었습니다.");
+            accountForm.querySelectorAll("[data-password-field]").forEach((field) => {
+                field.disabled = false;
+            });
+        } catch (error) {
+            accountVerifyButton.disabled = false;
+            setAccountMessage(error.message || "인증번호 확인 중 오류가 발생했습니다.", true);
+        }
+    });
+});
+
+/* 아이디 찾기: 가입 이메일을 조회한 뒤, 아이디를 해당 이메일로 발송합니다. */
+const findIdForm = document.querySelector("#forgot-id");
+const findIdEmailInput = document.querySelector("#find-id-email");
+const findIdMessage = document.querySelector("#findIdMessage");
+
+if (findIdForm && findIdEmailInput && findIdMessage) {
+    findIdForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = findIdEmailInput.value.trim();
+        if (!accountEmailRegex.test(email)) {
+            findIdMessage.textContent = "올바른 이메일 형식을 입력해주세요.";
+            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-erro";
+            return;
+        }
+
+        const submitButton = findIdForm.querySelector("button[type='submit']");
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch("/email/find-id", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+            const result = await response.json();
+
+            findIdMessage.textContent = result.message;
+            findIdMessage.className = result.success
+                ? "form-message mt-2 mb-0 is-visible is-success"
+                : "form-message mt-2 mb-0 is-visible is-erro";
+        } catch (error) {
+            findIdMessage.textContent = "아이디 찾기 요청 중 오류가 발생했습니다.";
+            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-erro";
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
+}
+
+/* 비밀번호 찾기: 인증번호 확인에 성공한 이메일만 같은 세션에서 비밀번호를 변경할 수 있습니다. */
+const resetPasswordBtn = document.querySelector("#resetPasswordBtn");
+const resetPasswordMessage = document.querySelector("#resetPasswordMessage");
+const resetPasswordEmailInput = document.querySelector("#find-password-email");
+
+if (resetPasswordBtn && resetPasswordMessage && resetPasswordEmailInput && pwInput && pwConfirmInput) {
+    resetPasswordBtn.addEventListener("click", async () => {
+        const newPassword = pwInput.value;
+        const confirmPassword = pwConfirmInput.value;
+
+        if (!passwordRegex.test(newPassword)) {
+            resetPasswordMessage.textContent = "비밀번호는 영문, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.";
+            resetPasswordMessage.className = "form-message mt-2 mb-0 is-visible is-error";
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            resetPasswordMessage.textContent = "새 비밀번호가 일치하지 않습니다.";
+            resetPasswordMessage.className = "form-message mt-2 mb-0 is-visible is-error";
+            return;
+        }
+
+        resetPasswordBtn.disabled = true;
+        try {
+            const response = await fetch("/member/reset-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: resetPasswordEmailInput.value.trim(),
+                    newPassword
+                })
+            });
+            const result = await response.json();
+            resetPasswordMessage.textContent = result.message;
+            resetPasswordMessage.className = result.success
+                ? "form-message mt-2 mb-0 is-visible is-success"
+                : "form-message mt-2 mb-0 is-visible is-error";
+
+            if (result.success) {
+                window.setTimeout(() => {
+                    window.location.href = "/member/login";
+                }, 1500);
+            } else {
+                resetPasswordBtn.disabled = false;
+            }
+        } catch (error) {
+            resetPasswordMessage.textContent = "비밀번호 변경 중 오류가 발생했습니다.";
+            resetPasswordMessage.className = "form-message mt-2 mb-0 is-visible is-error";
+            resetPasswordBtn.disabled = false;
+        }
+    });
 }
