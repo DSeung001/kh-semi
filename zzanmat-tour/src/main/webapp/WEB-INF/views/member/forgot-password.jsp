@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -41,14 +42,16 @@
       <section class="zt-panel zt-profile-card zt-panel-shadow">
         <ul class="nav nav-tabs mb-4" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#find-id" type="button">아이디 찾기</button>
+            <button class="nav-link ${param.tab eq 'password' ? '' : 'active'}"
+                    data-bs-toggle="tab" data-bs-target="#find-id" type="button">아이디 찾기</button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#find-password" type="button">비밀번호 찾기</button>
+            <button class="nav-link ${param.tab eq 'password' ? 'active' : ''}"
+                    data-bs-toggle="tab" data-bs-target="#find-password" type="button">비밀번호 찾기</button>
           </li>
         </ul>
         <div class="tab-content">
-          <div id="find-password" class="tab-pane fade">
+          <div id="find-password" class="tab-pane fade ${param.tab eq 'password' ? 'show active' : ''}">
             <form id="forgot-password" class="row g-3" novalidate>
               <div class="col-12" data-email-verification data-send-url="/email/password-send">
                 <label for="find-password-id" class="form-label">아이디</label>
@@ -81,7 +84,7 @@
               </div>
             </form>
           </div>
-          <div id="find-id" class="tab-pane fade show active">
+          <div id="find-id" class="tab-pane fade ${param.tab eq 'password' ? '' : 'show active'}">
             <form id="forgot-id" class="row g-3" novalidate>
               <div class="col-12">
                 <label for="find-id-email" class="form-label">가입 이메일</label>

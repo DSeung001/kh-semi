@@ -79,9 +79,9 @@
     </form>
 
     <div class="d-flex justify-content-center flex-wrap gap-2 my-3 small">
-      <a href="${pageContext.request.contextPath}/member/forgot-password">아이디 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password?tab=id">아이디 찾기</a>
       <span class="zt-muted">/</span>
-      <a href="${pageContext.request.contextPath}/member/forgot-password">비밀번호 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password?tab=password">비밀번호 찾기</a>
       <span class="zt-muted">/</span>
       <a href="${pageContext.request.contextPath}/member/signup">회원가입</a>
     </div>

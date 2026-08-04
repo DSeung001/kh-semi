@@ -142,9 +142,23 @@
       <textarea id="bio" name="bio" class="form-control" rows="4" maxlength="200">${userInfo.bio}</textarea>
     </div>
     <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-      <button id="withdrawBtn" class="btn btn-outline-danger px-4"
-              formaction="/member/withdraw"
-              onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기</button>
+      <c:choose>
+        <c:when test="${userInfo.loginType == 'KAKAO'}">
+          <button type="submit"
+                  formaction="${pageContext.request.contextPath}/member/withdraw/kakao"
+                  class="btn btn-outline-danger px-4"
+                  onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
+          </button>
+        </c:when>
+
+        <c:otherwise>
+          <button type="submit"
+                  formaction="${pageContext.request.contextPath}/member/withdraw/general"
+                  class="btn btn-outline-danger px-4"
+                  onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
+          </button>
+        </c:otherwise>
+      </c:choose>
       <button id="saveBtn" class="btn btn-primary zt-primary-btn px-4" type="submit">수정 완료</button>
     </div>
   </form>

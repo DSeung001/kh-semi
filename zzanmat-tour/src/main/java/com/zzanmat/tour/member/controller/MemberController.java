@@ -141,38 +141,76 @@ public class MemberController {
         return "redirect:/member/profile";
     }
 
-    // 탈퇴하기
-    @PostMapping("/withdraw")
-    public String withdraw(@AuthenticationPrincipal OAuth2User oAuth2User,
-                            @RegisteredOAuth2AuthorizedClient("kakao")
-                            OAuth2AuthorizedClient authorizedClient,
-                            HttpSession session,
-                            RedirectAttributes redirectAttributes) {
+    // 카카오 탈퇴하기
+    @PostMapping("/withdraw/kakao")
+    public String withdrawKakao(@RegisteredOAuth2AuthorizedClient("kakao") OAuth2AuthorizedClient authorizedClient,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
         MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
 
         if (loginMember == null) {
             return "redirect:/member/login";
         }
 
+        // 일반 회원이 카카오 탈퇴 API를 직접 호출하는 것 방지
+        if (!isKakaoMember(loginMember)) {
+            redirectAttributes.addFlashAttribute("withdrawError","잘못된 회원 탈퇴 요청입니다.");
+            return "redirect:/member/profile";
+        }
+
         try {
-            // 카카오 로그인 사용자일 때만 카카오 앱 연결 해제
-            if (oAuth2User != null && authorizedClient != null) {
-                String accessToken = authorizedClient.getAccessToken().getTokenValue();
+            String accessToken = authorizedClient.getAccessToken().getTokenValue();
 
-                memberService.unlink(accessToken);
-            }
+            // 카카오 연결 해제
+            memberService.unlink(accessToken);
 
-            // 카카오 연결 해제가 성공한 뒤 로컬 회원 삭제
+            // 카카오 연결 해제 성공 후 DB 회원 삭제
+            memberService.withdraw(loginMember.getUserId());
+            session.invalidate();
+            redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
+
+            return "redirect:/";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("withdrawError","카카오 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
+            return "redirect:/member/profile";
+        }
+    }
+
+    // 일반 회원 탈퇴
+    @PostMapping("/withdraw/general")
+    public String withdrawGeneral(HttpSession session, RedirectAttributes redirectAttributes) {
+
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
+        // 카카오 회원이 일반 회원 탈퇴 API를 직접 호출하는 것 방지
+        if (isKakaoMember(loginMember)) {
+            redirectAttributes.addFlashAttribute("withdrawError","잘못된 회원 탈퇴 요청입니다.");
+
+            return "redirect:/member/profile";
+        }
+
+        try {
             memberService.withdraw(loginMember.getUserId());
             session.invalidate();
 
             redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
-            return "redirect:/";
 
+            return "redirect:/";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("kakaoError","카카오 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
+            redirectAttributes.addFlashAttribute("withdrawError","회원 탈퇴 처리 중 오류가 발생했습니다.");
             return "redirect:/member/profile";
         }
+    }
+
+    private boolean isKakaoMember(MemberDto member) {
+        String userId = member.getUserId();
+        return userId != null && userId.matches("^[0-9]+$");
     }
 
     // 페이지 이동
