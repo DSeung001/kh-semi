@@ -102,7 +102,7 @@
       </div>
       <p class="zt-muted small mb-0 mt-2">가성비 좋은 여행 동선을 기록합니다.</p>
       <div class="zt-profile-stats">
-        <div><strong>18</strong><span>게시물</span></div>
+        <div><strong>${userPostCnt}</strong><span>게시물</span></div>
         <div><strong>324</strong><span>팔로워</span></div>
         <div><strong>201</strong><span>팔로잉</span></div>
       </div>

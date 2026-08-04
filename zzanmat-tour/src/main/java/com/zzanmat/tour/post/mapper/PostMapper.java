@@ -34,4 +34,6 @@ public interface PostMapper {
             @Param("postId") Long postId,
             @Param("uploadId") Long uploadId
     );
+
+    int countByUserPost(Long userId);
 }

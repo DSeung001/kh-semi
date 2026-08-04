@@ -6,6 +6,7 @@ import com.zzanmat.tour.common.util.CookieTokenUtils;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
+import com.zzanmat.tour.post.service.PostService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,9 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private PostService postService;
 
     // 회원가입
     @PostMapping("/signup")
@@ -251,7 +255,10 @@ public class MemberController {
         HttpSession session = request.getSession(false);
         MemberDto memberDto = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
         MemberDto memberInfo = memberService.findById(memberDto.getUserId());
+        int userPostCnt = postService.countByUserPost(memberDto.getId());
+
         model.addAttribute("userInfo", memberInfo);
+        model.addAttribute("userPostCnt", userPostCnt);
         return "member/profile";
     }
 
