@@ -40,7 +40,7 @@ public interface PostMapper {
             @Param("uploadId") Long uploadId
     );
 
-    void deletePostImage(
+    void deleteByPostIdAndUploadId(
             @Param("postId") Long postId,
             @Param("uploadId") Long uploadId
     );
@@ -54,22 +54,5 @@ public interface PostMapper {
             @Param("imageOrder") int imageOrder
     );
 
-    int countLikes(
-            @Param("postId") Long postId
-    );
-
-    int countUserLike(
-            @Param("postId") Long postId,
-            @Param("userId") Long userId
-    );
-
-    void saveLike(
-            @Param("postId") Long postId,
-            @Param("userId") Long userId
-    );
-
-    void deleteLike(
-            @Param("postId") Long postId,
-            @Param("userId") Long userId
-    );
+    
 }

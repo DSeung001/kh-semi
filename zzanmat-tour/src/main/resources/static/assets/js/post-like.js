@@ -21,15 +21,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 likeForm.action,
                 {
                     method: "POST",
+                    headers: {
+                        "Accept": "application/json",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
                     body: new FormData(likeForm)
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("좋아요 처리에 실패했습니다.");
+            const responseBody = await response.json();
+
+            if (!response.ok || !responseBody.success) {
+                throw new Error(
+                    responseBody.message ?? "좋아요 처리에 실패했습니다."
+                );
             }
 
-            const  result = await  response.json();
+            const result = responseBody.data;
 
             if (result.liked) {
                 likeIcon.className =
@@ -42,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "좋아요 " + result.likeCount + "개";
         } catch (error) {
             console.error(error);
-            alert("좋아요 처리 중 오류가 발생했습니다.");
+            alert(error.message);
         } finally {
             likeButton.disabled = false;
         }

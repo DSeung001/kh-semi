@@ -1,9 +1,11 @@
 package com.zzanmat.tour.post.controller;
 
+import com.zzanmat.tour.comment.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.post.dto.PostDto;
+import com.zzanmat.tour.post.dto.PostUpdateRequest;
 import com.zzanmat.tour.post.service.PostService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +20,14 @@ import java.util.List;
 @Controller
 public class PostController {
     private final PostService postService;
+    private final CommentService commentService;
 
-    public PostController(PostService postService) {
+    public PostController(
+            PostService postService,
+            CommentService commentService
+    ) {
         this.postService = postService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/new-post")
@@ -54,12 +61,17 @@ public class PostController {
 
         model.addAttribute("liked", liked);
 
+        model.addAttribute(
+                "comments",
+                commentService.findByPostId(postId)
+        );
+
         return "post/post-detail";
     }
 
     @PostMapping("/post-like")
     @ResponseBody
-    public Map<String, Object> toggleLike(
+    public ApiResponse<Map<String, Object>> toggleLike(
             @RequestParam Long postId,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
@@ -78,7 +90,7 @@ public class PostController {
                 postService.countLikes(postId)
         );
 
-        return result;
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/my-travel")
@@ -143,35 +155,36 @@ public class PostController {
 
     @PostMapping("/edit-post")
     public String updatePost(
-            PostDto post,
-            @RequestParam(
-                    name = "deleteImageIds",
-                    required = false
-            ) List<Long> deleteImageIds,
-            @RequestParam(
-                    name = "imageFiles",
-                    required = false
-            ) List<MultipartFile> imageFiles,
+            PostUpdateRequest request,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
     ) throws IOException {
 
         PostDto savedPost =
-                postService.findById(post.getPostId());
+                postService.findById(request.getPostId());
 
         if (!savedPost.getUserId().equals(loginMember.getId())) {
             return "redirect:/post-detail?postId="
-                    +post.getPostId();
+                    + request.getPostId();
         }
+
+        PostDto post = new PostDto();
+
+        post.setPostId(request.getPostId());
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        post.setTransportCost(request.getTransportCost());
+        post.setFoodCost(request.getFoodCost());
+        post.setOtherCost(request.getOtherCost());
 
         postService.update(
                 post,
-                deleteImageIds,
-                imageFiles
+                request.getDeleteImageIds(),
+                request.getImageFiles()
         );
 
         return "redirect:/post-detail?postId="
-                + post.getPostId();
+                + request.getPostId();
     }
 
     @PostMapping("/delete-post")

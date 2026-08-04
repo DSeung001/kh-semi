@@ -5,13 +5,17 @@ import com.zzanmat.tour.common.util.SavedFile;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.dto.PostImageDto;
 import com.zzanmat.tour.post.mapper.PostMapper;
+import com.zzanmat.tour.post.mapper.PostLikeMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class PostService {
@@ -19,6 +23,7 @@ public class PostService {
     private static final int MAX_IMAGE_COUNT = 5;
 
     private final PostMapper postMapper;
+    private final PostLikeMapper postLikeMapper;
     private final FileUploadUtil fileUploadUtil;
 
     @Value("${file.upload-dir.post}")
@@ -26,9 +31,11 @@ public class PostService {
 
     public PostService(
             PostMapper postMapper,
+            PostLikeMapper postLikeMapper,
             FileUploadUtil fileUploadUtil
     ) {
         this.postMapper = postMapper;
+        this.postLikeMapper = postLikeMapper;
         this.fileUploadUtil = fileUploadUtil;
     }
 
@@ -153,21 +160,62 @@ public class PostService {
             );
         }
 
+        if (imageFiles != null) {
+            for (MultipartFile imageFile : imageFiles) {
+                if (imageFile.isEmpty()) {
+                    continue;
+                }
+
+                String contentType = imageFile.getContentType();
+
+                if (!"image/jpeg".equals(contentType)
+                        && !"image/png".equals(contentType)) {
+                    throw new IllegalArgumentException(
+                            "JPG 또는 PNG 이미지만 등록할 수 있습니다."
+                    );
+                }
+            }
+        }
+
+        List<String> newlySavedPaths = new ArrayList<>();
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+
+                    @Override
+                    public void afterCommit() {
+                        for (PostImageDto image : imagesToDelete) {
+                            fileUploadUtil.delete(
+                                    image.getUploadPath(),
+                                    postUploadDir
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void afterCompletion(int status) {
+                        if (status
+                                == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                            for (String savedPath : newlySavedPaths) {
+                                fileUploadUtil.delete(
+                                        savedPath,
+                                        postUploadDir
+                                );
+                            }
+                        }
+                    }
+                }
+        );
         postMapper.update(post);
 
         for (PostImageDto image : imagesToDelete) {
 
-            postMapper.deletePostImage(
+            postMapper.deleteByPostIdAndUploadId(
                     post.getPostId(),
                     image.getUploadId()
             );
 
             postMapper.deleteImage(image.getUploadId());
 
-            fileUploadUtil.delete(
-                    image.getUploadPath(),
-                    postUploadDir
-            );
         }
 
         List<PostImageDto> remainingImages =
@@ -193,20 +241,13 @@ public class PostService {
                 continue;
             }
 
-            String contentType = imageFile.getContentType();
-
-            if (!"image/jpeg".equals(contentType)
-                    && !"image/png".equals(contentType)) {
-                throw new IllegalArgumentException(
-                        "JPG 또는 PNG 이미지만 등록할 수 있습니다."
-                );
-            }
-
             SavedFile savedFile = fileUploadUtil.save(
                     imageFile,
                     postUploadDir,
                     "/uploads/post"
             );
+
+            newlySavedPaths.add(savedFile.getPath());
 
             PostImageDto postImage = new PostImageDto();
             postImage.setPostId(post.getPostId());
@@ -244,14 +285,17 @@ public class PostService {
     }
 
     public int countLikes(Long postId) {
-        return postMapper.countLikes(postId);
+        return postLikeMapper.countByPostId(postId);
     }
 
     public boolean isLiked(
             Long postId,
             Long userId
     ) {
-        return postMapper.countUserLike(postId, userId) > 0;
+        return postLikeMapper.existsByPostIdAndUserId(
+                postId,
+                userId
+        );
     }
 
     @Transactional
@@ -260,10 +304,16 @@ public class PostService {
             Long userId
     ) {
         if (isLiked(postId, userId)) {
-            postMapper.deleteLike(postId, userId);
+            postLikeMapper.deleteByPostIdAndUserId(
+                    postId,
+                    userId
+            );
             return;
         }
 
-        postMapper.saveLike(postId, userId);
+        postLikeMapper.save(
+                postId,
+                userId
+        );
     }
 }

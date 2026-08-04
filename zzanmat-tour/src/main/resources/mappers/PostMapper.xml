@@ -215,7 +215,7 @@
         ORDER BY IU.IMAGE_ORDER ASC
     </select>
 
-    <delete id="deletePostImage">
+    <delete id="deleteByPostIdAndUploadId">
         DELETE FROM POST_UPLOAD
         WHERE POST_ID = #{postId}
             AND UPLOAD_ID = #{uploadId}
@@ -232,35 +232,5 @@
         WHERE UPLOAD_ID = #{uploadId}
     </update>
 
-    <select id="countLikes" resultType="int">
-        SELECT COUNT(*)
-        FROM POST_LIKE
-        WHERE POST_ID = #{postId}
-    </select>
-
-    <select id="countUserLike" resultType="int">
-        SELECT COUNT(*)
-        FROM POST_LIKE
-        WHERE POST_ID = #{postId}
-            AND USER_ID = #{userId}
-    </select>
-
-    <insert id="saveLike">
-        INSERT INTO POST_LIKE (
-            POST_ID,
-            USER_ID,
-            CREATE_AT
-        )
-        VALUES (
-            #{postId},
-            #{userId},
-            NOW()
-        )
-    </insert>
-
-    <delete id="deleteLike">
-        DELETE FROM POST_LIKE
-        WHERE POST_ID = #{postId}
-            AND USER_ID = #{userId}
-    </delete>
+    
 </mapper>

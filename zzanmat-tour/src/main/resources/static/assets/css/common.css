@@ -618,6 +618,97 @@ button, input, textarea, select { font: inherit; }
   border-bottom: 1px solid #efefef;
 }
 
+.zt-commet-row .flex-grow-1 {
+  min-width: 0;
+}
+
+.zt-comment-row p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.zt-comment-row form {
+  margin: 0;
+}
+
+.zt-comment-action-button {
+  padding: 0;
+  border: 0;
+  color: #737373;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.zt-comment-action-button:hover {
+  color: #262626;
+  text-decoration: underline;
+}
+
+.zt-comment-row form .zt-link-button:hover {
+  color: #c62335;
+  text-decoration: underline;
+}
+
+.zt-comment-form {
+  transition:
+          background-color 0.2s ease,
+          box-shadow 0.2s ease;
+}
+
+.zt-comment-form.is-editing {
+  background-color: #f5faff;
+  box-shadow: inset 3px 0 0 var(--zt-primary);
+}
+
+.zt-comment-form.is-editing #comment-content {
+  color: #262626;
+  font-weight: 500;
+}
+
+#comment-edit-cancel[hidden] {
+  display: none;
+}
+
+#comment-edit-cancel {
+  flex: 0 0 auto;
+}
+
+#comment-submit-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.zt-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.zt-comment-actions form {
+  display: flex;
+  align-items: center;
+}
+
+.zt-content-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+.zt-comment-delete-button {
+  color: #ed4956;
+}
+
+.zt-comment-delete-button:hover {
+  color: #c62335;
+}
+
 /* New post */
 .zt-upload-zone {
   display: grid;
