@@ -1,17 +1,18 @@
-package com.zzanmat.tour.mission.service.impl;
+package com.zzanmat.tour.mission.service.Impl;
 
-import org.springframework.transaction.annotation.Transactional;
-import com.zzanmat.tour.mission.dto.UserMissionResponseDto;
+import com.zzanmat.tour.mission.dto.MissionCheckResultDto;
+import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
-import com.zzanmat.tour.mission.dto.MissionDto;
-import com.zzanmat.tour.mission.dto.UserMissionDto;
 import com.zzanmat.tour.mission.mapper.MissionMapper;
 import com.zzanmat.tour.mission.service.MissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,89 +21,132 @@ public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
 
     @Override
-    public SseEmitter subscribe(Long userId) {
-        SseEmitter emitter = new SseEmitter(60L * 1000L * 30L);
+    @Transactional
+    public void startMissionForUser(Long userId, Long missionId, int durationDays) {
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusDays(durationDays);
 
-        emitter.onCompletion(() -> {
-        });
-        emitter.onTimeout(() -> {
-            emitter.complete();
-        });
-        emitter.onError((e) -> {
-            emitter.complete();
-        });
-
-        return emitter;
+        // MyBatis Mapper를 통해 데이터 저장 (필요한 경우 Mapper에 insert 쿼리 추가 필요)
+        missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
     }
 
     @Override
-    public List<MissionResponseDto> getAllMissions() {
-        return missionMapper.findAll();
-    }
-
-    @Override
-    public void createMission(MissionDto mission) {
-        missionMapper.save(mission);
-    }
-
-    @Override
-    public void updateMission(MissionDto mission) {
-        missionMapper.update(mission);
-    }
-
-    @Override
-    public void deleteMission(Long missionId) {
-        missionMapper.deleteById(missionId);
-    }
-
-    @Override
-    public void createDefaultMissions(Long userId) {
-        missionMapper.saveDefaultMissionsForUser(userId);
-    }
-
-    @Override
-    public List<UserMissionDto> getUserMissions(Long userId) {
-        return missionMapper.findUserMissionsByUserId(userId);
-    }
-
-    @Override
-    public void updateMissionStatus(UserMissionDto userMissionDto) {
-        missionMapper.updateStatus(userMissionDto);
+    public MissionResponseDto.Info getMissionById(Long missionId) {
+        List<MissionResponseDto.Info> allMissions = missionMapper.findAll();
+        if (allMissions == null) return null;
+        return allMissions.stream()
+                .filter(m -> m.getMissionId().equals(missionId))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
     @Transactional
-    public UserMissionResponseDto completeMission(Long userId, Long missionId) {
-        // 1. 유저 미션 상태 업데이트 객체 생성 (setMemberId 사용!)
-        UserMissionDto userMissionDto = new UserMissionDto();
-        userMissionDto.setMemberId(userId); // 👈 setUserId가 아니라 setMemberId입니다!
-        userMissionDto.setMissionId(missionId);
+    public MissionCheckResultDto verifyAndCompleteByAction(Long userId, Long missionId) {
+        int postCount = missionMapper.countUserPosts(userId);
+        int currentProgress = (postCount > 0) ? 1 : 0;
+        int targetCount = 1;
 
-        // 2. MyBatis 쿼리를 이용해 DB 업데이트 수행
-        missionMapper.updateStatus(userMissionDto);
+        Map<String, Object> missionInfo = missionMapper.findMissionInfoById(missionId);
+        int rewardPoint = missionInfo != null ? ((Number) missionInfo.get("reward_point")).intValue() : 1000;
 
-        // 3. 업데이트된 최신 사용자 미션 목록을 가져온 뒤, 방금 인증한 미션 객체 찾기
-        List<UserMissionDto> userMissions = missionMapper.findUserMissionsByUserId(userId);
-        UserMissionDto updated = userMissions.stream()
-                .filter(m -> m.getMissionId().equals(missionId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 미션을 찾을 수 없습니다."));
-
-        // 4. 미션의 상세 정보(title 등)를 가져오기 위해 전체 미션 목록 조회 후 매핑
-        List<MissionResponseDto> allMissions = missionMapper.findAll();
-        MissionResponseDto missionInfo = allMissions.stream()
-                .filter(m -> m.getId().equals(missionId))
-                .findFirst()
-                .orElse(null);
-
-        // 5. 프론트엔드로 전달할 DTO로 변환하여 반환
-        UserMissionResponseDto responseDto = new UserMissionResponseDto();
-        responseDto.setId(updated.getUserMissionId()); // DTO 필드명이 userMissionId이므로 여기도 맞춤
-
-        if (missionInfo != null) {
-            responseDto.setTitle(missionInfo.getTitle());
+        Map<String, Object> userMission = missionMapper.findUserMission(userId, missionId);
+        if (userMission == null) {
+            LocalDate startDate = LocalDate.now();
+            LocalDate endDate = startDate.plusDays(7);
+            missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
+            userMission = missionMapper.findUserMission(userId, missionId);
         }
 
-        return responseDto;
+        Long userMissionId = ((Number) userMission.get("progressId")).longValue();
+        String currentStatus = (String) userMission.get("status");
+
+        boolean isJustCompleted = false;
+        int percent = (currentProgress >= targetCount) ? 100 : 0;
+
+        if (currentProgress >= targetCount && !"COMPLETED".equals(currentStatus)) {
+            missionMapper.updateUserMissionStatus(userMissionId, "COMPLETED");
+            missionMapper.updateRewardReceived(userMissionId);
+            missionMapper.addPointToUser(userId, rewardPoint);
+            missionMapper.savePointHistory(userId, missionId, rewardPoint, "MISSION_REWARD");
+
+            currentStatus = "COMPLETED";
+            isJustCompleted = true;
+        }
+
+        int totalPointBalance = missionMapper.getUserPointBalance(userId);
+
+        return MissionCheckResultDto.builder()
+                .missionId(missionId)
+                .currentCount(currentProgress)
+                .targetCount(targetCount)
+                .percent(percent)
+                .status(currentStatus)
+                .isJustCompleted(isJustCompleted)
+                .rewardPoint(rewardPoint)
+                .totalPointBalance(totalPointBalance)
+                .build();
+    }
+
+    @Override
+    public List<MissionResponseDto.Info> getAllMissions() {
+        return missionMapper.findAll();
+    }
+
+    @Override
+    public List<MissionResponseDto.UserMissionDetail> getUserMissionProgressList(Long userId) {
+        return missionMapper.findUserMissionsByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public void acceptMission(Long userId, Long missionId) {
+        var existing = missionMapper.findUserMissionByUserAndMission(userId, missionId);
+        if (existing == null) {
+            LocalDate startDate = LocalDate.now();
+            LocalDate endDate = startDate.plusDays(7);
+            missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
+        }
+    }
+
+    @Override
+    public Map<String, Boolean> getUserChecklistStatus(Long userId, Long missionId) {
+        Map<String, Boolean> checklist = new HashMap<>();
+        boolean transit = missionMapper.existsTransitAuth(userId);
+        boolean landmark = missionMapper.existsLandmarkAuth(userId);
+        boolean meal = missionMapper.existsMealAuth(userId);
+
+        checklist.put("transit", transit);
+        checklist.put("landmark", landmark);
+        checklist.put("meal", meal);
+        return checklist;
+    }
+
+    @Override
+    @Transactional
+    public MissionResponseDto.UserMissionDetail completeMission(Long userId, Long missionId) {
+        MissionResponseDto.UserMissionDetail userMission = missionMapper.findUserMissionByUserAndMission(userId, missionId);
+        if (userMission == null) {
+            LocalDate startDate = LocalDate.now();
+            LocalDate endDate = startDate.plusDays(7);
+            missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
+            userMission = missionMapper.findUserMissionByUserAndMission(userId, missionId);
+        }
+
+        if (userMission != null && userMission.getUserMissionId() != null) {
+            missionMapper.updateUserMissionStatus(userMission.getUserMissionId(), "COMPLETED");
+        }
+
+        return missionMapper.findUserMissionByUserAndMission(userId, missionId);
+    }
+
+    @Override
+    public void createMission(MissionRequestDto.SaveOrUpdate requestDto) {
+        missionMapper.saveMission(requestDto);
+    }
+
+    @Override
+    public void deleteMission(Long missionId) {
+        missionMapper.deleteMissionById(missionId);
     }
 }
