@@ -214,4 +214,12 @@
         WHERE PU.POST_ID = #{postId}
         ORDER BY IU.IMAGE_ORDER ASC
     </select>
+
+    <select id="countByUserPost" parameterType="Long" resultType="int">
+        SELECT COUNT(*)
+          FROM POST
+         WHERE IS_BLOCK = FALSE
+           AND USER_ID = #{userId}
+    </select>
+
 </mapper>

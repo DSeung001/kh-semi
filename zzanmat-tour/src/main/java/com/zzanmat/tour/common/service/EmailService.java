@@ -55,6 +55,25 @@ public class EmailService {
         return authCode;
     }
 
+    public void sendUserIdEmail(String toEmail, String userId) throws jakarta.mail.MessagingException {
+        if ("local".equals(mailMode)) {
+            System.out.println("========================================");
+            System.out.println("[LOCAL MODE] 아이디 찾기 메일 전송 대신 아이디를 출력합니다.");
+            System.out.println("받는 사람: " + toEmail);
+            System.out.println("아이디: " + userId);
+            System.out.println("========================================");
+            return;
+        }
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom(username);
+        helper.setTo(toEmail);
+        helper.setSubject("짠맛투어 아이디 찾기 안내");
+        helper.setText("안녕하세요. 회원님의 아이디는 <b>[" + userId + "]</b> 입니다.", true);
+        mailSender.send(message);
+    }
+
     private String generateAuthCode() {
         Random random = new Random();
         int code = 100000 + random.nextInt(900000);

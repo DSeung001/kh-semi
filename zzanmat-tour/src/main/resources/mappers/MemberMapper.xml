@@ -66,16 +66,36 @@
          WHERE USER_ID = #{userId}
     </update>
 
-    <select id="findById" parameterType="MemberDto" resultType="MemberDto">
+    <select id="findById" parameterType="String" resultType="MemberDto">
         SELECT user_id
               ,nickname
               ,bio
               ,user_name
               ,email
               ,profile
+              ,login_type
           FROM `USER`
          WHERE USER_ID = #{userId}
     </select>
+
+    <select id="findByEmail" resultType="MemberDto">
+        SELECT user_id
+          FROM `USER`
+         WHERE email = #{email}
+    </select>
+
+    <select id="findByUserIdAndEmail" resultType="MemberDto">
+        SELECT user_id
+          FROM `USER`
+         WHERE user_id = #{userId}
+           AND email = #{email}
+    </select>
+
+    <update id="updatePasswordByEmail">
+        UPDATE `USER`
+           SET user_password = #{userPassword}
+         WHERE email = #{email}
+    </update>
 
     <delete id="deleteByMemberId">
         DELETE FROM user

@@ -130,4 +130,8 @@ public class PostService {
     public int countAll() {
         return postMapper.countAll();
     }
+
+    public int countByUserPost(Long userId){
+        return postMapper.countByUserPost(userId);
+    }
 }

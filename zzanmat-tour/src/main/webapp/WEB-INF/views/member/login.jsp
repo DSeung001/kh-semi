@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/member.css">
-  
+
 </head>
 <body>
 
@@ -24,6 +24,12 @@
 <c:if test="${not empty error}">
   <script>
     alert("${error}");
+  </script>
+</c:if>
+
+<c:if test="${param.oauthError eq 'true'}">
+  <script>
+    alert("소셜 로그인에 실패했습니다. 다시 시도해 주세요.");
   </script>
 </c:if>
 
@@ -57,6 +63,7 @@
     <form id="loginForm" method="post" action="/member/login">
       <div class="form-floating mb-3">
         <input id="login-id" name="userId" class="form-control" type="text" placeholder="아이디" required>
+        <input type="hidden" name="redirectURL" value="${param.redirectURL}">
         <label for="login-id">아이디</label>
       </div>
       <div class="form-floating mb-3">
@@ -70,7 +77,7 @@
           <label class="form-check-label small" for="save-id">아이디 저장</label>
         </div>
         <div class="form-check">
-          <input id="auto-login" class="form-check-input" type="checkbox">
+          <input id="remember-me" name="rememberMe" class="form-check-input" type="checkbox">
           <label class="form-check-label small" for="auto-login">자동 로그인</label>
         </div>
       </div>
@@ -79,21 +86,27 @@
     </form>
 
     <div class="d-flex justify-content-center flex-wrap gap-2 my-3 small">
-      <a href="${pageContext.request.contextPath}/member/forgot-password">아이디 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password?tab=id">아이디 찾기</a>
       <span class="zt-muted">/</span>
-      <a href="${pageContext.request.contextPath}/member/forgot-password">비밀번호 찾기</a>
+      <a href="${pageContext.request.contextPath}/member/forgot-password?tab=password">비밀번호 찾기</a>
       <span class="zt-muted">/</span>
       <a href="${pageContext.request.contextPath}/member/signup">회원가입</a>
     </div>
 
     <div class="zt-divider">또는</div>
 
-    <button class="btn zt-social-kakao w-100 py-2 mb-3" type="button">
-      <i class="bi bi-chat-fill me-2"></i>카카오 로그인
-    </button>
-    <button class="btn zt-social-naver w-100 py-2" type="button">
-      <strong class="me-2">N</strong>네이버 로그인
-    </button>
+    <%--<a href="/oauth2/authorization/kakao" class="btn zt-social-kakao w-100 py-2 mb-3 text-decoration-none">
+      <i class="bi bi-chat-fill me-2"></i>카카오로 시작하기
+    </a>--%>
+    <a href="${pageContext.request.contextPath}/oauth2/authorization/kakao"
+       class="btn zt-social-kakao w-100 py-2 mb-3 text-decoration-none">
+      <i class="bi bi-chat-fill me-2"></i>
+      카카오로 시작하기
+    </a>
+    <a href="${pageContext.request.contextPath}/oauth2/authorization/naver"
+       class="btn zt-social-naver w-100 py-2 text-decoration-none">
+      <strong class="me-2">N</strong>네이버로 시작하기
+    </a>
   </section>
 </div>
 

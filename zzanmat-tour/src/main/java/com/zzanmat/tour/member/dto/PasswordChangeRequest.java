@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmailSendRequest {
+public class PasswordChangeRequest {
     private String email;
-    private String userId;
+    private String newPassword;
 }
