@@ -1,14 +1,13 @@
 package com.zzanmat.tour.comment.controller;
 
 import com.zzanmat.tour.comment.CommentService;
-import com.zzanmat.tour.comment.dto.CommentCreateRequest;
-import com.zzanmat.tour.comment.dto.CommentDeleteRequest;
-import com.zzanmat.tour.comment.dto.CommentUpdateRequest;
-import com.zzanmat.tour.comment.dto.CommentDto;
+import com.zzanmat.tour.comment.dto.*;
+import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
 @Controller
@@ -74,5 +73,26 @@ public class CommentController {
                 + "#comments";
     }
 
+    @PostMapping("/comment-like")
+    @ResponseBody
+    public ApiResponse<CommentLikeResponse> toggleCommentLike(
+            CommentLikeRequest request,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER)
+            MemberDto loginMember
+    ) {
+        boolean liked = commentService.toggleLike(
+                request.getCommentId(),
+                loginMember.getId(),
+                request.getPostId()
+        );
 
+        int likeCount = commentService.countLikes(
+                request.getCommentId()
+        );
+
+        CommentLikeResponse response =
+                new CommentLikeResponse(liked, likeCount);
+
+        return ApiResponse.success(response);
+    }
 }

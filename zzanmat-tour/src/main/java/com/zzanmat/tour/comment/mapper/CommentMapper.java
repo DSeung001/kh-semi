@@ -10,7 +10,8 @@ import java.util.List;
 public interface CommentMapper {
 
     List<CommentDto> findByPostId(
-            @Param("postId") Long postId
+            @Param("postId") Long postId,
+            @Param("loginUserId") Long loginUserId
     );
 
     void save(CommentDto comment);

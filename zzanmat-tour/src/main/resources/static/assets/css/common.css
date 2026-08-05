@@ -1191,5 +1191,46 @@ button, input, textarea, select { font: inherit; }
     .zt-edit-new-image-preview {
       grid-template-columns: repeat(2, 1fr);
     }
-
   }
+
+.zt-comment-like-count {
+  margin-top: 2px;
+  color: #737373;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.zt-comment-like-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #262626;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+      color 0.15s ease,
+      transform 0.15s ease,
+      opacity 0.15s ease;
+}
+
+.zt-comment-like-button:hover {
+  opacity: 0.6;
+}
+
+.zt-comment-like-button:active {
+  transform: scale(0.85);
+}
+
+.zt-comment-like-button.is-liked {
+  color: #ed4956;
+}
+
+.zt-comment-like-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}

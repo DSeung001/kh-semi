@@ -16,6 +16,8 @@
         <result property="createAt" column="CREATE_AT"/>
         <result property="updateAt" column="UPDATE_AT"/>
         <result property="nickname" column="NICKNAME"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="liked" column="LIKED"/>
 
     </resultMap>
 
@@ -29,7 +31,18 @@
             C.CONTENT,
             C.CREATE_AT,
             C.UPDATE_AT,
-            U.NICKNAME
+            U.NICKNAME,
+            (
+                SELECT COUNT(*)
+                FROM COMMENT_LIKE CL
+                WHERE CL.COMMENT_ID = C.COMMENT_ID
+            ) AS LIKE_COUNT,
+            EXISTS (
+                SELECT 1
+                FROM COMMENT_LIKE CL
+                WHERE CL.COMMENT_ID = C.COMMENT_ID
+                    AND CL.USER_ID = #{loginUserId}
+            ) AS LIKED
         FROM `COMMENT` C
         JOIN `USER` U
             ON C.USER_ID = U.ID

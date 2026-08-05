@@ -61,9 +61,17 @@ public class PostController {
 
         model.addAttribute("liked", liked);
 
+        Long loginUserId = loginMember == null
+                ? null
+                : loginMember.getId();
+
+
         model.addAttribute(
                 "comments",
-                commentService.findByPostId(postId)
+                commentService.findByPostId(
+                        postId,
+                        loginUserId
+                )
         );
 
         return "post/post-detail";
@@ -103,11 +111,11 @@ public class PostController {
         int totalCount = postService.countAll();
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
-        if(page < 1){
+        if (page < 1) {
             page = 1;
         }
 
-        if(totalPages > 0 && page > totalPages) {
+        if (totalPages > 0 && page > totalPages) {
             page = totalPages;
         }
 
@@ -132,7 +140,7 @@ public class PostController {
         post.setUserId(loginMember.getId());
 
         postService.save(post, imageFiles);
-        
+
         return "redirect:/my-travel";
     }
 
@@ -144,7 +152,7 @@ public class PostController {
     ) {
         PostDto post = postService.findById(postId);
 
-        if(!post.getUserId().equals(loginMember.getId())){
+        if (!post.getUserId().equals(loginMember.getId())) {
             return "redirect:/post-detail?postId=" + postId;
         }
 
@@ -191,14 +199,14 @@ public class PostController {
     public String deletePost(
             @RequestParam Long postId,
             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-        ) {
-            PostDto post = postService.findById(postId);
+    ) {
+        PostDto post = postService.findById(postId);
 
-            if(!post.getUserId().equals(loginMember.getId())){
-                return "redirect:/post-detail?postId=" + postId;
-            }
+        if (!post.getUserId().equals(loginMember.getId())) {
+            return "redirect:/post-detail?postId=" + postId;
+        }
 
-            postService.deleteById(postId);
+        postService.deleteById(postId);
         return "redirect:/my-travel";
     }
 
@@ -210,10 +218,10 @@ public class PostController {
     ) {
         int size = 9;
         int totalCount = postService.countAll();
-        int totalPages = (int) Math.ceil((double) totalCount /size);
+        int totalPages = (int) Math.ceil((double) totalCount / size);
 
-        if(page<1){
-            page=1;
+        if (page < 1) {
+            page = 1;
         }
 
         Map<String, Object> result = new HashMap<>();
