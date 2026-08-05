@@ -1,6 +1,6 @@
 package com.zzanmat.tour.post.controller;
 
-import com.zzanmat.tour.comment.CommentService;
+import com.zzanmat.tour.comment.service.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;

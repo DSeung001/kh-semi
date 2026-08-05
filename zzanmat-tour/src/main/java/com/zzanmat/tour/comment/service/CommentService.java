@@ -1,4 +1,4 @@
-package com.zzanmat.tour.comment;
+package com.zzanmat.tour.comment.service;
 
 import com.zzanmat.tour.comment.dto.CommentDto;
 import com.zzanmat.tour.comment.mapper.CommentMapper;
