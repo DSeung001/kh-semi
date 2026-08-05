@@ -10,6 +10,7 @@ import lombok.ToString;
 public class MissionRequestDto {
 
     private Long missionId;
+    private String redirectUrl;
 
     @Getter
     @Setter
@@ -25,5 +26,9 @@ public class MissionRequestDto {
         private Long missionId;
         private String title;
         private String description;
+        private String missionType;
+        private String triggerEvent;
+        private Integer targetCount;
+        private Integer rewardPoint;
     }
 }
