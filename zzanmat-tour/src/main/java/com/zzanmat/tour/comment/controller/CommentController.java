@@ -28,6 +28,7 @@ public class CommentController {
         CommentDto comment = new CommentDto();
 
         comment.setPostId(request.getPostId());
+        comment.setParentCommentId(request.getParentCommentId());
         comment.setUserId(loginMember.getId());
         comment.setContent(request.getContent());
 

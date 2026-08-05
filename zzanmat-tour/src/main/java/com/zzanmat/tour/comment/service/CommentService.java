@@ -49,6 +49,23 @@ public class CommentService {
         }
 
         comment.setContent(content.trim());
+
+        Long parentCommentId = comment.getParentCommentId();
+
+        if (parentCommentId != null) {
+            boolean parentExists =
+                    commentMapper.existsRootByIdAndPostId(
+                            parentCommentId,
+                            comment.getPostId()
+                    );
+
+            if (!parentExists) {
+                throw new IllegalArgumentException(
+                        "답글을 작성할 댓글을 찾을 수 없습니다."
+                );
+            }
+        }
+        
         commentMapper.save(comment);
     }
 

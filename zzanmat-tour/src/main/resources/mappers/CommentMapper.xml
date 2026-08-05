@@ -12,6 +12,7 @@
 
         <result property="userId" column="USER_ID"/>
         <result property="postId" column="POST_ID"/>
+        <result property="parentCommentId" column="PARENT_COMMENT_ID"/>
         <result property="content" column="CONTENT"/>
         <result property="createAt" column="CREATE_AT"/>
         <result property="updateAt" column="UPDATE_AT"/>
@@ -28,6 +29,7 @@
             C.COMMENT_ID,
             C.USER_ID,
             C.POST_ID,
+            C.PARENT_COMMENT_ID,
             C.CONTENT,
             C.CREATE_AT,
             C.UPDATE_AT,
@@ -47,7 +49,26 @@
         JOIN `USER` U
             ON C.USER_ID = U.ID
         WHERE C.POST_ID = #{postId}
-        ORDER BY C.COMMENT_ID ASC
+        ORDER BY
+            COALESCE(C.PARENT_COMMENT_ID, C.COMMENT_ID) ASC,
+            CASE
+                WHEN C.PARENT_COMMENT_ID IS NULL THEN 0
+                ELSE 1
+            END ASC,
+            C.COMMENT_ID ASC
+
+    </select>
+
+    <select id="existsRootByIdAndPostId"
+            resultType="boolean">
+
+        SELECT EXISTS (
+            SELECT 1
+            FROM `COMMENT`
+            WHERE COMMENT_ID = #{commentId}
+                AND POST_ID = #{postId}
+                AND PARENT_COMMENT_ID IS NULL
+        )
 
     </select>
 
@@ -59,6 +80,7 @@
         INSERT INTO `COMMENT` (
             USER_ID,
             POST_ID,
+            PARENT_COMMENT_ID,
             CONTENT,
             CREATE_AT,
             UPDATE_AT
@@ -66,6 +88,7 @@
         VALUES (
             #{userId},
             #{postId},
+            #{parentCommentId},
             #{content},
             NOW(),
             NOW()

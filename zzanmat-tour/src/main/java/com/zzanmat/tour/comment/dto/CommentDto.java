@@ -14,6 +14,7 @@ public class CommentDto {
     private Long commentId;
     private Long userId;
     private Long postId;
+    private Long parentCommentId;
     private String content;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
