@@ -4,155 +4,130 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zzanmat.tour.mission.mapper.MissionMapper">
 
-    <!-- 1. 전체 미션 조회 -->
-    <select id="findAll" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$Info">
+    <resultMap id="missionInfoResultMap" type="com.zzanmat.tour.mission.dto.MissionResponseDto$Info">
+        <id property="missionId" column="mission_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="missionType" column="mission_type"/>
+        <result property="triggerEvent" column="trigger_event"/>
+        <result property="targetCount" column="target_count"/>
+        <result property="rewardPoint" column="reward_point"/>
+        <result property="startAt" column="start_at"/>
+        <result property="endAt" column="end_at"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="userMissionDetailResultMap" type="com.zzanmat.tour.mission.dto.MissionResponseDto$UserMissionDetail">
+        <id property="userMissionId" column="user_mission_id"/>
+        <result property="missionId" column="mission_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="targetCount" column="target_count"/>
+        <result property="currentCount" column="current_count"/>
+        <result property="progress" column="progress"/>
+        <result property="rewardPoint" column="reward_point"/>
+        <result property="rewardReceived" column="reward_received"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="missionInfoResultMap">
         SELECT
-        id AS missionId,
-        title,
-        description,
-        mission_type AS missionType,
-        trigger_event AS triggerEvent,
-        target_count AS targetCount,
-        reward_point AS rewardPoint,
-        created_at AS createdAt
+            id AS mission_id,
+            title,
+            description,
+            mission_type,
+            trigger_event,
+            target_count,
+            reward_point,
+            start_at,
+            end_at,
+            created_at
         FROM mission
+        ORDER BY id
     </select>
 
-    <!-- 2. 유저별 미션 진척도 목록 조회 -->
-    <select id="findUserMissionsByUserId" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$UserMissionDetail">
+    <select id="findById" resultMap="missionInfoResultMap">
         SELECT
-        mp.progress_id AS id,
-        mp.user_id AS userId,
-        mp.mission_id AS missionId,
-        mp.status,
-        mp.start_date AS startDate,
-        mp.end_date AS endDate,
-        m.target_count AS targetCount,
-        m.title,
-        m.description,
-        m.reward_point AS rewardPoint
-        FROM mission_progress mp
-        JOIN mission m ON mp.mission_id = m.id
-        WHERE mp.user_id = #{userId}
-    </select>
-
-    <!-- 3. 특정 유저 미션 단건 상세 조회 (DTO 리턴) -->
-    <select id="findUserMissionByUserAndMission" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$UserMissionDetail">
-        SELECT
-        mp.progress_id AS id,
-        mp.user_id AS userId,
-        mp.mission_id AS missionId,
-        mp.status,
-        mp.start_date AS startDate,
-        mp.end_date AS endDate,
-        m.target_count AS targetCount,
-        m.title,
-        m.description,
-        m.reward_point AS rewardPoint
-        FROM mission_progress mp
-        JOIN mission m ON mp.mission_id = m.id
-        WHERE mp.user_id = #{userId} AND mp.mission_id = #{missionId}
-    </select>
-
-    <!-- 3-1. 특정 유저 미션 단건 조회 (Map 리턴용 - 누락 추가) -->
-    <select id="findUserMission" resultType="map">
-        SELECT
-        progress_id AS progressId,
-        user_id AS userId,
-        mission_id AS missionId,
-        status,
-        start_date AS startDate,
-        end_date AS endDate
-        FROM mission_progress
-        WHERE user_id = #{userId} AND mission_id = #{missionId}
-    </select>
-
-    <!-- 4. 미션 기본 정보 조회 (Map 리턴용 - 누락 추가) -->
-    <select id="findMissionInfoById" resultType="map">
-        SELECT
-        id AS missionId,
-        title,
-        description,
-        mission_type AS missionType,
-        trigger_event AS triggerEvent,
-        target_count AS targetCount,
-        reward_point AS rewardPoint
+            id AS mission_id,
+            title,
+            description,
+            mission_type,
+            trigger_event,
+            target_count,
+            reward_point,
+            start_at,
+            end_at,
+            created_at
         FROM mission
         WHERE id = #{missionId}
     </select>
 
-    <!-- 5. 유저 미션 수락(생성) 저장 - 누락 추가 -->
-    <insert id="saveSingleUserMission">
-        INSERT INTO mission_progress (user_id, mission_id, start_date, end_date, status)
-        VALUES (#{userId}, #{missionId}, #{startDate}, #{endDate}, 'IN_PROGRESS')
+    <select id="findUserMissionByUserAndMission" resultMap="userMissionDetailResultMap">
+        SELECT
+            mp.id AS user_mission_id,
+            mp.user_id,
+            mp.mission_id,
+            mp.status,
+            mp.current_count,
+            mp.progress,
+            mp.reward_received,
+            m.target_count,
+            m.title,
+            m.description,
+            m.reward_point
+        FROM mission_progress mp
+        JOIN mission m ON mp.mission_id = m.id
+        WHERE mp.user_id = #{userId}
+          AND mp.mission_id = #{missionId}
+    </select>
+
+    <insert id="saveProgress">
+        INSERT INTO mission_progress (user_id, mission_id, status, current_count, progress)
+        VALUES (#{userId}, #{missionId}, 'IN_PROGRESS', 0, 0)
     </insert>
 
-    <!-- 6. 유저 미션 상태 변경 -->
-    <update id="updateUserMissionStatus">
+    <update id="updateStatus">
         UPDATE mission_progress
         SET status = #{status}
-        WHERE progress_id = #{userMissionId}
+        WHERE id = #{userMissionId}
     </update>
 
-    <!-- 6-1. 보상 수령 상태 변경 -->
     <update id="updateRewardReceived">
         UPDATE mission_progress
-        SET status = 'COMPLETED'
-        WHERE progress_id = #{userMissionId}
-    </update>
-
-    <!-- 7. 시스템 인증 관련 체크 메서드 예시들 (서비스 로직에 따라 테이블명에 맞게 수정 필요) -->
-    <select id="existsTransitAuth" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM transit_auth WHERE user_id = #{userId}
-    </select>
-
-    <select id="existsLandmarkAuth" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM landmark_auth WHERE user_id = #{userId}
-    </select>
-
-    <select id="existsMealAuth" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM meal_auth WHERE user_id = #{userId}
-    </select>
-
-    <select id="countUserPosts" resultType="int">
-        SELECT COUNT(*) FROM post WHERE user_id = #{userId}
-    </select>
-
-    <!-- 8. 포인트 및 마이페이지 연동 관련 -->
-    <update id="addPointToUser">
-        UPDATE member
-        SET point = point + #{rewardPoint}
-        WHERE id = #{userId}
+        SET reward_received = TRUE,
+            completed_at = NOW()
+        WHERE id = #{userMissionId}
     </update>
 
     <insert id="savePointHistory">
         INSERT INTO point_history (user_id, mission_id, point, reason, created_at)
-        VALUES (#{userId}, #{missionId}, #{rewardPoint}, #{type}, NOW())
+        VALUES (#{userId}, #{missionId}, #{rewardPoint}, #{reason}, NOW())
     </insert>
 
-    <select id="getUserPointBalance" resultType="int">
-        SELECT point FROM member WHERE id = #{userId}
-    </select>
-
-    <!-- 9. 관리자용 미션 등록/수정/삭제 -->
-    <insert id="saveMission" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
-        INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point)
-        VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint})
+    <insert id="save"
+            parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate"
+            useGeneratedKeys="true"
+            keyProperty="missionId"
+            keyColumn="id">
+        INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point, start_at, end_at)
+        VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint}, #{startAt}, #{endAt})
     </insert>
 
-    <!-- 미션 수정 쿼리 아이디 맞춤 (인터페이스에 맞추어 관리) -->
-    <update id="updateMission" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate">
+    <update id="update" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate">
         UPDATE mission
         SET title = #{title},
-        description = #{description},
-        mission_type = #{missionType},
-        trigger_event = #{triggerEvent},
-        target_count = #{targetCount},
-        reward_point = #{rewardPoint}
+            description = #{description},
+            mission_type = #{missionType},
+            trigger_event = #{triggerEvent},
+            target_count = #{targetCount},
+            reward_point = #{rewardPoint},
+            start_at = #{startAt},
+            end_at = #{endAt}
         WHERE id = #{missionId}
     </update>
 
-    <delete id="deleteMissionById">
+    <delete id="deleteById">
         DELETE FROM mission
         WHERE id = #{missionId}
     </delete>

@@ -1,6 +1,5 @@
-package com.zzanmat.tour.mission.service.Impl;
+package com.zzanmat.tour.mission.service.impl;
 
-import com.zzanmat.tour.mission.dto.MissionCheckResultDto;
 import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.mapper.MissionMapper;
@@ -9,144 +8,188 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class MissionServiceImpl implements MissionService {
 
+    private static final String STATUS_DONE = "DONE";
+    private static final String POINT_REASON_MISSION = "MISSION";
+    private static final String PERIOD_ACTIVE = "ACTIVE";
+    private static final String PERIOD_EXPIRED = "EXPIRED";
+    private static final String PERIOD_UPCOMING = "UPCOMING";
+
     private final MissionMapper missionMapper;
 
     @Override
     @Transactional
-    public void startMissionForUser(Long userId, Long missionId, int durationDays) {
-        LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusDays(durationDays);
-
-        // MyBatis Mapper를 통해 데이터 저장 (필요한 경우 Mapper에 insert 쿼리 추가 필요)
-        missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
-    }
-
-    @Override
-    public MissionResponseDto.Info getMissionById(Long missionId) {
-        List<MissionResponseDto.Info> allMissions = missionMapper.findAll();
-        if (allMissions == null) return null;
-        return allMissions.stream()
-                .filter(m -> m.getMissionId().equals(missionId))
-                .findFirst()
-                .orElse(null);
+    public List<MissionResponseDto.Info> getAllMissions(Long userId) {
+        List<MissionResponseDto.Info> missions = missionMapper.findAll();
+        if (missions == null) {
+            return List.of();
+        }
+        for (MissionResponseDto.Info mission : missions) {
+            applyPeriodStatus(mission);
+            if (userId != null && mission.isAvailable()) {
+                ensureInProgress(userId, mission.getMissionId());
+            }
+        }
+        return missions;
     }
 
     @Override
     @Transactional
-    public MissionCheckResultDto verifyAndCompleteByAction(Long userId, Long missionId) {
-        int postCount = missionMapper.countUserPosts(userId);
-        int currentProgress = (postCount > 0) ? 1 : 0;
-        int targetCount = 1;
-
-        Map<String, Object> missionInfo = missionMapper.findMissionInfoById(missionId);
-        int rewardPoint = missionInfo != null ? ((Number) missionInfo.get("reward_point")).intValue() : 1000;
-
-        Map<String, Object> userMission = missionMapper.findUserMission(userId, missionId);
-        if (userMission == null) {
-            LocalDate startDate = LocalDate.now();
-            LocalDate endDate = startDate.plusDays(7);
-            missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
-            userMission = missionMapper.findUserMission(userId, missionId);
+    public MissionResponseDto.Info getMissionById(Long missionId, Long userId) {
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            return null;
         }
-
-        Long userMissionId = ((Number) userMission.get("progressId")).longValue();
-        String currentStatus = (String) userMission.get("status");
-
-        boolean isJustCompleted = false;
-        int percent = (currentProgress >= targetCount) ? 100 : 0;
-
-        if (currentProgress >= targetCount && !"COMPLETED".equals(currentStatus)) {
-            missionMapper.updateUserMissionStatus(userMissionId, "COMPLETED");
-            missionMapper.updateRewardReceived(userMissionId);
-            missionMapper.addPointToUser(userId, rewardPoint);
-            missionMapper.savePointHistory(userId, missionId, rewardPoint, "MISSION_REWARD");
-
-            currentStatus = "COMPLETED";
-            isJustCompleted = true;
+        applyPeriodStatus(mission);
+        if (userId != null && mission.isAvailable()) {
+            ensureInProgress(userId, missionId);
         }
-
-        int totalPointBalance = missionMapper.getUserPointBalance(userId);
-
-        return MissionCheckResultDto.builder()
-                .missionId(missionId)
-                .currentCount(currentProgress)
-                .targetCount(targetCount)
-                .percent(percent)
-                .status(currentStatus)
-                .isJustCompleted(isJustCompleted)
-                .rewardPoint(rewardPoint)
-                .totalPointBalance(totalPointBalance)
-                .build();
-    }
-
-    @Override
-    public List<MissionResponseDto.Info> getAllMissions() {
-        return missionMapper.findAll();
-    }
-
-    @Override
-    public List<MissionResponseDto.UserMissionDetail> getUserMissionProgressList(Long userId) {
-        return missionMapper.findUserMissionsByUserId(userId);
+        return mission;
     }
 
     @Override
     @Transactional
-    public void acceptMission(Long userId, Long missionId) {
-        var existing = missionMapper.findUserMissionByUserAndMission(userId, missionId);
-        if (existing == null) {
-            LocalDate startDate = LocalDate.now();
-            LocalDate endDate = startDate.plusDays(7);
-            missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
+    public MissionResponseDto.Progress getUserMissionProgress(Long userId, Long missionId) {
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            throw new IllegalArgumentException("미션을 찾을 수 없습니다.");
         }
-    }
+        applyPeriodStatus(mission);
 
-    @Override
-    public Map<String, Boolean> getUserChecklistStatus(Long userId, Long missionId) {
-        Map<String, Boolean> checklist = new HashMap<>();
-        boolean transit = missionMapper.existsTransitAuth(userId);
-        boolean landmark = missionMapper.existsLandmarkAuth(userId);
-        boolean meal = missionMapper.existsMealAuth(userId);
+        if (userId != null && mission.isAvailable()) {
+            ensureInProgress(userId, missionId);
+        }
 
-        checklist.put("transit", transit);
-        checklist.put("landmark", landmark);
-        checklist.put("meal", meal);
-        return checklist;
+        MissionResponseDto.Progress progress = new MissionResponseDto.Progress();
+        progress.setMissionId(mission.getMissionId());
+        progress.setTitle(mission.getTitle());
+        progress.setTargetCount(mission.getTargetCount());
+        progress.setRewardPoint(mission.getRewardPoint());
+        progress.setLoggedIn(userId != null);
+        progress.setStartAt(mission.getStartAt());
+        progress.setEndAt(mission.getEndAt());
+        progress.setPeriodStatus(mission.getPeriodStatus());
+        progress.setAvailable(mission.isAvailable());
+
+        if (userId == null) {
+            progress.setStatus(null);
+            progress.setCurrentCount(0);
+            progress.setPercent(0);
+            progress.setRewardReceived(false);
+            return progress;
+        }
+
+        MissionResponseDto.UserMissionDetail detail =
+                missionMapper.findUserMissionByUserAndMission(userId, missionId);
+
+        if (detail == null) {
+            progress.setStatus(null);
+            progress.setCurrentCount(0);
+            progress.setPercent(0);
+            progress.setRewardReceived(false);
+            return progress;
+        }
+
+        int currentCount = detail.getCurrentCount();
+        int targetCount = detail.getTargetCount() > 0 ? detail.getTargetCount() : 1;
+        int percent = Math.min(100, (int) Math.round((currentCount * 100.0) / targetCount));
+        if (detail.getProgress() > 0) {
+            percent = detail.getProgress();
+        }
+
+        progress.setStatus(detail.getStatus());
+        progress.setCurrentCount(currentCount);
+        progress.setPercent(percent);
+        progress.setRewardReceived(detail.isRewardReceived());
+        return progress;
     }
 
     @Override
     @Transactional
     public MissionResponseDto.UserMissionDetail completeMission(Long userId, Long missionId) {
-        MissionResponseDto.UserMissionDetail userMission = missionMapper.findUserMissionByUserAndMission(userId, missionId);
-        if (userMission == null) {
-            LocalDate startDate = LocalDate.now();
-            LocalDate endDate = startDate.plusDays(7);
-            missionMapper.saveSingleUserMission(userId, missionId, startDate, endDate);
-            userMission = missionMapper.findUserMissionByUserAndMission(userId, missionId);
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            throw new IllegalArgumentException("미션을 찾을 수 없습니다.");
+        }
+        applyPeriodStatus(mission);
+        if (!mission.isAvailable()) {
+            throw new IllegalArgumentException("지금은 수행할 수 없는 미션입니다.");
         }
 
-        if (userMission != null && userMission.getUserMissionId() != null) {
-            missionMapper.updateUserMissionStatus(userMission.getUserMissionId(), "COMPLETED");
+        ensureInProgress(userId, missionId);
+
+        MissionResponseDto.UserMissionDetail userMission =
+                missionMapper.findUserMissionByUserAndMission(userId, missionId);
+
+        if (userMission == null || userMission.getUserMissionId() == null) {
+            throw new IllegalStateException("미션 진행 정보를 생성할 수 없습니다.");
+        }
+
+        if (!STATUS_DONE.equals(userMission.getStatus())) {
+            missionMapper.updateStatus(userMission.getUserMissionId(), STATUS_DONE);
+        }
+
+        if (!userMission.isRewardReceived()) {
+            missionMapper.updateRewardReceived(userMission.getUserMissionId());
+            missionMapper.savePointHistory(
+                    userId,
+                    missionId,
+                    mission.getRewardPoint(),
+                    POINT_REASON_MISSION
+            );
         }
 
         return missionMapper.findUserMissionByUserAndMission(userId, missionId);
     }
 
     @Override
+    @Transactional
     public void createMission(MissionRequestDto.SaveOrUpdate requestDto) {
-        missionMapper.saveMission(requestDto);
+        missionMapper.save(requestDto);
     }
 
     @Override
+    @Transactional
+    public void updateMission(MissionRequestDto.SaveOrUpdate requestDto) {
+        missionMapper.update(requestDto);
+    }
+
+    @Override
+    @Transactional
     public void deleteMission(Long missionId) {
-        missionMapper.deleteMissionById(missionId);
+        missionMapper.deleteById(missionId);
+    }
+
+    private void ensureInProgress(Long userId, Long missionId) {
+        MissionResponseDto.UserMissionDetail existing =
+                missionMapper.findUserMissionByUserAndMission(userId, missionId);
+        if (existing == null) {
+            missionMapper.saveProgress(userId, missionId);
+        }
+    }
+
+    private void applyPeriodStatus(MissionResponseDto.Info mission) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startAt = mission.getStartAt();
+        LocalDateTime endAt = mission.getEndAt();
+
+        if (startAt != null && now.isBefore(startAt)) {
+            mission.setPeriodStatus(PERIOD_UPCOMING);
+            mission.setAvailable(false);
+            return;
+        }
+        if (endAt != null && now.isAfter(endAt)) {
+            mission.setPeriodStatus(PERIOD_EXPIRED);
+            mission.setAvailable(false);
+            return;
+        }
+        mission.setPeriodStatus(PERIOD_ACTIVE);
+        mission.setAvailable(true);
     }
 }
