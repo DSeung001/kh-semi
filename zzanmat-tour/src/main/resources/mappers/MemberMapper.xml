@@ -40,6 +40,7 @@
               ,user_password
               ,nickname
               ,email
+              ,role
           FROM `USER`
          WHERE user_id = #{userId}
     </select>
@@ -74,6 +75,7 @@
               ,email
               ,profile
               ,login_type
+              ,role
           FROM `USER`
          WHERE USER_ID = #{userId}
     </select>

@@ -26,6 +26,13 @@
        aria-current="${param.activePage eq 'mission' ? 'page' : 'false'}">
       <i class="bi bi-flag"></i><span>Mission Possible</span>
     </a>
+    <c:if test="${not empty loginMember and loginMember.role eq 'ADMIN'}">
+      <a class="zt-nav-link ${param.activePage eq 'admin' ? 'active' : ''}"
+         href="${pageContext.request.contextPath}/admin"
+         aria-current="${param.activePage eq 'admin' ? 'page' : 'false'}">
+        <i class="bi bi-shield-lock"></i><span>관리자</span>
+      </a>
+    </c:if>
     <c:choose>
       <c:when test="${not empty loginMember}">
       <a class="zt-nav-link ${param.activePage eq 'profile' ? 'active' : ''}"
