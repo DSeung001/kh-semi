@@ -32,4 +32,10 @@ public interface MemberService {
     void unlinkKakao(String accessToken);
 
     void unlinkNaver(String accessToken);
+
+    boolean isFollowing(Long followerId, Long followeringId);
+
+    void follow(Long followerId, Long followingId);
+
+    void unfollow(Long followerId, Long followingId);
 }

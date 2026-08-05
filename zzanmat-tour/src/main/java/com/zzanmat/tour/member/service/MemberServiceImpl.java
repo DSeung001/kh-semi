@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
@@ -199,5 +200,33 @@ public class MemberServiceImpl implements MemberService{
         if (response == null || !"success".equals(response.get("result"))) {
             throw new IllegalStateException("네이버 연결 해제에 실패했습니다.");
         }
+    }
+
+    public boolean isFollowing(Long followerId, Long followeringId) {
+        return memberMapper.countByFollowId(followerId, followeringId) > 0;
+    }
+
+    @Transactional
+    public void follow(Long followerId, Long followingId) {
+
+        if (followerId.equals(followingId)) {
+            throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
+        }
+
+        if (isFollowing(followerId, followingId)) {
+            return;
+        }
+
+        memberMapper.saveFollowe(followerId, followingId);
+    }
+
+    @Transactional
+    public void unfollow(Long followerId, Long followingId) {
+
+        if (followerId.equals(followingId)) {
+            throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
+        }
+
+        memberMapper.deleteByFollow(followerId, followingId);
     }
 }

@@ -111,8 +111,35 @@
     </update>
 
     <delete id="deleteByMemberId">
-        DELETE FROM user
+        DELETE FROM `USER`
          WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 현재 로그인 사용자가 대상 사용자를 팔로우 중인지 확인 -->
+    <select id="countByFollowId" resultType="int">
+        SELECT COUNT(*)
+          FROM FOLLOWE
+         WHERE FOLLOWER_ID = #{followerId}
+           AND FOLLOWERING_ID = #{followeringId}
+    </select>
+
+    <!-- 팔로우 추가 -->
+    <insert id="saveFollowe">
+        INSERT INTO FOLLOWE (
+            FOLLOWER_ID,
+            FOLLOWERING_ID
+        ) VALUES (
+            #{followerId},
+            #{followeringId}
+        )
+
+    </insert>
+
+    <!-- 팔로우 취소 -->
+    <delete id="deleteByFollow">
+        DELETE FROM FOLLOWE
+         WHERE FOLLOWER_ID    = #{followerId}
+           AND FOLLOWERING_ID = #{followeringId}
     </delete>
 
 </mapper>

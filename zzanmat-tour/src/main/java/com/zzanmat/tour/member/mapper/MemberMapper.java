@@ -27,4 +27,9 @@ public interface MemberMapper {
 
     int deleteByMemberId(@Param("userId") String userId);
 
+    int countByFollowId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
+
+    int saveFollowe(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
+
+    int deleteByFollow(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
 }

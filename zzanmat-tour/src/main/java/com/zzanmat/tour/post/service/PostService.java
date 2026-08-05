@@ -134,4 +134,5 @@ public class PostService {
     public int countByUserPost(Long userId){
         return postMapper.countByUserPost(userId);
     }
+    
 }

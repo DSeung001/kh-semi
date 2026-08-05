@@ -56,7 +56,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/member/profile",
                         "/new-post",
                         "/edit-post",
-                        "/delete-post"
+                        "/delete-post",
+                        "/member/follow/**"
                 );
     }
 }

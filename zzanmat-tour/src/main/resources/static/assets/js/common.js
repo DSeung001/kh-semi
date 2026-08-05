@@ -21,15 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  document.querySelectorAll("[data-follow-button]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const following = button.dataset.following === "true";
-      button.dataset.following = String(!following);
-      button.textContent = following ? "팔로우" : "팔로잉";
-      button.classList.toggle("text-secondary", !following);
-    });
-  });
-
   document.querySelectorAll("[data-demo-form]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       event.preventDefault();

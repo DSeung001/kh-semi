@@ -383,34 +383,35 @@ public class MemberController {
         return memberService.naverJoin(naverId, nickname, email);
     }
 
-    /*@GetMapping("/kakao-login")
-    public String loginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User
-                                ,HttpSession session
-                                ,RedirectAttributes redirectAttributes) throws IOException {
+    // 팔로우
+    @PostMapping("/follow/{followingId}")
+    @ResponseBody
+    public ApiResponse<Boolean> follow(@PathVariable Long followingId, HttpSession session) {
 
-        if (oAuth2User == null) {
-            redirectAttributes.addFlashAttribute("error","카카오 로그인 정보를 가져오지 못했습니다. 다시 시도해주세요.");
-            return "redirect:/member/login";
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        if (loginMember == null) {
+            return ApiResponse.fail("로그인이 필요합니다.");
         }
 
-        Map<String, Object> properties = (Map<String, Object>) oAuth2User.getAttributes().get("properties");
+        memberService.follow(loginMember.getId(), followingId);
 
-        if (properties == null || properties.get("nickname") == null) {
-            redirectAttributes.addFlashAttribute("error","카카오 계정의 닉네임 정보를 가져오지 못했습니다.");
-            return "redirect:/member/login";
+        return ApiResponse.success("팔로우했습니다.", true);
+    }
+
+    // 팔로우 취소
+    @DeleteMapping("/follow/{followingId}")
+    @ResponseBody
+    public ApiResponse<Boolean> unfollow(@PathVariable Long followingId,  HttpSession session) {
+
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        if (loginMember == null) {
+            return ApiResponse.fail("로그인이 필요합니다.");
         }
 
-        String kakaoId = oAuth2User.getName();
-        String nickname = String.valueOf(properties.get("nickname"));
+        memberService.unfollow(loginMember.getId(), followingId);
 
-        MemberDto member = memberService.kakaoJoin(kakaoId, nickname);
-
-        if (member == null) {
-            redirectAttributes.addFlashAttribute("error","카카오 회원 정보 처리 중 오류가 발생했습니다.");
-            return "redirect:/member/login";
-        }
-
-        session.setAttribute(SessionConst.LOGIN_MEMBER, member);
-        return "redirect:/";
-    }*/
+        return ApiResponse.success("팔로우를 취소했습니다.",false);
+    }
 }
