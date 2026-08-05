@@ -1,108 +1,195 @@
 package com.zzanmat.tour.mission.service.impl;
 
-import org.springframework.transaction.annotation.Transactional;
-import com.zzanmat.tour.mission.dto.UserMissionResponseDto;
+import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
-import com.zzanmat.tour.mission.dto.MissionDto;
-import com.zzanmat.tour.mission.dto.UserMissionDto;
 import com.zzanmat.tour.mission.mapper.MissionMapper;
 import com.zzanmat.tour.mission.service.MissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class MissionServiceImpl implements MissionService {
 
+    private static final String STATUS_DONE = "DONE";
+    private static final String POINT_REASON_MISSION = "MISSION";
+    private static final String PERIOD_ACTIVE = "ACTIVE";
+    private static final String PERIOD_EXPIRED = "EXPIRED";
+    private static final String PERIOD_UPCOMING = "UPCOMING";
+
     private final MissionMapper missionMapper;
 
     @Override
-    public SseEmitter subscribe(Long userId) {
-        SseEmitter emitter = new SseEmitter(60L * 1000L * 30L);
-
-        emitter.onCompletion(() -> {
-        });
-        emitter.onTimeout(() -> {
-            emitter.complete();
-        });
-        emitter.onError((e) -> {
-            emitter.complete();
-        });
-
-        return emitter;
-    }
-
-    @Override
-    public List<MissionResponseDto> getAllMissions() {
-        return missionMapper.findAll();
-    }
-
-    @Override
-    public void createMission(MissionDto mission) {
-        missionMapper.save(mission);
-    }
-
-    @Override
-    public void updateMission(MissionDto mission) {
-        missionMapper.update(mission);
-    }
-
-    @Override
-    public void deleteMission(Long missionId) {
-        missionMapper.deleteById(missionId);
-    }
-
-    @Override
-    public void createDefaultMissions(Long userId) {
-        missionMapper.saveDefaultMissionsForUser(userId);
-    }
-
-    @Override
-    public List<UserMissionDto> getUserMissions(Long userId) {
-        return missionMapper.findUserMissionsByUserId(userId);
-    }
-
-    @Override
-    public void updateMissionStatus(UserMissionDto userMissionDto) {
-        missionMapper.updateStatus(userMissionDto);
+    @Transactional
+    public List<MissionResponseDto.Info> getAllMissions(Long userId) {
+        List<MissionResponseDto.Info> missions = missionMapper.findAll();
+        if (missions == null) {
+            return List.of();
+        }
+        for (MissionResponseDto.Info mission : missions) {
+            applyPeriodStatus(mission);
+            if (userId != null && mission.isAvailable()) {
+                ensureInProgress(userId, mission.getMissionId());
+            }
+        }
+        return missions;
     }
 
     @Override
     @Transactional
-    public UserMissionResponseDto completeMission(Long userId, Long missionId) {
-        // 1. 유저 미션 상태 업데이트 객체 생성 (setMemberId 사용!)
-        UserMissionDto userMissionDto = new UserMissionDto();
-        userMissionDto.setMemberId(userId); // 👈 setUserId가 아니라 setMemberId입니다!
-        userMissionDto.setMissionId(missionId);
+    public MissionResponseDto.Info getMissionById(Long missionId, Long userId) {
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            return null;
+        }
+        applyPeriodStatus(mission);
+        if (userId != null && mission.isAvailable()) {
+            ensureInProgress(userId, missionId);
+        }
+        return mission;
+    }
 
-        // 2. MyBatis 쿼리를 이용해 DB 업데이트 수행
-        missionMapper.updateStatus(userMissionDto);
+    @Override
+    @Transactional
+    public MissionResponseDto.Progress getUserMissionProgress(Long userId, Long missionId) {
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            throw new IllegalArgumentException("미션을 찾을 수 없습니다.");
+        }
+        applyPeriodStatus(mission);
 
-        // 3. 업데이트된 최신 사용자 미션 목록을 가져온 뒤, 방금 인증한 미션 객체 찾기
-        List<UserMissionDto> userMissions = missionMapper.findUserMissionsByUserId(userId);
-        UserMissionDto updated = userMissions.stream()
-                .filter(m -> m.getMissionId().equals(missionId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 미션을 찾을 수 없습니다."));
-
-        // 4. 미션의 상세 정보(title 등)를 가져오기 위해 전체 미션 목록 조회 후 매핑
-        List<MissionResponseDto> allMissions = missionMapper.findAll();
-        MissionResponseDto missionInfo = allMissions.stream()
-                .filter(m -> m.getId().equals(missionId))
-                .findFirst()
-                .orElse(null);
-
-        // 5. 프론트엔드로 전달할 DTO로 변환하여 반환
-        UserMissionResponseDto responseDto = new UserMissionResponseDto();
-        responseDto.setId(updated.getUserMissionId()); // DTO 필드명이 userMissionId이므로 여기도 맞춤
-
-        if (missionInfo != null) {
-            responseDto.setTitle(missionInfo.getTitle());
+        if (userId != null && mission.isAvailable()) {
+            ensureInProgress(userId, missionId);
         }
 
-        return responseDto;
+        MissionResponseDto.Progress progress = new MissionResponseDto.Progress();
+        progress.setMissionId(mission.getMissionId());
+        progress.setTitle(mission.getTitle());
+        progress.setTargetCount(mission.getTargetCount());
+        progress.setRewardPoint(mission.getRewardPoint());
+        progress.setLoggedIn(userId != null);
+        progress.setStartAt(mission.getStartAt());
+        progress.setEndAt(mission.getEndAt());
+        progress.setPeriodStatus(mission.getPeriodStatus());
+        progress.setAvailable(mission.isAvailable());
+
+        if (userId == null) {
+            progress.setStatus(null);
+            progress.setCurrentCount(0);
+            progress.setPercent(0);
+            progress.setRewardReceived(false);
+            return progress;
+        }
+
+        MissionResponseDto.UserMissionDetail detail =
+                missionMapper.findUserMissionByUserAndMission(userId, missionId);
+
+        if (detail == null) {
+            progress.setStatus(null);
+            progress.setCurrentCount(0);
+            progress.setPercent(0);
+            progress.setRewardReceived(false);
+            return progress;
+        }
+
+        int currentCount = detail.getCurrentCount();
+        int targetCount = detail.getTargetCount() > 0 ? detail.getTargetCount() : 1;
+        int percent = Math.min(100, (int) Math.round((currentCount * 100.0) / targetCount));
+        if (detail.getProgress() > 0) {
+            percent = detail.getProgress();
+        }
+
+        progress.setStatus(detail.getStatus());
+        progress.setCurrentCount(currentCount);
+        progress.setPercent(percent);
+        progress.setRewardReceived(detail.isRewardReceived());
+        return progress;
+    }
+
+    @Override
+    @Transactional
+    public MissionResponseDto.UserMissionDetail completeMission(Long userId, Long missionId) {
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            throw new IllegalArgumentException("미션을 찾을 수 없습니다.");
+        }
+        applyPeriodStatus(mission);
+        if (!mission.isAvailable()) {
+            throw new IllegalArgumentException("지금은 수행할 수 없는 미션입니다.");
+        }
+
+        ensureInProgress(userId, missionId);
+
+        MissionResponseDto.UserMissionDetail userMission =
+                missionMapper.findUserMissionByUserAndMission(userId, missionId);
+
+        if (userMission == null || userMission.getUserMissionId() == null) {
+            throw new IllegalStateException("미션 진행 정보를 생성할 수 없습니다.");
+        }
+
+        if (!STATUS_DONE.equals(userMission.getStatus())) {
+            missionMapper.updateStatus(userMission.getUserMissionId(), STATUS_DONE);
+        }
+
+        if (!userMission.isRewardReceived()) {
+            missionMapper.updateRewardReceived(userMission.getUserMissionId());
+            missionMapper.savePointHistory(
+                    userId,
+                    missionId,
+                    mission.getRewardPoint(),
+                    POINT_REASON_MISSION
+            );
+        }
+
+        return missionMapper.findUserMissionByUserAndMission(userId, missionId);
+    }
+
+    @Override
+    @Transactional
+    public void createMission(MissionRequestDto.SaveOrUpdate requestDto) {
+        missionMapper.save(requestDto);
+    }
+
+    @Override
+    @Transactional
+    public void updateMission(MissionRequestDto.SaveOrUpdate requestDto) {
+        missionMapper.update(requestDto);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMission(Long missionId) {
+        missionMapper.deleteById(missionId);
+    }
+
+    private void ensureInProgress(Long userId, Long missionId) {
+        MissionResponseDto.UserMissionDetail existing =
+                missionMapper.findUserMissionByUserAndMission(userId, missionId);
+        if (existing == null) {
+            missionMapper.saveProgress(userId, missionId);
+        }
+    }
+
+    private void applyPeriodStatus(MissionResponseDto.Info mission) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startAt = mission.getStartAt();
+        LocalDateTime endAt = mission.getEndAt();
+
+        if (startAt != null && now.isBefore(startAt)) {
+            mission.setPeriodStatus(PERIOD_UPCOMING);
+            mission.setAvailable(false);
+            return;
+        }
+        if (endAt != null && now.isAfter(endAt)) {
+            mission.setPeriodStatus(PERIOD_EXPIRED);
+            mission.setAvailable(false);
+            return;
+        }
+        mission.setPeriodStatus(PERIOD_ACTIVE);
+        mission.setAvailable(true);
     }
 }

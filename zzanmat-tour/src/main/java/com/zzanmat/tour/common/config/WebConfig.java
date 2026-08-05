@@ -1,5 +1,6 @@
 package com.zzanmat.tour.common.config;
 
+import com.zzanmat.tour.common.interceptor.AdminInterceptor;
 import com.zzanmat.tour.common.interceptor.AutoLoginInterceptor;
 import com.zzanmat.tour.common.interceptor.CacheControlInterceptor;
 import com.zzanmat.tour.common.interceptor.LoginInterceptor;
@@ -58,6 +59,13 @@ public class WebConfig implements WebMvcConfigurer {
                         "/edit-post",
                         "/delete-post",
                         "/member/follow/**"
+                        "/post-like",
+                        "/comment-like",
+                        "/comments",
+                        "/comments/**"
                 );
+
+        registry.addInterceptor(new AdminInterceptor())
+                .addPathPatterns("/admin", "/admin/**", "/api/admin/**");
     }
 }

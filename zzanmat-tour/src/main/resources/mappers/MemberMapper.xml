@@ -43,6 +43,7 @@
               ,nickname
               ,email
               ,login_type
+              ,role
           FROM `USER`
          WHERE user_id = #{userId}
     </select>
@@ -88,6 +89,8 @@
                  WHERE F.FOLLOWER_ID = U.ID
               ) AS FOLLOWING_COUNT
           FROM `USER` U
+              ,role
+          FROM `USER`
          WHERE USER_ID = #{userId}
     </select>
 

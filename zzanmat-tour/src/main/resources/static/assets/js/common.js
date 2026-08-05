@@ -50,23 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  document.querySelectorAll("[data-mission-accept]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const missionId = button.dataset.missionId;
-      const redirect = button.dataset.redirect;
-      if (redirect) {
-        window.location.href = `${redirect}?missionId=${missionId}`;
-      }
-    });
-  });
-
-  const missionTitle = document.querySelector("[data-active-mission-title]");
-  if (missionTitle) {
-    const params = new URLSearchParams(window.location.search);
-    const mission = params.get("mission");
-    if (mission) missionTitle.textContent = mission;
-  }
-
   const uploadInput = document.querySelector("[data-upload-input]");
   const uploadPreview = document.querySelector("[data-upload-preview]");
   if (uploadInput && uploadPreview) {

@@ -4,26 +4,117 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zzanmat.tour.mission.mapper.MissionMapper">
 
-    <select id="findAll" resultType="MissionResponseDto">
+    <resultMap id="missionInfoResultMap" type="com.zzanmat.tour.mission.dto.MissionResponseDto$Info">
+        <id property="missionId" column="mission_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="missionType" column="mission_type"/>
+        <result property="triggerEvent" column="trigger_event"/>
+        <result property="targetCount" column="target_count"/>
+        <result property="rewardPoint" column="reward_point"/>
+        <result property="startAt" column="start_at"/>
+        <result property="endAt" column="end_at"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="userMissionDetailResultMap" type="com.zzanmat.tour.mission.dto.MissionResponseDto$UserMissionDetail">
+        <id property="userMissionId" column="user_mission_id"/>
+        <result property="missionId" column="mission_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="targetCount" column="target_count"/>
+        <result property="currentCount" column="current_count"/>
+        <result property="progress" column="progress"/>
+        <result property="rewardPoint" column="reward_point"/>
+        <result property="rewardReceived" column="reward_received"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="missionInfoResultMap">
         SELECT
-            id,
+            id AS mission_id,
             title,
             description,
-            mission_type AS missionType,
-            trigger_event AS triggerEvent,
-            target_count AS targetCount,
-            reward_point AS rewardPoint,
-            auto_complete AS autoComplete,
-            created_at AS createdAt
+            mission_type,
+            trigger_event,
+            target_count,
+            reward_point,
+            start_at,
+            end_at,
+            created_at
         FROM mission
+        ORDER BY id
     </select>
 
-    <insert id="save" parameterType="MissionDto" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point, auto_complete)
-        VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint}, #{autoComplete})
+    <select id="findById" resultMap="missionInfoResultMap">
+        SELECT
+            id AS mission_id,
+            title,
+            description,
+            mission_type,
+            trigger_event,
+            target_count,
+            reward_point,
+            start_at,
+            end_at,
+            created_at
+        FROM mission
+        WHERE id = #{missionId}
+    </select>
+
+    <select id="findUserMissionByUserAndMission" resultMap="userMissionDetailResultMap">
+        SELECT
+            mp.id AS user_mission_id,
+            mp.user_id,
+            mp.mission_id,
+            mp.status,
+            mp.current_count,
+            mp.progress,
+            mp.reward_received,
+            m.target_count,
+            m.title,
+            m.description,
+            m.reward_point
+        FROM mission_progress mp
+        JOIN mission m ON mp.mission_id = m.id
+        WHERE mp.user_id = #{userId}
+          AND mp.mission_id = #{missionId}
+    </select>
+
+    <insert id="saveProgress">
+        INSERT INTO mission_progress (user_id, mission_id, status, current_count, progress)
+        VALUES (#{userId}, #{missionId}, 'IN_PROGRESS', 0, 0)
     </insert>
 
-    <update id="update" parameterType="MissionDto">
+    <update id="updateStatus">
+        UPDATE mission_progress
+        SET status = #{status}
+        WHERE id = #{userMissionId}
+    </update>
+
+    <update id="updateRewardReceived">
+        UPDATE mission_progress
+        SET reward_received = TRUE,
+            completed_at = NOW()
+        WHERE id = #{userMissionId}
+    </update>
+
+    <insert id="savePointHistory">
+        INSERT INTO point_history (user_id, mission_id, point, reason, created_at)
+        VALUES (#{userId}, #{missionId}, #{rewardPoint}, #{reason}, NOW())
+    </insert>
+
+    <insert id="save"
+            parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate"
+            useGeneratedKeys="true"
+            keyProperty="missionId"
+            keyColumn="id">
+        INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point, start_at, end_at)
+        VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint}, #{startAt}, #{endAt})
+    </insert>
+
+    <update id="update" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate">
         UPDATE mission
         SET title = #{title},
             description = #{description},
@@ -31,65 +122,14 @@
             trigger_event = #{triggerEvent},
             target_count = #{targetCount},
             reward_point = #{rewardPoint},
-            auto_complete = #{autoComplete}
-        WHERE id = #{id}
+            start_at = #{startAt},
+            end_at = #{endAt}
+        WHERE id = #{missionId}
     </update>
 
     <delete id="deleteById">
         DELETE FROM mission
-        WHERE id = #{id}
+        WHERE id = #{missionId}
     </delete>
-
-    <insert id="saveMissionImages">
-        INSERT INTO mission_image (mission_id, origin_name, saved_name, file_path)
-        VALUES
-        <foreach collection="list" item="image" separator=",">
-            (#{image.missionId}, #{image.originName}, #{image.savedName}, #{image.filePath})
-        </foreach>
-    </insert>
-
-    <insert id="saveDefaultMissionsForUser">
-        INSERT INTO user_mission (user_id, mission_id, status, progress_count, target_count)
-        SELECT #{userId}, id, 'PENDING', 0, target_count FROM mission;
-    </insert>
-
-    <select id="findUserMissionsByUserId" resultType="UserMissionDto">
-        SELECT um.user_mission_id AS userMissionId,
-               um.user_id AS userId,
-               um.mission_id AS missionId,
-               um.status,
-               um.progress_count AS progressCount,
-               um.target_count AS targetCount,
-               m.title,
-               m.description,
-               m.reward_point AS rewardPoint
-        FROM user_mission um
-                 JOIN mission m ON um.mission_id = m.id
-        WHERE um.user_id = #{userId}
-    </select>
-
-    <update id="updateToInProgress">
-        UPDATE user_mission
-        SET status = 'IN_PROGRESS'
-        WHERE user_mission_id = #{userMissionId}
-    </update>
-
-    <update id="updateStatus" parameterType="UserMissionDto">
-        UPDATE user_mission
-        SET progress_count = #{progressCount},
-            status = #{status}
-        WHERE user_mission_id = #{userMissionId}
-    </update>
-
-    <insert id="saveMissionPost" useGeneratedKeys="true" keyProperty="postId">
-        INSERT INTO mission_post (user_mission_id, title, content, created_at)
-        VALUES (#{userMissionId}, #{title}, #{content}, NOW())
-    </insert>
-
-    <update id="addMemberPoint">
-        UPDATE member
-        SET point = point + #{rewardPoint}
-        WHERE user_id = #{userId}
-    </update>
 
 </mapper>

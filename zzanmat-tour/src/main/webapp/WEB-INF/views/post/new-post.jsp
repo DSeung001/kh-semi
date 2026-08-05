@@ -111,9 +111,7 @@
                   class="form-control"
                   rows="8"
                   placeholder="여행 내용을 적어 주세요."
-                  required>
-
-        </textarea>
+                  required></textarea>
       </div>
 
       <div class="mb-3">

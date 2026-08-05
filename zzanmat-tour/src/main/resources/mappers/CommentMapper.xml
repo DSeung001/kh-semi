@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zzanmat.tour.comment.mapper.CommentMapper">
+
+    <resultMap id="commentResultMap"
+               type="com.zzanmat.tour.comment.dto.CommentDto">
+
+        <id property="commentId" column="COMMENT_ID"/>
+
+        <result property="userId" column="USER_ID"/>
+        <result property="postId" column="POST_ID"/>
+        <result property="content" column="CONTENT"/>
+        <result property="createAt" column="CREATE_AT"/>
+        <result property="updateAt" column="UPDATE_AT"/>
+        <result property="nickname" column="NICKNAME"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="liked" column="LIKED"/>
+
+    </resultMap>
+
+    <select id="findByPostId"
+            resultMap="commentResultMap">
+
+        SELECT
+            C.COMMENT_ID,
+            C.USER_ID,
+            C.POST_ID,
+            C.CONTENT,
+            C.CREATE_AT,
+            C.UPDATE_AT,
+            U.NICKNAME,
+            (
+                SELECT COUNT(*)
+                FROM COMMENT_LIKE CL
+                WHERE CL.COMMENT_ID = C.COMMENT_ID
+            ) AS LIKE_COUNT,
+            EXISTS (
+                SELECT 1
+                FROM COMMENT_LIKE CL
+                WHERE CL.COMMENT_ID = C.COMMENT_ID
+                    AND CL.USER_ID = #{loginUserId}
+            ) AS LIKED
+        FROM `COMMENT` C
+        JOIN `USER` U
+            ON C.USER_ID = U.ID
+        WHERE C.POST_ID = #{postId}
+        ORDER BY C.COMMENT_ID ASC
+
+    </select>
+
+    <insert id="save"
+            parameterType="com.zzanmat.tour.comment.dto.CommentDto"
+            useGeneratedKeys="true"
+            keyProperty="commentId">
+
+        INSERT INTO `COMMENT` (
+            USER_ID,
+            POST_ID,
+            CONTENT,
+            CREATE_AT,
+            UPDATE_AT
+        )
+        VALUES (
+            #{userId},
+            #{postId},
+            #{content},
+            NOW(),
+            NOW()
+        )
+
+    </insert>
+
+    <update id="updateByIdAndUserId"
+            parameterType="com.zzanmat.tour.comment.dto.CommentDto">
+
+        UPDATE `COMMENT`
+        SET
+            CONTENT = #{content},
+            UPDATE_AT = NOW()
+        WHERE COMMENT_ID = #{commentId}
+            AND USER_ID = #{userId}
+
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+
+        DELETE FROM `COMMENT`
+        WHERE COMMENT_ID = #{commentId}
+            AND USER_ID = #{userId}
+
+    </delete>
+</mapper>

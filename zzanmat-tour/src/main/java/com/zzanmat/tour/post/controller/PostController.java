@@ -1,10 +1,12 @@
 package com.zzanmat.tour.post.controller;
 
+import com.zzanmat.tour.comment.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.post.dto.PostDto;
+import com.zzanmat.tour.post.dto.PostUpdateRequest;
 import com.zzanmat.tour.post.service.PostService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,14 @@ public class PostController {
     private MemberService memberService;
 
     private final PostService postService;
+    private final CommentService commentService;
 
-    public PostController(PostService postService) {
+    public PostController(
+            PostService postService,
+            CommentService commentService
+    ) {
         this.postService = postService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/new-post")
@@ -64,8 +71,69 @@ public class PostController {
         model.addAttribute("post", post);
         model.addAttribute("isFollowing", isFollowing);
         model.addAttribute("isOwnPost", isOwnPost);
+    public String postDetail(
+            @RequestParam Long postId,
+            @SessionAttribute(
+                    value = SessionConst.LOGIN_MEMBER,
+                    required = false
+            ) MemberDto loginMember,
+            Model model
+    ) {
+        postService.increaseViewCount(postId);
+
+        model.addAttribute(
+                "post",
+                postService.findById(postId)
+        );
+
+        model.addAttribute(
+                "likeCount",
+                postService.countLikes(postId)
+        );
+
+        boolean liked = loginMember != null
+                && postService.isLiked(postId, loginMember.getId());
+
+        model.addAttribute("liked", liked);
+
+        Long loginUserId = loginMember == null
+                ? null
+                : loginMember.getId();
+
+
+        model.addAttribute(
+                "comments",
+                commentService.findByPostId(
+                        postId,
+                        loginUserId
+                )
+        );
 
         return "post/post-detail";
+    }
+
+    @PostMapping("/post-like")
+    @ResponseBody
+    public ApiResponse<Map<String, Object>> toggleLike(
+            @RequestParam Long postId,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER)
+            MemberDto loginMember
+    ) {
+        postService.toggleLike(postId, loginMember.getId());
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put(
+                "liked",
+                postService.isLiked(postId, loginMember.getId())
+        );
+
+        result.put(
+                "likeCount",
+                postService.countLikes(postId)
+        );
+
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/my-travel")
@@ -78,11 +146,11 @@ public class PostController {
         int totalCount = postService.countAll();
         int totalPages = (int) Math.ceil((double) totalCount / size);
 
-        if(page < 1){
+        if (page < 1) {
             page = 1;
         }
 
-        if(totalPages > 0 && page > totalPages) {
+        if (totalPages > 0 && page > totalPages) {
             page = totalPages;
         }
 
@@ -107,7 +175,7 @@ public class PostController {
         post.setUserId(loginMember.getId());
 
         postService.save(post, imageFiles);
-        
+
         return "redirect:/my-travel";
     }
 
@@ -119,7 +187,7 @@ public class PostController {
     ) {
         PostDto post = postService.findById(postId);
 
-        if(!post.getUserId().equals(loginMember.getId())){
+        if (!post.getUserId().equals(loginMember.getId())) {
             return "redirect:/post-detail?postId=" + postId;
         }
 
@@ -130,32 +198,50 @@ public class PostController {
 
     @PostMapping("/edit-post")
     public String updatePost(
-            PostDto post,
-            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-    ) {
-        PostDto savePost = postService.findById(post.getPostId());
+            PostUpdateRequest request,
+            @SessionAttribute(SessionConst.LOGIN_MEMBER)
+            MemberDto loginMember
+    ) throws IOException {
 
-        if(!savePost.getUserId().equals(loginMember.getId())){
-            return "redirect:/post-detail?postId=" + post.getPostId();
+        PostDto savedPost =
+                postService.findById(request.getPostId());
+
+        if (!savedPost.getUserId().equals(loginMember.getId())) {
+            return "redirect:/post-detail?postId="
+                    + request.getPostId();
         }
 
-        postService.update(post);
+        PostDto post = new PostDto();
 
-        return "redirect:/post-detail?postId=" + post.getPostId();
+        post.setPostId(request.getPostId());
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        post.setTransportCost(request.getTransportCost());
+        post.setFoodCost(request.getFoodCost());
+        post.setOtherCost(request.getOtherCost());
+
+        postService.update(
+                post,
+                request.getDeleteImageIds(),
+                request.getImageFiles()
+        );
+
+        return "redirect:/post-detail?postId="
+                + request.getPostId();
     }
 
     @PostMapping("/delete-post")
     public String deletePost(
             @RequestParam Long postId,
             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-        ) {
-            PostDto post = postService.findById(postId);
+    ) {
+        PostDto post = postService.findById(postId);
 
-            if(!post.getUserId().equals(loginMember.getId())){
-                return "redirect:/post-detail?postId=" + postId;
-            }
+        if (!post.getUserId().equals(loginMember.getId())) {
+            return "redirect:/post-detail?postId=" + postId;
+        }
 
-            postService.deleteById(postId);
+        postService.deleteById(postId);
         return "redirect:/my-travel";
     }
 
@@ -167,10 +253,10 @@ public class PostController {
     ) {
         int size = 9;
         int totalCount = postService.countAll();
-        int totalPages = (int) Math.ceil((double) totalCount /size);
+        int totalPages = (int) Math.ceil((double) totalCount / size);
 
-        if(page<1){
-            page=1;
+        if (page < 1) {
+            page = 1;
         }
 
         Map<String, Object> result = new HashMap<>();

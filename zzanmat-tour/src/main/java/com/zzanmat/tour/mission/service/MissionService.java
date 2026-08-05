@@ -1,31 +1,23 @@
 package com.zzanmat.tour.mission.service;
 
-import com.zzanmat.tour.mission.dto.UserMissionResponseDto;
+import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import com.zzanmat.tour.mission.dto.MissionDto;
-import com.zzanmat.tour.mission.dto.UserMissionDto;
+
 import java.util.List;
 
 public interface MissionService {
 
+    List<MissionResponseDto.Info> getAllMissions(Long userId);
 
-    UserMissionResponseDto completeMission(Long userId, Long missionId);
+    MissionResponseDto.Info getMissionById(Long missionId, Long userId);
 
-    List<MissionResponseDto> getAllMissions();
+    MissionResponseDto.Progress getUserMissionProgress(Long userId, Long missionId);
 
-    SseEmitter subscribe(Long userId);
+    MissionResponseDto.UserMissionDetail completeMission(Long userId, Long missionId);
 
-    void createMission(MissionDto mission);
+    void createMission(MissionRequestDto.SaveOrUpdate requestDto);
 
-    void updateMission(MissionDto mission);
+    void updateMission(MissionRequestDto.SaveOrUpdate requestDto);
 
     void deleteMission(Long missionId);
-
-
-    void createDefaultMissions(Long userId);
-
-    List<UserMissionDto> getUserMissions(Long userId);
-
-    void updateMissionStatus(UserMissionDto userMissionDto);
 }

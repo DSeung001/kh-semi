@@ -21,4 +21,5 @@ public class MemberDto {
     // 내 정보 페이지 팔로잉, 팔로워 개수 갖고올 떄 사용
     private int followerCount;
     private int followingCount;
+    private String role;
 }

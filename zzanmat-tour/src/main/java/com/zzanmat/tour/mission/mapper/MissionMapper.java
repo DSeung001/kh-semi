@@ -1,8 +1,7 @@
 package com.zzanmat.tour.mission.mapper;
 
+import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
-import com.zzanmat.tour.mission.dto.MissionDto;
-import com.zzanmat.tour.mission.dto.UserMissionDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,17 +10,37 @@ import java.util.List;
 @Mapper
 public interface MissionMapper {
 
-    List<MissionResponseDto> findAll();
+    List<MissionResponseDto.Info> findAll();
 
-    void save(MissionDto mission);
+    MissionResponseDto.Info findById(@Param("missionId") Long missionId);
 
-    void update(MissionDto mission);
+    MissionResponseDto.UserMissionDetail findUserMissionByUserAndMission(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId
+    );
 
-    void deleteById(@Param("id") Long missionId);
+    void saveProgress(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId
+    );
 
-    void saveDefaultMissionsForUser(@Param("userId") Long userId);
+    void updateStatus(
+            @Param("userMissionId") Long userMissionId,
+            @Param("status") String status
+    );
 
-    List<UserMissionDto> findUserMissionsByUserId(@Param("userId") Long userId);
+    void updateRewardReceived(@Param("userMissionId") Long userMissionId);
 
-    void updateStatus(UserMissionDto userMissionDto);
+    void savePointHistory(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId,
+            @Param("rewardPoint") int rewardPoint,
+            @Param("reason") String reason
+    );
+
+    void save(MissionRequestDto.SaveOrUpdate requestDto);
+
+    void update(MissionRequestDto.SaveOrUpdate requestDto);
+
+    void deleteById(@Param("missionId") Long missionId);
 }
