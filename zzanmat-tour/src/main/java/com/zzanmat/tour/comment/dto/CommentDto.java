@@ -18,5 +18,7 @@ public class CommentDto {
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
     private String nickname;
+    private int likeCount;
+    private boolean liked;
 }
 

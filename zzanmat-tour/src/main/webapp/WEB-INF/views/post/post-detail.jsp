@@ -255,6 +255,13 @@
                   </span>
                 </p>
 
+                <div class="zt-comment-like-count">
+                  좋아요
+                  <span data-comment-like-count>
+                    <c:out value="${comment.likeCount}"/>
+                  </span>개
+                </div>
+
                 <c:if test="${sessionScope.loginMember.id eq comment.userId}">
                   <div class="zt-comment-actions">
 
@@ -286,6 +293,19 @@
                   </div>
                 </c:if>
               </div>
+              <button class="zt-comment-like-button ${comment.liked ? 'is-liked' : ''}"
+                      type="button"
+                      data-comment-like-button
+                      data-comment-id="${comment.commentId}"
+                      data-post-id="${post.postId}"
+                      data-logged-in="${not empty sessionScope.loginMember}"
+                      data-like-action="${pageContext.request.contextPath}/comment-like"
+                      data-login-url="${pageContext.request.contextPath}/member/login">
+
+                <i class="bi ${comment.liked ? 'bi-heart-fill' : 'bi-heart'}"
+                   data-comment-like-icon></i>
+              </button>
+
             </div>
           </c:forEach>
         </c:otherwise>
@@ -355,7 +375,7 @@
 <script src="${pageContext.request.contextPath}/assets/js/post-detail-carousel.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/comment-edit.js"></script>
-
+<script src="${pageContext.request.contextPath}/assets/js/comment-like.js"></script>
 
 </body>
 </html>

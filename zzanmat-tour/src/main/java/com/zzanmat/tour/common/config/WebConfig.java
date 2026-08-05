@@ -58,6 +58,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/edit-post",
                         "/delete-post",
                         "/post-like",
+                        "/comment-like",
                         "/comments",
                         "/comments/**"
                 );

@@ -23,8 +23,14 @@ public class CommentService {
         this.commentLikeMapper = commentLikeMapper;
     }
 
-    public List<CommentDto> findByPostId(Long postId) {
-        return commentMapper.findByPostId(postId);
+    public List<CommentDto> findByPostId(
+            Long postId,
+            Long loginUserId
+    ) {
+        return commentMapper.findByPostId(
+                postId,
+                loginUserId
+        );
     }
 
     public void save(CommentDto comment) {
@@ -109,7 +115,7 @@ public class CommentService {
                     userId
             );
 
-            return  false;
+            return false;
         }
 
         commentLikeMapper.save(
