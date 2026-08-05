@@ -5,6 +5,7 @@ import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -18,18 +19,32 @@ public interface MissionMapper {
     List<MissionResponseDto.UserMissionDetail> findUserMissionsByUserId(@Param("userId") Long userId);
 
     // 3. 유저와 미션 ID로 개별 미션 진행 상황 조회
-    MissionResponseDto.UserMissionDetail findUserMissionByUserAndMission(@Param("userId") Long userId, @Param("missionId") Long missionId);
+    MissionResponseDto.UserMissionDetail findUserMissionByUserAndMission(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId
+    );
 
-    Map<String, Object> findUserMission(@Param("userId") Long userId, @Param("missionId") Long missionId);
+    Map<String, Object> findUserMission(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId
+    );
 
     // 4. 미션 기본 정보 조회
     Map<String, Object> findMissionInfoById(@Param("missionId") Long missionId);
 
     // 5. mission_progress 테이블에 유저 미션 수락(생성) 저장
-    void saveSingleUserMission(@Param("userId") Long userId, @Param("missionId") Long missionId, @Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
+    void saveSingleUserMission(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 
     // 6. 상태 및 진행도 업데이트
-    void updateUserMissionStatus(@Param("userMissionId") Long userMissionId, @Param("status") String status);
+    void updateUserMissionStatus(
+            @Param("userMissionId") Long userMissionId,
+            @Param("status") String status
+    );
 
     void updateRewardReceived(@Param("userMissionId") Long userMissionId);
 
@@ -43,9 +58,17 @@ public interface MissionMapper {
     int countUserPosts(@Param("userId") Long userId);
 
     // 8. 포인트 및 마이페이지 연동 관련
-    void addPointToUser(@Param("userId") Long userId, @Param("rewardPoint") int rewardPoint);
+    void addPointToUser(
+            @Param("userId") Long userId,
+            @Param("rewardPoint") int rewardPoint
+    );
 
-    void savePointHistory(@Param("userId") Long userId, @Param("missionId") Long missionId, @Param("rewardPoint") int rewardPoint, @Param("type") String type);
+    void savePointHistory(
+            @Param("userId") Long userId,
+            @Param("missionId") Long missionId,
+            @Param("rewardPoint") int rewardPoint,
+            @Param("type") String type
+    );
 
     int getUserPointBalance(@Param("userId") Long userId);
 

@@ -23,7 +23,7 @@
     <a class="zt-brand" href="${pageContext.request.contextPath}/home">
       <span>짠맛투어</span>
     </a>
-    <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
+    <a href="${pageContext.request.contextPath}/member/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
   </header>
 
   <nav class="zt-mobile-nav" aria-label="모바일 메뉴">
@@ -47,7 +47,7 @@
         <p id="mission-title-display" class="fw-medium text-dark">
           <c:choose>
             <c:when test="${mission != null}">${mission.title}</c:when>
-            <c:otherwise>여행 미션 진행 현황</c:otherwise>
+            <c:otherwise>선택된 미션 정보가 없습니다.</c:otherwise>
           </c:choose>
         </p>
       </header>
@@ -61,7 +61,7 @@
         <div class="mb-4">
           <div class="d-flex justify-content-between mb-2">
             <strong>전체 진행률</strong>
-            <span id="progress-text-display" class="zt-muted">0 / 3</span>
+            <span id="progress-text-display" class="zt-muted">0 / 0</span>
           </div>
 
           <div class="progress zt-mission-progress" role="progressbar" aria-label="미션 진행률" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
@@ -71,24 +71,17 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">실시간 미션 인증 현황</h5>
-          <!-- 사용자가 수동으로 진행도를 갱신할 수 있는 새로고침 버튼 -->
           <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshMissionProgress()">
             <i class="bi bi-arrow-clockwise"></i> 진행도 새로고침
           </button>
         </div>
 
         <!-- 미션 상태 텍스트 -->
-        <span class="status-text" id="missionStatus">상태: 진행 중</span>
-
-        <!-- 비로그인 시 안내 영역 -->
-        <div id="login-required-banner" class="alert alert-light border text-center py-4 mb-4" style="display: none;">
-          <p class="text-muted mb-2">미션 인증 상태를 확인하고 포인트를 적립하려면 로그인이 필요합니다.</p>
-          <a href="${pageContext.request.contextPath}/member/login" class="btn btn-sm btn-primary fw-bold px-4">로그인하러 가기</a>
-        </div>
+        <span class="status-text" id="missionStatus">상태: 진행 중 (인증 게시물 작성 시 자동으로 체크 및 반영됩니다)</span>
 
         <!-- DB 연동 실시간 체크리스트 동적 렌더링 영역 -->
         <div class="list-group mb-4" id="checklist-container">
-          <!-- 동적으로 채워집니다 -->
+          <!-- 동적으로 데이터가 바인딩 -->
         </div>
 
         <!-- 인증 게시물 작성 버튼 -->
@@ -107,153 +100,154 @@
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 
 <script>
-const contextPath = "${pageContext.request.contextPath}";
+  const contextPath = "${pageContext.request.contextPath}";
 
-// URL 파라미터에서 미션 ID 안전하게 추출
-const urlParams = new URLSearchParams(window.location.search);
-let rawMissionId = urlParams.get('missionId');
-let missionId = '';
+  // URL 파라미터에서 미션 ID를 동적으로 추출 (모델에 바인딩된 ID가 존재할 경우 fallback 활용)
+  const urlParams = new URLSearchParams(window.location.search);
+  let rawMissionId = urlParams.get('missionId');
+  let missionId = '';
 
-if (rawMissionId) {
-missionId = rawMissionId.toString().split(/[:?#]/)[0].replace(/[^0-9]/g, '');
-}
-if (!missionId) {
-missionId = "${mission != null ? mission.missionId : '1'}";
-}
+  if (rawMissionId) {
+    missionId = rawMissionId.toString().replace(/[^0-9]/g, '');
+  }
+  if (!missionId) {
+    missionId = "${mission != null ? mission.missionId : ''}";
+  }
 
-document.addEventListener("DOMContentLoaded", function () {
-refreshMissionProgress();
+  document.addEventListener("DOMContentLoaded", function () {
+    if (missionId) {
+      refreshMissionProgress();
+    } else {
+      document.getElementById("checklist-container").innerHTML = `
+            <div class="list-group-item text-center text-muted py-4 rounded-3 border">
+                조회할 미션 정보가 없습니다. 미션 목록에서 미션을 선택해주세요.
+            </div>
+        `;
+    }
 
-// 인증 게시물 작성 버튼 클릭 이벤트 (POST 방식 로그인 검증 연동)
-const authPostBtn = document.getElementById("authPostBtn");
-if (authPostBtn) {
-authPostBtn.addEventListener("click", function (e) {
-e.preventDefault();
-// AJAX가 아닌 POST Form 방식을 호출
-checkLoginAndMovePost(missionId);
-});
-}
-});
+    // 인증 게시물 작성 버튼 클릭 이벤트 (로그인 검증 및 현재 미션 페이지 복귀 주소 연동)
+    const authPostBtn = document.getElementById("authPostBtn");
+    if (authPostBtn) {
+      authPostBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (!missionId) {
+          alert("미션 정보가 올바르지 않습니다.");
+          return;
+        }
+        checkLoginAndMovePost(missionId);
+      });
+    }
+  });
 
-// [추가/수정] POST 방식으로 서버에 로그인 상태 확인 및 이동을 요청하는 함수
-function checkLoginAndMovePost(missionId) {
-const form = document.createElement('form');
-form.method = 'POST';
-// 서버에서 로그인 여부를 검증하고 리다이렉트 처리를 수행할 엔드포인트 지정
-form.action = contextPath + '/mission/check-auth-and-move';
+  // POST 방식으로 로그인 상태 체크 후 현재 미션 페이지로 복귀하도록 요청하는 함수
+  function checkLoginAndMovePost(targetMissionId) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = contextPath + '/mission/check-auth-and-move';
 
-// 미션 ID 데이터 담기
-const missionInput = document.createElement('input');
-missionInput.type = 'hidden';
-missionInput.name = 'missionId';
-missionInput.value = missionId;
-form.appendChild(missionInput);
+    const missionInput = document.createElement('input');
+    missionInput.type = 'hidden';
+    missionInput.name = 'missionId';
+    missionInput.value = targetMissionId;
+    form.appendChild(missionInput);
 
-// 나중에 돌아올 복귀 경로를 함께 전달 (선택사항)
-const urlInput = document.createElement('input');
-urlInput.type = 'hidden';
-urlInput.name = 'redirectUrl';
-urlInput.value = window.location.pathname + window.location.search;
-form.appendChild(urlInput);
+    const urlInput = document.createElement('input');
+    urlInput.type = 'hidden';
+    urlInput.name = 'redirectUrl';
+    urlInput.value = window.location.pathname + window.location.search;
+    form.appendChild(urlInput);
 
-document.body.appendChild(form);
-form.submit();
-}
+    document.body.appendChild(form);
+    form.submit();
+  }
 
-// 미션 완료 시 포인트 자동 적립 처리 함수
-function triggerAutomaticCompletion() {
-fetch(contextPath + '/api/mission/complete', {
-method: 'POST',
-headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({missionId: Number(missionId)})
-})
-.then(res => {
-if (res.ok) return res.json();
-})
-.then(data => {
-if (data && data.success) {
-alert("축하합니다! 미션 조건이 모두 충족되어 마이페이지로 포인트가 자동 적립되었습니다! 🎉");
-window.location.href = contextPath + "/my-travel";
-}
-})
-.catch(err => {
-console.error("자동 완료 처리 에러:", err);
-});
-}
+  // 미션 완료 시 포인트 자동 적립 처리 함수
+  function triggerAutomaticCompletion() {
+    fetch(contextPath + '/api/mission/complete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({missionId: Number(missionId)})
+    })
+            .then(res => {
+              if (res.ok) return res.json();
+            })
+            .then(data => {
+              if (data && data.success) {
+                alert("축하합니다! 미션 조건이 모두 충족되어 마이페이지로 포인트가 자동 적립되었습니다! 🎉");
+                window.location.href = contextPath + "/my-travel";
+              }
+            })
+            .catch(err => {
+              console.error("자동 완료 처리 에러:", err);
+            });
+  }
 
-// DB 연동 실시간 체크리스트 및 프로그레스바 동적 갱신 함수 (전역 스코프)
-function refreshMissionProgress() {
-fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
-.then(res => {
-if (res.status === 401 || res.status === 403) {
-document.getElementById("login-required-banner").style.display = "block";
-return null;
-}
-if (!res.ok) throw new Error("서버 통신 오류");
-return res.json();
-})
-.then(response => {
-if (!response) return;
-const statusMap = response.success !== undefined ? response.data : response;
-if (!statusMap || typeof statusMap !== 'object' || Array.isArray(statusMap)) {
-return;
-}
+  // DB 연동 실시간 체크리스트 및 프로그레스바 동적 갱신 함수
+  function refreshMissionProgress() {
+    if (!missionId) return;
 
-document.getElementById("login-required-banner").style.display = "none";
-const container = document.getElementById("checklist-container");
-container.innerHTML = "";
+    fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
+            .then(res => res.json())
+            .then(response => {
+              if (!response || !response.success) return;
 
-const entries = Object.entries(statusMap);
-if (entries.length === 0) return;
+              const statusMap = response.data;
+              if (!statusMap || typeof statusMap !== 'object') return;
 
-let completedCount = 0;
-const totalCount = entries.length;
+              const container = document.getElementById("checklist-container");
+              container.innerHTML = "";
 
-// DOM API를 사용하여 안전하게 체크리스트 구성
-entries.forEach(([itemName, isChecked]) => {
-if (isChecked) completedCount++;
+              const entries = Object.entries(statusMap);
+              if (entries.length === 0) return;
 
-const label = document.createElement("label");
-label.className = "list-group-item d-flex gap-3 py-3 align-items-center shadow-sm mb-2 rounded-3";
+              let completedCount = 0;
+              const totalCount = entries.length;
 
-const input = document.createElement("input");
-input.className = "form-check-input flex-shrink-0";
-input.type = "checkbox";
-input.checked = isChecked;
-input.disabled = true;
+              entries.forEach(([itemName, isChecked]) => {
+                if (isChecked) completedCount++;
 
-const span = document.createElement("span");
-const strong = document.createElement("strong");
-strong.innerText = itemName;
+                const label = document.createElement("label");
+                label.className = "list-group-item d-flex gap-3 py-3 align-items-center shadow-sm mb-2 rounded-3";
 
-const small = document.createElement("small");
-small.className = "d-block " + (isChecked ? "text-success fw-bold" : "text-secondary");
-small.innerText = isChecked ? '✨ 시스템 인증 완료됨' : '⏳ 인증 대기 중 (게시글 작성 필요)';
+                const input = document.createElement("input");
+                input.className = "form-check-input flex-shrink-0";
+                input.type = "checkbox";
+                input.checked = isChecked;
+                input.disabled = true; // 시스템 인증 연동형이므로 사용자 임의 조작 방지
 
-span.appendChild(strong);
-span.appendChild(small);
+                const span = document.createElement("span");
+                const strong = document.createElement("strong");
+                strong.innerText = itemName;
 
-label.appendChild(input);
-label.appendChild(span);
-container.appendChild(label);
-});
+                const small = document.createElement("small");
+                small.className = "d-block " + (isChecked ? "text-success fw-bold" : "text-secondary");
+                small.innerText = isChecked ? '✨ 시스템 인증 완료됨' : '⏳ 인증 대기 중 (게시글 작성 필요)';
 
-// 실시간 프로그레스바 퍼센트 계산 및 반영
-const percent = Math.round((completedCount / totalCount) * 100);
-document.getElementById("progress-text-display").innerText = completedCount + " / " + totalCount;
+                span.appendChild(strong);
+                span.appendChild(small);
 
-const bar = document.getElementById("progress-bar-element");
-bar.style.width = percent + "%";
-bar.setAttribute("aria-valuenow", percent);
+                label.appendChild(input);
+                label.appendChild(span);
+                container.appendChild(label);
+              });
 
-if (percent === 100) {
-triggerAutomaticCompletion();
-}
-})
-.catch(err => {
-console.error("진행 상황 동기화 실패:", err);
-});
-}
+              // 프로그레스 바 동적 반영
+              const percent = Math.round((completedCount / totalCount) * 100);
+              document.getElementById("progress-text-display").innerText = completedCount + " / " + totalCount;
+
+              const bar = document.getElementById("progress-bar-element");
+              bar.style.width = percent + "%";
+              bar.setAttribute("aria-valuenow", percent);
+
+              // 100% 달성 및 로그인 상태일 경우 자동 완료 처리 트리거
+              if (percent === 100 && response.isLoggedIn) {
+                triggerAutomaticCompletion();
+              }
+            })
+            .catch(err => {
+              console.error("진행 상황 동기화 실패:", err);
+            });
+  }
 </script>
 </body>
 </html>
