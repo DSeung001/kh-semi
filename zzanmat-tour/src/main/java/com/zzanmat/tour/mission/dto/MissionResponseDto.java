@@ -3,6 +3,8 @@ package com.zzanmat.tour.mission.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 public class MissionResponseDto {
 
     @Getter
@@ -15,7 +17,12 @@ public class MissionResponseDto {
         private String triggerEvent;
         private int targetCount;
         private int rewardPoint;
+        private LocalDateTime startAt;
+        private LocalDateTime endAt;
         private String createdAt;
+        /** ACTIVE | EXPIRED | UPCOMING */
+        private String periodStatus;
+        private boolean available;
     }
 
     @Getter
@@ -46,5 +53,9 @@ public class MissionResponseDto {
         private int rewardPoint;
         private boolean rewardReceived;
         private boolean loggedIn;
+        private LocalDateTime startAt;
+        private LocalDateTime endAt;
+        private String periodStatus;
+        private boolean available;
     }
 }

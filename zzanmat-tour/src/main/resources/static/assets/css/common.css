@@ -476,6 +476,18 @@ button, input, textarea, select { font: inherit; }
   background: #fff;
 }
 
+.zt-mission-card.is-expired,
+.zt-mission-card.is-upcoming {
+  opacity: 0.55;
+  background: #f7f7f7;
+  filter: grayscale(0.35);
+}
+
+.zt-mission-card.is-expired .btn,
+.zt-mission-card.is-upcoming .btn {
+  pointer-events: none;
+}
+
 .zt-mission-icon {
   display: grid;
   place-items: center;

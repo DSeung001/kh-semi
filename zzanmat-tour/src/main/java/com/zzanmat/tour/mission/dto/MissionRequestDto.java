@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @ToString
@@ -30,5 +32,7 @@ public class MissionRequestDto {
         private String triggerEvent;
         private Integer targetCount;
         private Integer rewardPoint;
+        private LocalDateTime startAt;
+        private LocalDateTime endAt;
     }
 }

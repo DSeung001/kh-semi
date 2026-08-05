@@ -26,8 +26,11 @@ public class MissionApiController {
     private final MissionService missionService;
 
     @GetMapping
-    public ApiResponse<List<MissionResponseDto.Info>> getAllMissions() {
-        return ApiResponse.success(missionService.getAllMissions());
+    public ApiResponse<List<MissionResponseDto.Info>> getAllMissions(
+            @SessionAttribute(value = SessionConst.LOGIN_MEMBER, required = false) MemberDto loginMember
+    ) {
+        Long userId = loginMember != null ? loginMember.getId() : null;
+        return ApiResponse.success(missionService.getAllMissions(userId));
     }
 
     @GetMapping("/progress")

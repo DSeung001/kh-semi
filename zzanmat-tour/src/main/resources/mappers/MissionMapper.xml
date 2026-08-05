@@ -12,6 +12,8 @@
         <result property="triggerEvent" column="trigger_event"/>
         <result property="targetCount" column="target_count"/>
         <result property="rewardPoint" column="reward_point"/>
+        <result property="startAt" column="start_at"/>
+        <result property="endAt" column="end_at"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
@@ -38,6 +40,8 @@
             trigger_event,
             target_count,
             reward_point,
+            start_at,
+            end_at,
             created_at
         FROM mission
         ORDER BY id
@@ -52,6 +56,8 @@
             trigger_event,
             target_count,
             reward_point,
+            start_at,
+            end_at,
             created_at
         FROM mission
         WHERE id = #{missionId}
@@ -104,8 +110,8 @@
             useGeneratedKeys="true"
             keyProperty="missionId"
             keyColumn="id">
-        INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point)
-        VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint})
+        INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point, start_at, end_at)
+        VALUES (#{title}, #{description}, #{missionType}, #{triggerEvent}, #{targetCount}, #{rewardPoint}, #{startAt}, #{endAt})
     </insert>
 
     <update id="update" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate">
@@ -115,7 +121,9 @@
             mission_type = #{missionType},
             trigger_event = #{triggerEvent},
             target_count = #{targetCount},
-            reward_point = #{rewardPoint}
+            reward_point = #{rewardPoint},
+            start_at = #{startAt},
+            end_at = #{endAt}
         WHERE id = #{missionId}
     </update>
 

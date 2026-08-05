@@ -28,9 +28,13 @@ public class MissionController {
     private final MissionService missionService;
 
     @GetMapping({"", "/list"})
-    public String missionPage(Model model) {
+    public String missionPage(
+            Model model,
+            @SessionAttribute(value = SessionConst.LOGIN_MEMBER, required = false) MemberDto loginMember
+    ) {
+        Long userId = loginMember != null ? loginMember.getId() : null;
         try {
-            List<MissionResponseDto.Info> missions = missionService.getAllMissions();
+            List<MissionResponseDto.Info> missions = missionService.getAllMissions(userId);
             model.addAttribute("missions", missions != null ? missions : Collections.emptyList());
         } catch (Exception e) {
             log.error("미션 목록 조회 실패: {}", e.getMessage());
@@ -42,17 +46,22 @@ public class MissionController {
     @GetMapping("/active")
     public String missionActive(
             @RequestParam(required = false) Long missionId,
-            Model model
+            Model model,
+            @SessionAttribute(value = SessionConst.LOGIN_MEMBER, required = false) MemberDto loginMember
     ) {
+        Long userId = loginMember != null ? loginMember.getId() : null;
         MissionResponseDto.Info mission = null;
         try {
             if (missionId != null) {
-                mission = missionService.getMissionById(missionId);
+                mission = missionService.getMissionById(missionId, userId);
             }
             if (mission == null) {
-                List<MissionResponseDto.Info> allMissions = missionService.getAllMissions();
+                List<MissionResponseDto.Info> allMissions = missionService.getAllMissions(userId);
                 if (allMissions != null && !allMissions.isEmpty()) {
-                    mission = allMissions.get(0);
+                    mission = allMissions.stream()
+                            .filter(MissionResponseDto.Info::isAvailable)
+                            .findFirst()
+                            .orElse(allMissions.get(0));
                 }
             }
         } catch (Exception e) {
@@ -61,31 +70,6 @@ public class MissionController {
 
         model.addAttribute("mission", mission);
         return "mission/mission-active";
-    }
-
-    @PostMapping("/accept")
-    public String acceptMission(
-            MissionRequestDto request,
-            @SessionAttribute(value = SessionConst.LOGIN_MEMBER, required = false) MemberDto loginMember,
-            HttpSession session
-    ) {
-        Long missionId = request.getMissionId();
-        String redirectUrl = request.getRedirectUrl();
-        String fallback = "/mission/active?missionId=" + missionId;
-
-        if (loginMember == null) {
-            session.setAttribute("redirectUrl",
-                    (redirectUrl != null && !redirectUrl.isEmpty()) ? redirectUrl : fallback);
-            return "redirect:/member/login";
-        }
-
-        try {
-            missionService.acceptMission(loginMember.getId(), missionId);
-        } catch (Exception e) {
-            log.warn("미션 수락 실패: {}", e.getMessage());
-        }
-
-        return "redirect:" + (redirectUrl != null && !redirectUrl.isEmpty() ? redirectUrl : fallback);
     }
 
     @PostMapping({"/check-auth-and-post", "/check-auth", "/check-auth-and-move"})

@@ -41,7 +41,6 @@
                 <p>재미있는 여행 미션에 도전하고 인증 기록을 남겨보세요.</p>
             </header>
 
-            <!-- 서버사이드 렌더링(JSTL)을 통한 미션 목록 영역 -->
             <section class="zt-panel zt-mission-list" id="missionListSection">
                 <c:choose>
                     <c:when test="${empty missions}">
@@ -49,7 +48,15 @@
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="mission" items="${missions}">
-                            <article class="zt-mission-card">
+                            <c:set var="cardClass" value="zt-mission-card"/>
+                            <c:if test="${mission.periodStatus == 'EXPIRED'}">
+                                <c:set var="cardClass" value="zt-mission-card is-expired"/>
+                            </c:if>
+                            <c:if test="${mission.periodStatus == 'UPCOMING'}">
+                                <c:set var="cardClass" value="zt-mission-card is-upcoming"/>
+                            </c:if>
+
+                            <article class="${cardClass}">
                                 <div class="zt-mission-icon">
                                     <i class="bi
                                         <c:choose>
@@ -68,15 +75,50 @@
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                                             +<fmt:formatNumber value="${mission.rewardPoint}" type="number"/>P
                                         </span>
+                                        <c:choose>
+                                            <c:when test="${mission.periodStatus == 'EXPIRED'}">
+                                                <span class="badge bg-secondary">기간 종료</span>
+                                            </c:when>
+                                            <c:when test="${mission.periodStatus == 'UPCOMING'}">
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle">예정</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">진행 가능</span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
-                                    <p class="zt-muted small mb-0">${mission.description}</p>
+                                    <p class="zt-muted small mb-1">${mission.description}</p>
+                                    <p class="zt-muted small mb-0">
+                                        <c:choose>
+                                            <c:when test="${mission.startAt != null && mission.endAt != null}">
+                                                기간: ${mission.startAt} ~ ${mission.endAt}
+                                            </c:when>
+                                            <c:when test="${mission.startAt != null}">
+                                                시작: ${mission.startAt}
+                                            </c:when>
+                                            <c:when test="${mission.endAt != null}">
+                                                종료: ${mission.endAt}
+                                            </c:when>
+                                            <c:otherwise>
+                                                기간 제한 없음
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </p>
                                 </div>
-                                <button class="btn btn-warning fw-bold" type="button"
-                                        data-mission-accept
-                                        data-mission-id="${mission.missionId}"
-                                        data-redirect="${pageContext.request.contextPath}/mission/active?missionId=${mission.missionId}">
-                                    미션 수락
-                                </button>
+                                <c:choose>
+                                    <c:when test="${mission.available}">
+                                        <a class="btn btn-warning fw-bold"
+                                           href="${pageContext.request.contextPath}/mission/active?missionId=${mission.missionId}">
+                                            상세보기
+                                        </a>
+                                    </c:when>
+                                    <c:when test="${mission.periodStatus == 'EXPIRED'}">
+                                        <button class="btn btn-secondary fw-bold" type="button" disabled>기간 종료</button>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button class="btn btn-outline-secondary fw-bold" type="button" disabled>예정</button>
+                                    </c:otherwise>
+                                </c:choose>
                             </article>
                         </c:forEach>
                     </c:otherwise>
@@ -90,58 +132,5 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
-
-<script>
-    const contextPath = "${pageContext.request.contextPath}";
-
-    document.addEventListener("DOMContentLoaded", function () {
-        // 미션 수락 버튼 클릭 이벤트 처리 (POST 방식 로그인 검증 연동)
-        document.addEventListener("click", function (e) {
-            const btn = e.target.closest("[data-mission-accept]");
-            if (btn) {
-                const missionId = btn.getAttribute("data-mission-id");
-                const redirectUrl = btn.getAttribute("data-redirect");
-
-                if (!missionId || isNaN(missionId)) {
-                    alert("유효하지 않은 미션입니다.");
-                    return;
-                }
-
-                // POST 폼 제출 함수 호출
-                checkLoginAndAcceptMission(missionId, redirectUrl);
-            }
-        });
-    });
-
-    // 서버로 POST 요청을 보내 로그인 상태를 확인하고 미션을 수락/진행시키는 전역 함수
-
-    function checkLoginAndAcceptMission(mId, redirectUrl) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-
-        // 🚨 수정 포인트: check-auth-and-post (게시물용) 대신 미션 수락/진행을 처리하는 전용 엔드포인트로 변경
-        // 예: /mission/accept 또는 /mission/check-auth-and-accept 등 백엔드 매핑 주소에 맞게 수정
-        form.action = contextPath + '/mission/accept';
-
-        // 미션 ID 파라미터 추가
-        const missionInput = document.createElement('input');
-        missionInput.type = 'hidden';
-        missionInput.name = 'missionId';
-        missionInput.value = mId;
-        form.appendChild(missionInput);
-
-        // 최종 이동 목적지 URL 파라미터 추가
-        if (redirectUrl) {
-            const redirectInput = document.createElement('input');
-            redirectInput.type = 'hidden';
-            redirectInput.name = 'redirectUrl';
-            redirectInput.value = redirectUrl;
-            form.appendChild(redirectInput);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-</script>
 </body>
 </html>

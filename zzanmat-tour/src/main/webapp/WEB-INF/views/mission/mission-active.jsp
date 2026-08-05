@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="수락한 여행 미션 진행 페이지">
+  <meta name="description" content="여행 미션 진행 페이지">
   <title>진행 중인 미션 | 짠맛투어</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
@@ -50,6 +50,18 @@
             <c:otherwise>선택된 미션 정보가 없습니다.</c:otherwise>
           </c:choose>
         </p>
+        <c:if test="${mission != null}">
+          <p class="zt-muted small mb-0" id="mission-period-display">
+            <c:choose>
+              <c:when test="${mission.startAt != null && mission.endAt != null}">
+                수행 기간: ${mission.startAt} ~ ${mission.endAt}
+              </c:when>
+              <c:otherwise>기간 제한 없음</c:otherwise>
+            </c:choose>
+            <c:if test="${mission.periodStatus == 'EXPIRED'}"> · 기간 종료</c:if>
+            <c:if test="${mission.periodStatus == 'UPCOMING'}"> · 예정</c:if>
+          </p>
+        </c:if>
       </header>
 
       <section class="zt-panel zt-profile-card">
@@ -180,11 +192,13 @@
       });
   }
 
-  function statusLabel(status) {
+  function statusLabel(status, periodStatus) {
+    if (periodStatus === 'EXPIRED') return '기간 종료';
+    if (periodStatus === 'UPCOMING') return '예정';
     if (status === 'DONE') return '완료';
     if (status === 'IN_PROGRESS') return '진행 중';
     if (status === 'READY') return '대기';
-    if (!status) return '미수락';
+    if (!status) return '미시작';
     return status;
   }
 
@@ -207,23 +221,32 @@
         bar.style.width = percent + "%";
         bar.setAttribute("aria-valuenow", percent);
 
-        document.getElementById("missionStatus").innerText = "상태: " + statusLabel(data.status);
+        document.getElementById("missionStatus").innerText =
+          "상태: " + statusLabel(data.status, data.periodStatus);
 
         const summary = document.getElementById("progress-summary");
         if (!data.loggedIn) {
-          summary.innerText = "로그인 후 미션을 수락하면 진행 상태가 표시됩니다.";
-        } else if (!data.status) {
-          summary.innerText = "아직 수락하지 않은 미션입니다. 목록에서 미션을 수락해주세요.";
+          summary.innerText = "로그인하면 기간 내 미션이 자동으로 시작됩니다.";
+        } else if (data.periodStatus === 'EXPIRED') {
+          summary.innerText = "이 미션은 수행 기간이 종료되었습니다.";
+        } else if (data.periodStatus === 'UPCOMING') {
+          summary.innerText = "아직 시작 전인 미션입니다. 기간이 되면 자동으로 수행됩니다.";
         } else if (data.status === 'DONE') {
           summary.innerText = "미션을 완료했습니다." + (data.rewardReceived ? " 보상이 지급되었습니다." : "");
+        } else if (!data.status) {
+          summary.innerText = "진행 정보를 준비하는 중입니다.";
         } else {
           summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행했습니다. (보상 " + (data.rewardPoint || 0) + "P)";
         }
 
+        const canAct = data.loggedIn && data.available && data.status === 'IN_PROGRESS';
+        const authPostBtn = document.getElementById("authPostBtn");
         const completeBtn = document.getElementById("completeBtn");
+        if (authPostBtn) {
+          authPostBtn.style.display = canAct ? "block" : "none";
+        }
         if (completeBtn) {
-          const canComplete = data.loggedIn && data.status === 'IN_PROGRESS';
-          completeBtn.style.display = canComplete ? "block" : "none";
+          completeBtn.style.display = canAct ? "block" : "none";
         }
       })
       .catch(err => {
