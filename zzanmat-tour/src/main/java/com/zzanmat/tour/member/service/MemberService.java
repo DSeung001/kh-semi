@@ -27,5 +27,9 @@ public interface MemberService {
 
     MemberDto kakaoJoin(String kakaoId, String nickname);
 
-    void unlink(String accessToken);
+    MemberDto naverJoin(String naverId, String nickname, String email);
+
+    void unlinkKakao(String accessToken);
+
+    void unlinkNaver(String accessToken);
 }

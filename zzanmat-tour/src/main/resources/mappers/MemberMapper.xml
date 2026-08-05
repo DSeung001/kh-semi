@@ -15,6 +15,7 @@
         ,USER_NAME
         ,BIO
         ,PROFILE
+        ,LOGIN_TYPE
         )
         VALUES
         (
@@ -25,6 +26,7 @@
         ,#{userName}
         ,#{bio}
         ,#{profile}
+        ,#{loginType}
         )
     </insert>
 
@@ -40,6 +42,7 @@
               ,user_password
               ,nickname
               ,email
+              ,login_type
           FROM `USER`
          WHERE user_id = #{userId}
     </select>
@@ -74,7 +77,17 @@
               ,email
               ,profile
               ,login_type
-          FROM `USER`
+              ,(
+                SELECT COUNT(*)
+                  FROM FOLLOWE F
+                 WHERE F.FOLLOWERING_ID = U.ID
+              ) AS FOLLOWER_COUNT
+              ,(
+                SELECT COUNT(*)
+                  FROM FOLLOWE F
+                 WHERE F.FOLLOWER_ID = U.ID
+              ) AS FOLLOWING_COUNT
+          FROM `USER` U
          WHERE USER_ID = #{userId}
     </select>
 

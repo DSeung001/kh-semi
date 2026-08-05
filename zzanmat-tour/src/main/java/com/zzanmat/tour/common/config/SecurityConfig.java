@@ -21,10 +21,15 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable) // http베이직 인증도 사용하지 않겠다.
                 .logout(AbstractHttpConfigurer::disable) // 시큐리티가 제공하는 로그아웃처리도 사용하지 않겠다.
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .oauth2Login(oauth2 -> oauth2
+                /*.oauth2Login(oauth2 -> oauth2
                         .loginPage("/member/login") // 사용자가 만든 커스텀 로그인 JSP 페이지 주소
                         .defaultSuccessUrl("/member/kakao-login", true) // 로그인 성공 시 이동할 주소
-                ); //모든요청 허용
+                ); //모든요청 허용*/
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/member/login")
+                        .defaultSuccessUrl("/member/oauth2-login", true)
+                        .failureUrl("/member/login?oauthError=true")
+                );
         return http.build();
     }
 

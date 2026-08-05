@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -167,7 +168,7 @@ public class MemberController {
             String accessToken = authorizedClient.getAccessToken().getTokenValue();
 
             // 카카오 연결 해제
-            memberService.unlink(accessToken);
+            memberService.unlinkKakao(accessToken);
 
             // 카카오 연결 해제 성공 후 DB 회원 삭제
             memberService.withdraw(loginMember.getUserId());
@@ -178,6 +179,49 @@ public class MemberController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("withdrawError","카카오 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
+            return "redirect:/member/profile";
+        }
+    }
+
+    // 네이버 회원 탈퇴
+    @PostMapping("/withdraw/naver")
+    public String withdrawNaver(@RegisteredOAuth2AuthorizedClient("naver") OAuth2AuthorizedClient authorizedClient,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
+        // 세션 DTO에는 loginType이 없을 수 있으므로 DB에서 다시 조회
+        MemberDto memberInfo = memberService.findById(loginMember.getUserId());
+
+        if (memberInfo == null || !"NAVER".equals(memberInfo.getLoginType())) {
+            redirectAttributes.addFlashAttribute("withdrawError","잘못된 네이버 회원 탈퇴 요청입니다.");
+            return "redirect:/member/profile";
+        }
+
+        try {
+            if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
+                throw new IllegalStateException("네이버 인증 정보가 없습니다.");
+            }
+            String accessToken = authorizedClient.getAccessToken().getTokenValue();
+
+            // 네이버 연결 해제
+            memberService.unlinkNaver(accessToken);
+
+            // DB 회원 삭제
+            memberService.withdraw(loginMember.getUserId());
+            session.invalidate();
+            redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
+
+            return "redirect:/";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("withdrawError","네이버 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
+
             return "redirect:/member/profile";
         }
     }
@@ -267,7 +311,79 @@ public class MemberController {
         return "member/signup";
     }
 
-    @GetMapping("/kakao-login")
+    @GetMapping("/oauth2-login")
+    public String oauth2LoginSuccess(OAuth2AuthenticationToken authentication, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (authentication == null) {
+            redirectAttributes.addFlashAttribute("error","소셜 로그인 정보를 가져오지 못했습니다.");
+            return "redirect:/member/login";
+        }
+
+        String registrationId = authentication.getAuthorizedClientRegistrationId();
+        OAuth2User oAuth2User = authentication.getPrincipal();
+
+        try {
+            MemberDto member;
+
+            if ("kakao".equals(registrationId)) {
+                member = processKakaoLogin(oAuth2User);
+            } else if ("naver".equals(registrationId)) {
+                member = processNaverLogin(oAuth2User);
+            } else {
+                redirectAttributes.addFlashAttribute("error","지원하지 않는 소셜 로그인입니다.");
+                return "redirect:/member/login";
+            }
+
+            if (member == null) {
+                redirectAttributes.addFlashAttribute("error","소셜 회원 정보 처리 중 오류가 발생했습니다.");
+                return "redirect:/member/login";
+            }
+
+            session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+            return "redirect:/";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error","소셜 로그인 처리 중 오류가 발생했습니다.");
+            return "redirect:/member/login";
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private MemberDto processKakaoLogin(OAuth2User oAuth2User) {
+
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+
+        Object idValue = attributes.get("id");
+
+        Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
+
+        if (idValue == null || properties == null) {
+            throw new IllegalStateException("카카오 필수 회원 정보가 없습니다.");
+        }
+
+        String kakaoId = String.valueOf(idValue);
+        String nickname = properties.get("nickname") != null ? String.valueOf(properties.get("nickname")) : "카카오회원";
+
+        return memberService.kakaoJoin(kakaoId, nickname);
+    }
+
+    @SuppressWarnings("unchecked")
+    private MemberDto processNaverLogin(OAuth2User oAuth2User) {
+
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
+        if (response == null || response.get("id") == null) {
+            throw new IllegalStateException("네이버 필수 회원 정보를 가져오지 못했습니다.");
+        }
+
+        String naverId = String.valueOf(response.get("id"));
+        String nickname = response.get("nickname") != null ? String.valueOf(response.get("nickname")) : "네이버회원";
+        String email = response.get("email") != null ? String.valueOf(response.get("email")): null;
+
+        return memberService.naverJoin(naverId, nickname, email);
+    }
+
+    /*@GetMapping("/kakao-login")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User oAuth2User
                                 ,HttpSession session
                                 ,RedirectAttributes redirectAttributes) throws IOException {
@@ -296,5 +412,5 @@ public class MemberController {
 
         session.setAttribute(SessionConst.LOGIN_MEMBER, member);
         return "redirect:/";
-    }
+    }*/
 }
