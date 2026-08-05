@@ -135,6 +135,10 @@ button, input, textarea, select { font: inherit; }
   font-weight: 750;
 }
 
+#missionForm {
+  padding: 25px;
+}
+
 .zt-page-header p {
   margin: 5px 0 0;
   color: var(--zt-muted);

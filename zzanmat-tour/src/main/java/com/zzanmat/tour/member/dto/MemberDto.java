@@ -17,4 +17,5 @@ public class MemberDto {
     private String userName;
     private String profile;
     private String loginType;
+    private String role;
 }
