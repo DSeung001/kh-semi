@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zzanmat.tour.comment.mapper.CommentLikeMapper">
+
+    <select id="countByCommentId" resultType="int">
+        SELECT COUNT(*)
+        FROM COMMENT_LIKE
+        WHERE COMMENT_ID = #{commentId}
+    </select>
+
+    <select id="existsByCommentIdAndUserId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM COMMENT_LIKE
+        WHERE COMMENT_ID = #{commentId}
+            AND USER_ID = #{userId}
+    </select>
+
+    <insert id="save">
+        INSERT INTO COMMENT_LIKE (
+            COMMENT_ID,
+            USER_ID,
+            POST_ID,
+            CREATE_AT
+        )
+        VALUES (
+            #{commentId},
+            #{userId},
+            #{postId},
+            NOW()
+        )
+    </insert>
+
+    <delete id="deleteByCommentIdAndUserId">
+        DELETE
+        FROM COMMENT_LIKE
+        WHERE COMMENT_ID = #{commentId}
+            AND USER_ID = #{userId}
+    </delete>
+    
+</mapper>

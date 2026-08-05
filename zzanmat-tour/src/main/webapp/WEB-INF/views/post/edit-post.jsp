@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -44,17 +45,77 @@
 <section class="zt-panel zt-profile-card">
   <form class="row g-4"
         action="${pageContext.request.contextPath}/edit-post"
-        method="post">
+        method="post"
+        enctype="multipart/form-data">
+
     <input type="hidden" name="postId" value="${post.postId}">
   <div class="col-lg-6">
-      <label class="zt-upload-zone p-3" for="new-post-image" data-upload-preview>
-        <span>
-          <i class="bi bi-images display-5 d-block mb-3"></i>
-          <strong class="d-block mb-1">사진을 선택하세요</strong>
-          <small class="zt-muted">JPG, PNG 파일을 업로드할 수 있습니다.</small>
-        </span>
-      </label>
+    <div class="zt-edit-image-section">
+      <h2 class="h5 mb-3">등록된 사진</h2>
+
+      <c:choose>
+        <c:when test="${not empty post.images}">
+          <div class="zt-edit-image-list">
+            <c:forEach var="image"
+                       items="${post.images}"
+                       varStatus="status">
+             <div class="zt-edit-image-item">
+               <img src="${pageContext.request.contextPath}${image.uploadPath}"
+                    alt="${image.originName}">
+
+               <span class="zt-edit-image-order">
+                 ${status.count}
+               </span>
+
+                <label class="zt-edit-image-delete">
+                  <input type="checkbox"
+                         name="deleteImageIds"
+                         value="${image.uploadId}">
+                  삭제
+                </label>
+              </div>
+            </c:forEach>
+          </div>
+        </c:when>
+
+        <c:otherwise>
+          <p class="zt-muted">
+             현재 등록된 사진이 없습니다.
+          </p>
+        </c:otherwise>
+      </c:choose>
+
+      <div class="mt-4">
+        <label class="form-label"
+               for="edit-post-images">
+          새 사진 추가
+        </label>
+
+        <input id="edit-post-images"
+               name="imageFiles"
+               class="form-control"
+               type="file"
+               accept="image/jpeg,image/png"
+               multiple>
+
+        <small class="zt-muted d-block mt-2">
+          기존 사진과 새 사진을 합쳐 최대 5장까지 등록할 수 있습니다.
+        </small>
+
+        <div class="zt-edit-new-images mt-3">
+          <p class="mb-2">
+            새로 선택한 사진
+            <strong>
+              <span id="edit-new-image-count">0</span>장
+            </strong>
+          </p>
+
+          <div id="edit-new-image-preview"
+               class="zt-edit-new-image-preview"></div>
+        </div>
+      </div>
     </div>
+  </div>
 
     <div class="col-lg-6">
       <div class="mb-3">
@@ -139,6 +200,8 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-edit-image.js"></script>
+
 
 </body>
 </html>

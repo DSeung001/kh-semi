@@ -215,11 +215,29 @@
         ORDER BY IU.IMAGE_ORDER ASC
     </select>
 
-    <select id="countByUserPost" parameterType="Long" resultType="int">
-        SELECT COUNT(*)
-          FROM POST
-         WHERE IS_BLOCK = FALSE
-           AND USER_ID = #{userId}
-    </select>
+    <delete id="deleteByPostIdAndUploadId">
+        DELETE FROM POST_UPLOAD
+        WHERE POST_ID = #{postId}
+            AND UPLOAD_ID = #{uploadId}
+    </delete>
 
+    <delete id="deleteImage">
+        DELETE FROM IMAGE_UPLOAD
+        WHERE UPLOAD_ID = #{uploadId}
+    </delete>
+
+    <update id="updateImageOrder">
+        UPDATE IMAGE_UPLOAD
+        SET IMAGE_ORDER = #{imageOrder}
+        WHERE UPLOAD_ID = #{uploadId}
+    </update>
+
+    <select id="countByUserPost"
+            parameterType="Long"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM POST
+        WHERE IS_BLOCK = FALSE
+            AND USER_ID = #{userId}
+    </select>
 </mapper>

@@ -74,9 +74,43 @@
 
   <c:choose>
     <c:when test="${not empty post.images}">
-      <img class="zt-detail-image"
-           src="${pageContext.request.contextPath}${post.images[0].uploadPath}"
-           alt="${post.images[0].originName}">
+      <div class="zt-detail-carousel"
+           data-detail-carousel>
+
+        <div class="zt-detail-slides">
+          <c:forEach var="image"
+                     items="${post.images}"
+                     varStatus="status">
+
+            <img class="zt-detail-image zt-detail-slide ${status.first ? 'is-active' : ''}"
+                 src="${pageContext.request.contextPath}${image.uploadPath}"
+                 alt="${image.originName}"
+                 data-slide-index="${status.index}">
+          </c:forEach>
+        </div>
+
+        <c:if test="${post.images.size() > 1}">
+          <button type="button"
+                  class="zt-detail-carousel-button zt-detail-carousel-prev"
+                  data-carousel-prev
+                  aria-label="이전 사진">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <button type="button"
+                  class="zt-detail-carousel-button zt-detail-carousel-next"
+                  data-carousel-next
+                  aria-label="다음 사진">
+              <i class="bi bi-chevron-right"></i>
+          </button>
+
+          <div class="zt-detail-carousel-count">
+            <span data-carousel-current>1</span>
+            /
+            <span data-carousel-total>${post.images.size()}</span>
+          </div>
+        </c:if>
+      </div>
     </c:when>
 
     <c:otherwise>
@@ -87,11 +121,58 @@
   </c:choose>
 
   <div class="zt-post-actions">
-    <button class="zt-icon-btn" data-like-button data-like-target="#detail-likes"><i class="bi bi-heart"></i></button>
-    <button class="zt-icon-btn"><i class="bi bi-chat"></i></button>
-    <button class="zt-icon-btn"><i class="bi bi-send"></i></button>
-    <button class="zt-icon-btn zt-save-btn"><i class="bi bi-bookmark"></i></button>
+    <c:choose>
+      <c:when test="${not empty sessionScope.loginMember}">
+        <form action="${pageContext.request.contextPath}/post-like"
+              method="post"
+              class="d-inline">
+
+          <input type="hidden"
+                 name="postId"
+                 value="${post.postId}">
+
+          <button type="submit"
+                  class="zt-icon-btn"
+                  aria-label="좋아요">
+            <c:choose>
+              <c:when test="${liked}">
+                <i class="bi bi-heart-fill text-danger"></i>
+              </c:when>
+
+              <c:otherwise>
+                <i class="bi bi-heart"></i>
+              </c:otherwise>
+            </c:choose>
+          </button>
+        </form>
+      </c:when>
+
+      <c:otherwise>
+        <a class="zt-icon-btn"
+           href="${pageContext.request.contextPath}/member/login"
+           aria-label="로그인 후 좋아요">
+          <i class="bi bi-heart"></i>
+        </a>
+      </c:otherwise>
+    </c:choose>
+
+    <button class="zt-icon-btn" type="button">
+      <i class="bi bi-chat"></i>
+    </button>
+
+    <button class="zt-icon-btn" type="button">
+      <i class="bi bi-send"></i>
+    </button>
+
+    <button class="zt-icon-btn zt-save-btn" type="button">
+      <i class="bi bi-bookmark"></i>
+    </button>
   </div>
+
+  <p id="detail-likes" class="fw-bold px-3 mb-2">
+    좋아요 <c:out value="${likeCount}"/>개
+
+  </p>
 
   <div class="zt-post-body">
    <p class="fw-bold">
@@ -149,24 +230,120 @@
   <section id="comments" class="zt-comments-box border-top">
     <h2 class="h6 fw-bold">댓글</h2>
     <div data-comment-list>
-      <div class="zt-comment-row">
-        <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="">
-        <p class="small mb-0"><strong>travel_sora</strong> 이동 동선이 정말 깔끔하네요. 다음 주에 따라가 볼게요!</p>
-        <button class="zt-icon-btn fs-6"><i class="bi bi-heart"></i></button>
-      </div>
-      <div class="zt-comment-row">
-        <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-min.svg" alt="">
-        <p class="small mb-0"><strong>budget_min</strong> 망원시장 메뉴도 추천해 주세요.</p>
-        <button class="zt-icon-btn fs-6"><i class="bi bi-heart"></i></button>
-      </div>
+      <c:choose>
+        <c:when test="${empty comments}">
+          <p class="zt-muted small mb-0">
+            아직 작성된 댓글이 없습니다.
+          </p>
+        </c:when>
+
+        <c:otherwise>
+          <c:forEach var="comment" items="${comments}">
+            <div class="zt-comment-row">
+              <img class="zt-avatar zt-avatar-sm"
+                   src="${pageContext.request.contextPath}/assets/images/profile-sora.svg"
+                   alt="댓글 작성자 프로필">
+
+              <div class="flex-grow-1">
+                <p class="small mb-1">
+                  <strong>
+                    <c:out value="${comment.nickname}"/>
+                  </strong>
+
+                  <span data-comment-content>
+                    <c:out value="${comment.content}"/>
+                  </span>
+                </p>
+
+                <c:if test="${sessionScope.loginMember.id eq comment.userId}">
+                  <div class="zt-comment-actions">
+
+                    <button class="zt-comment-action-button"
+                            type="button"
+                            data-comment-edit-button
+                            data-comment-id="${comment.commentId}">
+                      수정
+                    </button>
+
+                    <form action="${pageContext.request.contextPath}/comments/delete"
+                          method="post"
+                          onsubmit="return confirm('댓글을 삭제하시겠습니까?');">
+
+                      <input type="hidden"
+                             name="commentId"
+                             value="${comment.commentId}">
+
+                      <input type="hidden"
+                             name="postId"
+                             value="${post.postId}">
+
+                      <button class="zt-comment-action-button zt-comment-delete-button"
+                              type="submit">
+                        삭제
+                      </button>
+                    </form>
+
+                  </div>
+                </c:if>
+              </div>
+            </div>
+          </c:forEach>
+        </c:otherwise>
+      </c:choose>
     </div>
   </section>
 
-  <form class="zt-comment-form" data-comment-form>
-    <i class="bi bi-emoji-smile"></i>
-    <input type="text" placeholder="댓글 입력" aria-label="댓글 입력">
-    <button class="zt-link-button" type="submit">게시</button>
-  </form>
+  <c:choose>
+    <c:when test="${not empty sessionScope.loginMember}">
+      <form id="comment-form"
+            class="zt-comment-form"
+            action="${pageContext.request.contextPath}/comments"
+            method="post"
+            data-create-action="${pageContext.request.contextPath}/comments"
+            data-update-action="${pageContext.request.contextPath}/comments/update">
+
+        <input type="hidden"
+               name="postId"
+               value="${post.postId}">
+
+        <input id="comment-edit-id"
+               type="hidden"
+               name="commentId"
+               disabled>
+
+        <i class="bi bi-emoji-smile"></i>
+
+        <input id="comment-content"
+               type="text"
+               name="content"
+               maxlength="300"
+               placeholder="댓글 입력"
+               aria-label="댓글 입력"
+               required>
+
+        <button id="comment-edit-cancel"
+                class="zt-comment-action-button"
+                type="button"
+                hidden>
+          취소
+        </button>
+
+        <button id="comment-submit-button"
+                class="zt-link-button"
+                type="submit">
+          게시
+        </button>
+      </form>
+    </c:when>
+
+    <c:otherwise>
+      <div class="zt-comment-form">
+        <a href="${pageContext.request.contextPath}/member/login">
+          로그인 후 댓글을 작성할 수 있습니다.
+        </a>
+      </div>
+    </c:otherwise>
+  </c:choose>
 </article>
 
     </main>
@@ -175,6 +352,10 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-detail-carousel.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/comment-edit.js"></script>
+
 
 </body>
 </html>
