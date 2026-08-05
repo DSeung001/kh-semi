@@ -6,8 +6,10 @@ import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.mapper.MemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -26,6 +28,8 @@ public class MemberServiceImpl implements MemberService{
 
     @Value("${file.upload-dir.profile}")
     private String profileUploadDir;
+
+    private final RestClient restClient = RestClient.create();
 
     @Override
     public void join(MemberDto memberDto, MultipartFile profileImage) throws IOException {
@@ -87,12 +91,57 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberDto findById(MemberDto memberDto) {
-        return memberMapper.findById(memberDto);
+    public MemberDto findById(String userId) {
+        return memberMapper.findById(userId);
+    }
+
+    @Override
+    public MemberDto findByEmail(String email) {
+        return memberMapper.findByEmail(email);
+    }
+
+    @Override
+    public MemberDto findByUserIdAndEmail(String userId, String email) {
+        return memberMapper.findByUserIdAndEmail(userId, email);
+    }
+
+    @Override
+    public boolean resetPasswordByEmail(String email, String newPassword) {
+        return memberMapper.updatePasswordByEmail(email, passwordEncoder.encode(newPassword)) > 0;
     }
 
     @Override
     public void withdraw(String userId) {
         memberMapper.deleteByMemberId(userId);
+    }
+
+    @Override
+    public MemberDto kakaoJoin(String kakaoId, String nickname) {
+
+        // 1. 카카오 ID로 기존 회원 조회
+        MemberDto member = memberMapper.findByMemberId(kakaoId);
+
+        // 2. 이미 가입한 회원이면 그대로 반환
+        if (member != null) {
+            return member;
+        }
+
+        // 3. 처음 카카오 로그인한 회원이면 회원가입
+        MemberDto memberDto = new MemberDto();
+        memberDto.setUserId(kakaoId);
+        memberDto.setNickname(nickname);
+
+        memberMapper.save(memberDto);
+
+        // 4. DB에 저장된 회원 다시 조회
+        return memberMapper.findByMemberId(kakaoId);
+    }
+
+    @Override
+    public void unlink(String accessToken) {
+        restClient.post().uri("https://kapi.kakao.com/v1/user/unlink")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                        .retrieve()
+                        .toBodilessEntity();
     }
 }

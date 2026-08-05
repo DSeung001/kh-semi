@@ -15,7 +15,15 @@ public interface MemberMapper {
 
     int update(MemberDto memberDto);
 
-    MemberDto findById(MemberDto memberDto);
+    MemberDto findById(String userId);
+
+    MemberDto findByEmail(@Param("email") String email);
+
+    MemberDto findByUserIdAndEmail(@Param("userId") String userId,
+                                   @Param("email") String email);
+
+    int updatePasswordByEmail(@Param("email") String email,
+                              @Param("userPassword") String userPassword);
 
     int deleteByMemberId(@Param("userId") String userId);
 

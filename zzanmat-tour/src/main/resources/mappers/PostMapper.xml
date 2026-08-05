@@ -232,5 +232,12 @@
         WHERE UPLOAD_ID = #{uploadId}
     </update>
 
-    
+    <select id="countByUserPost"
+            parameterType="Long"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM POST
+        WHERE IS_BLOCK = FALSE
+            AND USER_ID = #{userId}
+    </select>
 </mapper>

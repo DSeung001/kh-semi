@@ -308,6 +308,7 @@ public class PostService {
                     postId,
                     userId
             );
+
             return;
         }
 
@@ -315,5 +316,9 @@ public class PostService {
                 postId,
                 userId
         );
+    }
+
+    public int countByUserPost(Long userId) {
+        return postMapper.countByUserPost(userId);
     }
 }

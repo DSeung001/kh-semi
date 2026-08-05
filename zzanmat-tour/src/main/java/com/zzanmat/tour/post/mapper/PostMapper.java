@@ -54,5 +54,5 @@ public interface PostMapper {
             @Param("imageOrder") int imageOrder
     );
 
-    
+    int countByUserPost(Long userId);
 }

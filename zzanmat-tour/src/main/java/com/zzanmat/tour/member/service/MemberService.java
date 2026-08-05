@@ -15,7 +15,17 @@ public interface MemberService {
 
     boolean update(MemberDto memberDto, MultipartFile profileImage, String originProfileName) throws IOException;
 
-    MemberDto findById(MemberDto memberDto);
+    MemberDto findById(String userId);
+
+    MemberDto findByEmail(String email);
+
+    MemberDto findByUserIdAndEmail(String userId, String email);
+
+    boolean resetPasswordByEmail(String email, String newPassword);
 
     void withdraw(String userId);
+
+    MemberDto kakaoJoin(String kakaoId, String nickname);
+
+    void unlink(String accessToken);
 }

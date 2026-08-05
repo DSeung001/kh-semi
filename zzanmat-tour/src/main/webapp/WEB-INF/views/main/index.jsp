@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -36,7 +37,11 @@
 </jsp:include>
 
     <main class="zt-content">
-      
+      <c:if test="${not empty message}">
+        <script>
+          alert("${message}");
+        </script>
+      </c:if>
 <form class="input-group zt-search" role="search" data-demo-form data-message="검색 기능은 서버 연결 후 구현됩니다.">
   <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
   <input class="form-control bg-white" type="search" placeholder="여행지, 사용자, 해시태그 검색">
@@ -77,8 +82,6 @@
   </form>
 </article>
 
-
-
 <article class="zt-panel zt-post">
   <header class="zt-post-header">
     <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="travel_sora 프로필">
@@ -113,9 +116,7 @@
   </form>
 </article>
 
-
     </main>
-
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
