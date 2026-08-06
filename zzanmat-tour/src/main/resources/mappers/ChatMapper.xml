@@ -4,9 +4,35 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zzanmat.tour.chat.mapper.ChatMapper">
 
-    <insert id="save">
+    <insert id="save"
+            parameterType="ChatMessage"
+            useGeneratedKeys="true"
+            keyProperty="chatId"
+            keyColumn="CHAT_ID">
         INSERT INTO `CHAT_MESSAGE` (ID, CONTENT, CREATE_AT, UPDATE_AT)
         VALUES (#{userId}, #{content}, NOW(), NOW())
+    </insert>
+
+    <insert id="saveImage"
+            parameterType="ChatImageDto"
+            useGeneratedKeys="true"
+            keyProperty="uploadId"
+            keyColumn="UPLOAD_ID">
+        INSERT INTO IMAGE_UPLOAD (
+            ORIGIN_NAME,
+            UPLOAD_PATH,
+            IMAGE_ORDER
+        )
+        VALUES (
+            #{originName},
+            #{uploadPath},
+            #{imageOrder}
+        )
+    </insert>
+
+    <insert id="saveTalkImage">
+        INSERT INTO TALK_IMAGE (CHAT_ID, UPLOAD_ID)
+        VALUES (#{chatId}, #{uploadId})
     </insert>
 
     <select id="findRecent" resultType="ChatMessage">
@@ -15,6 +41,14 @@
           , c.ID as userId
           , u.NICKNAME as sender
           , c.CONTENT as content
+          , (
+                SELECT iu.UPLOAD_PATH
+                  FROM TALK_IMAGE ti
+                  JOIN IMAGE_UPLOAD iu ON iu.UPLOAD_ID = ti.UPLOAD_ID
+                 WHERE ti.CHAT_ID = c.CHAT_ID
+                 ORDER BY ti.TALK_ID ASC
+                 LIMIT 1
+            ) as imageUrl
           , DATE_FORMAT(c.CREATE_AT, '%H:%i') as time
         FROM `CHAT_MESSAGE` c
         JOIN `USER` u ON c.ID = u.ID

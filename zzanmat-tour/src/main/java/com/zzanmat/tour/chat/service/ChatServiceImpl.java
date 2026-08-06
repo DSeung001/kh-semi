@@ -1,11 +1,18 @@
 package com.zzanmat.tour.chat.service;
 
+import com.zzanmat.tour.chat.dto.ChatImageDto;
 import com.zzanmat.tour.chat.dto.ChatMessage;
 import com.zzanmat.tour.chat.mapper.ChatMapper;
+import com.zzanmat.tour.common.util.FileUploadUtil;
+import com.zzanmat.tour.common.util.SavedFile;
 import com.zzanmat.tour.member.dto.MemberDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -17,51 +24,87 @@ public class ChatServiceImpl implements ChatService {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final ChatMapper chatMapper;
+    private final FileUploadUtil fileUploadUtil;
 
-    // 채팅 서비스 생성자
-    public ChatServiceImpl(ChatMapper chatMapper) {
+    @Value("${file.upload-dir.chat}")
+    private String chatUploadDir;
+
+    public ChatServiceImpl(ChatMapper chatMapper, FileUploadUtil fileUploadUtil) {
         this.chatMapper = chatMapper;
+        this.fileUploadUtil = fileUploadUtil;
     }
 
     @Override
     public ChatMessage save(MemberDto loginMember, String content) {
-        // 로그인 회원이 없거나 회원 아이디가 없으면 null 반환
         if (loginMember == null || loginMember.getId() == null) {
             return null;
         }
-        // 채팅 내용이 없으면 null 반환
         if (!StringUtils.hasText(content)) {
             return null;
         }
 
-        // 채팅 내용 정리
         String trimmed = content.trim();
-        // 채팅 내용이 300자 초과하면 300자로 자름, DDL 정의를 따름
         if (trimmed.length() > 300) {
             trimmed = trimmed.substring(0, 300);
         }
 
-        // 채팅 내용 저장
-        chatMapper.save(loginMember.getId(), trimmed);
+        ChatMessage message = new ChatMessage();
+        message.setUserId(loginMember.getId());
+        message.setContent(trimmed);
+        chatMapper.save(message);
 
-        // 응답 생성
-        ChatMessage response = new ChatMessage();
-        response.setUserId(loginMember.getId());
-        response.setSender(loginMember.getNickname());
-        response.setContent(trimmed);
-        response.setTime(LocalTime.now().format(TIME_FORMAT));
-        return response;
+        message.setSender(loginMember.getNickname());
+        message.setTime(LocalTime.now().format(TIME_FORMAT));
+        return message;
+    }
+
+    @Override
+    @Transactional
+    public ChatMessage saveImage(MemberDto loginMember, MultipartFile imageFile) throws IOException {
+        if (loginMember == null || loginMember.getId() == null) {
+            return null;
+        }
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("이미지 파일이 필요합니다.");
+        }
+
+        String contentType = imageFile.getContentType();
+        if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+            throw new IllegalArgumentException("JPG 또는 PNG 이미지만 등록할 수 있습니다.");
+        }
+
+        SavedFile savedFile = fileUploadUtil.save(
+                imageFile,
+                chatUploadDir,
+                "/uploads/chat"
+        );
+
+        ChatImageDto image = new ChatImageDto();
+        image.setOriginName(savedFile.getOriginalName());
+        image.setUploadPath(savedFile.getPath());
+        image.setImageOrder(1);
+        chatMapper.saveImage(image);
+
+        ChatMessage message = new ChatMessage();
+        message.setUserId(loginMember.getId());
+        message.setContent("");
+        chatMapper.save(message);
+
+        chatMapper.saveTalkImage(message.getChatId(), image.getUploadId());
+
+        message.setSender(loginMember.getNickname());
+        message.setImageUrl(savedFile.getPath());
+        message.setTime(LocalTime.now().format(TIME_FORMAT));
+        return message;
     }
 
     @Override
     public List<ChatMessage> listRecent(int limit) {
-        // 최근 채팅 메시지 조회
         int safeLimit = Math.max(1, Math.min(limit, 50));
         List<ChatMessage> messages = chatMapper.findRecent(safeLimit);
         if (messages == null || messages.isEmpty()) {
             return Collections.emptyList();
         }
-        // 최근 채팅 메시지 역순으로 정렬
         Collections.reverse(messages);
         return messages;
     }
