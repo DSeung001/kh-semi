@@ -71,13 +71,15 @@
     </update>
 
     <select id="findById" parameterType="String" resultType="MemberDto">
-        SELECT user_id
+        SELECT id
+              ,user_id
               ,nickname
               ,bio
               ,user_name
               ,email
               ,profile
               ,login_type
+              ,role
               ,(
                 SELECT COUNT(*)
                   FROM FOLLOWE F
@@ -89,8 +91,6 @@
                  WHERE F.FOLLOWER_ID = U.ID
               ) AS FOLLOWING_COUNT
           FROM `USER` U
-              ,role
-          FROM `USER`
          WHERE USER_ID = #{userId}
     </select>
 
