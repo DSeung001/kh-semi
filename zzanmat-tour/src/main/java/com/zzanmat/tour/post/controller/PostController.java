@@ -4,9 +4,12 @@ import com.zzanmat.tour.comment.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
+import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.dto.PostUpdateRequest;
 import com.zzanmat.tour.post.service.PostService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,10 @@ import java.util.List;
 
 @Controller
 public class PostController {
+
+    @Autowired
+    private MemberService memberService;
+
     private final PostService postService;
     private final CommentService commentService;
 
@@ -36,6 +43,34 @@ public class PostController {
     }
 
     @GetMapping("/post-detail")
+    public String postDetail(@RequestParam Long postId,
+            HttpSession session,
+            Model model) {
+
+        postService.increaseViewCount(postId); // 조회 수 증가
+
+        PostDto post = postService.findById(postId);
+
+        if (post == null) {
+            return "redirect:/my-travel"; // 게시글 정보가 없으면 게시글 리스트로 보내기
+        }
+
+        boolean isFollowing = false;
+        boolean isOwnPost = false;
+
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        if (loginMember != null) { // 로그인이 되어있으면
+            isOwnPost = loginMember.getId().equals(post.getUserId()); // 로그인유저랑 게시글에 등록된 유저랑 비교
+
+            if (!isOwnPost) {
+                isFollowing = memberService.isFollowing(loginMember.getId(), post.getUserId());
+            }
+        }
+
+        model.addAttribute("post", post);
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("isOwnPost", isOwnPost);
     public String postDetail(
             @RequestParam Long postId,
             @SessionAttribute(

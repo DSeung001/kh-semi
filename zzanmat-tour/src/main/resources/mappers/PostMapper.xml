@@ -5,11 +5,8 @@
 
 <mapper namespace="com.zzanmat.tour.post.mapper.PostMapper">
 
-    <resultMap id="postResultMap"
-               type="PostDto">
-
+    <resultMap id="postResultMap" type="PostDto">
         <id property="postId" column="POST_ID"/>
-
         <result property="userId" column="USER_ID"/>
         <result property="title" column="TITLE"/>
         <result property="content" column="CONTENT"/>
@@ -20,9 +17,8 @@
         <result property="foodCost" column="FOOD_COST"/>
         <result property="otherCost" column="OTHER_COST"/>
         <result property="thumbnailPath" column="THUMBNAIL_PATH"/>
-
-
-
+        <result property="authorNickname" column="AUTHOR_NICKNAME"/>
+        <result property="authorProfile" column="AUTHOR_PROFILE"/>
     </resultMap>
 
     <select id="findAll" resultMap="postResultMap">
@@ -57,24 +53,27 @@
         </choose>
 
     </select>
-<select id="findById"
-        parameterType="long"
-        resultMap="postResultMap">
-    SELECT
-        P.POST_ID,
-        P.USER_ID,
-        P.TITLE,
-        P.CONTENT,
-        P.VIEW_COUNT,
-        P.CREATE_AT,
-        P.IS_BLOCK,
-        P.TRANSPORT_COST,
-        P.FOOD_COST,
-        P.OTHER_COST
-    FROM POST P
-    WHERE P.POST_ID = #{postId}
-        AND P.IS_BLOCK = FALSE
-</select>
+
+    <select id="findById" parameterType="long" resultMap="postResultMap">
+        SELECT P.POST_ID,
+               P.USER_ID,
+               P.TITLE,
+               P.CONTENT,
+               P.VIEW_COUNT,
+               P.CREATE_AT,
+               P.IS_BLOCK,
+               P.TRANSPORT_COST,
+               P.FOOD_COST,
+               P.OTHER_COST,
+               U.NICKNAME AS AUTHOR_NICKNAME,
+               U.PROFILE AS AUTHOR_PROFILE
+          FROM POST P
+          LEFT JOIN `USER` U
+            ON U.ID = P.USER_ID
+         WHERE P.POST_ID = #{postId}
+           AND P.IS_BLOCK = FALSE
+    </select>
+
     <insert id="save"
             parameterType="PostDto"
             useGeneratedKeys="true"

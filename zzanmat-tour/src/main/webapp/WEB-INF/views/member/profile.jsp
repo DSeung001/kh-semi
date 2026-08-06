@@ -49,30 +49,6 @@
           alert("${error}");
         </script>
       </c:if>
-      <%--<c:if test="${not empty kakaoError}">
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          <c:out value="${kakaoError}" />
-
-          <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="alert"
-                  aria-label="닫기">
-          </button>
-        </div>
-      </c:if>
-      <c:if test="${not empty message}">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-          <c:out value="${message}" />
-
-          <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="alert"
-                  aria-label="닫기">
-          </button>
-        </div>
-      </c:if>--%>
 <header class="zt-page-header">
   <h1>내 정보</h1>
   <p>프로필과 계정 정보를 확인하고 수정합니다.</p>
@@ -98,13 +74,12 @@
     <div class="flex-grow-1">
       <div class="d-flex flex-wrap gap-2 align-items-center">
         <h2 class="h5 mb-0">${userInfo.userId}</h2>
-        <%--<a class="btn btn-sm btn-outline-secondary" href="${pageContext.request.contextPath}/new-post">새 게시물</a>--%>
       </div>
       <p class="zt-muted small mb-0 mt-2">가성비 좋은 여행 동선을 기록합니다.</p>
       <div class="zt-profile-stats">
         <div><strong>${userPostCnt}</strong><span>게시물</span></div>
-        <div><strong>324</strong><span>팔로워</span></div>
-        <div><strong>201</strong><span>팔로잉</span></div>
+        <div><strong>${userInfo.followerCount}</strong><span>팔로워</span></div>
+        <div><strong>${userInfo.followingCount}</strong><span>팔로잉</span></div>
       </div>
     </div>
     <div class="logoutArea">
@@ -146,6 +121,14 @@
         <c:when test="${userInfo.loginType == 'KAKAO'}">
           <button type="submit"
                   formaction="${pageContext.request.contextPath}/member/withdraw/kakao"
+                  class="btn btn-outline-danger px-4"
+                  onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
+          </button>
+        </c:when>
+
+        <c:when test="${userInfo.loginType == 'NAVER'}">
+          <button type="submit"
+                  formaction="${pageContext.request.contextPath}/member/withdraw/naver"
                   class="btn btn-outline-danger px-4"
                   onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
           </button>
