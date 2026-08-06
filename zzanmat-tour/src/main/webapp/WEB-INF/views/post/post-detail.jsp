@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
-
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/post-detail.css">
+  
 </head>
 <body>
 <div class="zt-app">
@@ -41,8 +42,42 @@
 <article class="zt-panel overflow-hidden">
   <header class="zt-post-header">
     <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">
-    <div class="zt-user-meta"><strong>travel_ethan</strong><span>서울 · 2시간 전</span></div>
-    <button class="zt-icon-btn fs-5"><i class="bi bi-three-dots"></i></button>
+    <div class="zt-user-meta">
+      <div class="d-flex align-items-center gap-2">
+        <strong>
+          <c:out value="${post.authorNickname}"/>
+        </strong>
+
+        <!-- 로그인했으며 자신의 글이 아닌 경우 -->
+        <c:if test="${not empty sessionScope.loginMember and not isOwnPost}">
+          <button type="button"
+                  class="zt-follow-button btn btn-link btn-sm p-0 text-decoration-none ${isFollowing ? 'is-following' : ''}"
+                  data-follow-button
+                  data-context-path="${pageContext.request.contextPath}"
+                  data-following-id="${post.userId}"
+                  data-following="${isFollowing}">
+
+            <c:choose>
+              <c:when test="${isFollowing}">
+                팔로잉
+              </c:when>
+              <c:otherwise>
+                팔로우
+              </c:otherwise>
+            </c:choose>
+
+          </button>
+        </c:if>
+
+        <%--<c:if test="${empty sessionScope.loginMember}">
+          <a href="${pageContext.request.contextPath}/member/login?redirectURL=${pageContext.request.contextPath}/post-detail?postId=${post.postId}"
+             class="btn btn-link btn-sm p-0 text-decoration-none">
+            팔로우
+          </a>
+        </c:if>--%>
+
+      </div>
+    </div>
   </header>
 
   <c:if test="${not empty sessionScope.loginMember
@@ -407,6 +442,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-detail.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-detail-carousel.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/comment-edit.js"></script>

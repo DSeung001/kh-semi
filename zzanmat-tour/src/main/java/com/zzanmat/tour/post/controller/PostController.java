@@ -4,9 +4,11 @@ import com.zzanmat.tour.comment.service.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
+import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.dto.PostUpdateRequest;
 import com.zzanmat.tour.post.service.PostService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,10 @@ import java.util.List;
 
 @Controller
 public class PostController {
+
+    @Autowired
+    private MemberService memberService;
+
     private final PostService postService;
     private final CommentService commentService;
 
@@ -46,33 +52,34 @@ public class PostController {
     ) {
         postService.increaseViewCount(postId);
 
-        model.addAttribute(
-                "post",
-                postService.findById(postId)
-        );
+        PostDto post = postService.findById(postId);
 
-        model.addAttribute(
-                "likeCount",
-                postService.countLikes(postId)
-        );
+        if (post == null) {
+            return "redirect:/my-travel";
+        }
+
+        boolean isFollowing = false;
+        boolean isOwnPost = false;
+
+        if (loginMember != null) {
+            isOwnPost = loginMember.getId().equals(post.getUserId());
+
+            if (!isOwnPost) {
+                isFollowing = memberService.isFollowing(loginMember.getId(), post.getUserId());
+            }
+        }
+
+        model.addAttribute("post", post);
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("isOwnPost", isOwnPost);
+        model.addAttribute("likeCount", postService.countLikes(postId));
 
         boolean liked = loginMember != null
                 && postService.isLiked(postId, loginMember.getId());
-
         model.addAttribute("liked", liked);
 
-        Long loginUserId = loginMember == null
-                ? null
-                : loginMember.getId();
-
-
-        model.addAttribute(
-                "comments",
-                commentService.findByPostId(
-                        postId,
-                        loginUserId
-                )
-        );
+        Long loginUserId = loginMember == null ? null : loginMember.getId();
+        model.addAttribute("comments", commentService.findByPostId(postId, loginUserId));
 
         return "post/post-detail";
     }

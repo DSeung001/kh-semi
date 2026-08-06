@@ -27,5 +27,15 @@ public interface MemberService {
 
     MemberDto kakaoJoin(String kakaoId, String nickname);
 
-    void unlink(String accessToken);
+    MemberDto naverJoin(String naverId, String nickname, String email);
+
+    void unlinkKakao(String accessToken);
+
+    void unlinkNaver(String accessToken);
+
+    boolean isFollowing(Long followerId, Long followeringId);
+
+    void follow(Long followerId, Long followingId);
+
+    void unfollow(Long followerId, Long followingId);
 }

@@ -7,12 +7,17 @@ import com.zzanmat.tour.member.mapper.MemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Service
 public class MemberServiceImpl implements MemberService{
@@ -28,6 +33,12 @@ public class MemberServiceImpl implements MemberService{
 
     @Value("${file.upload-dir.profile}")
     private String profileUploadDir;
+
+    @Value("${spring.security.oauth2.client.registration.naver.client-id}")
+    private String naverClientId;
+
+    @Value("${spring.security.oauth2.client.registration.naver.client-secret}")
+    private String naverClientSecret;
 
     private final RestClient restClient = RestClient.create();
 
@@ -47,7 +58,7 @@ public class MemberServiceImpl implements MemberService{
         if(saved != null){
             memberDto.setProfile(saved.getPath());
         }
-
+        memberDto.setLoginType("LOCAL");
         memberMapper.save(memberDto);
     }
 
@@ -130,6 +141,7 @@ public class MemberServiceImpl implements MemberService{
         MemberDto memberDto = new MemberDto();
         memberDto.setUserId(kakaoId);
         memberDto.setNickname(nickname);
+        memberDto.setLoginType("KAKAO");
 
         memberMapper.save(memberDto);
 
@@ -138,10 +150,83 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public void unlink(String accessToken) {
+    public MemberDto naverJoin(String naverId, String nickname, String email) {
+
+        // 1. 네이버 고유 ID로 기존 회원 조회
+        MemberDto member = memberMapper.findByMemberId(naverId);
+
+        // 2. 이미 가입된 네이버 회원이면 그대로 반환
+        if (member != null) {
+            return member;
+        }
+
+        // 3. 최초 로그인이라면 회원 데이터 생성
+        MemberDto memberDto = new MemberDto();
+        memberDto.setUserId(naverId);
+        memberDto.setNickname(nickname);
+        memberDto.setEmail(email);
+        memberDto.setLoginType("NAVER");
+
+        memberMapper.save(memberDto);
+
+        // 4. 저장된 회원을 다시 조회
+        return memberMapper.findByMemberId(naverId);
+    }
+
+    @Override
+    public void unlinkKakao(String accessToken) {
         restClient.post().uri("https://kapi.kakao.com/v1/user/unlink")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .retrieve()
                         .toBodilessEntity();
+    }
+
+    @Override
+    public void unlinkNaver(String accessToken) {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+
+        formData.add("grant_type", "delete");
+        formData.add("client_id", naverClientId);
+        formData.add("client_secret", naverClientSecret);
+        formData.add("access_token", accessToken);
+        formData.add("service_provider", "NAVER");
+
+        Map<String, Object> response = restClient.post().uri("https://nid.naver.com/oauth2.0/token")
+                                                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                                    .body(formData)
+                                                    .retrieve()
+                                                    .body(Map.class);
+
+        if (response == null || !"success".equals(response.get("result"))) {
+            throw new IllegalStateException("네이버 연결 해제에 실패했습니다.");
+        }
+    }
+
+    public boolean isFollowing(Long followerId, Long followeringId) {
+        return memberMapper.countByFollowId(followerId, followeringId) > 0;
+    }
+
+    @Transactional
+    public void follow(Long followerId, Long followingId) {
+
+        if (followerId.equals(followingId)) {
+            throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
+        }
+
+        if (isFollowing(followerId, followingId)) {
+            return;
+        }
+
+        memberMapper.saveFollowe(followerId, followingId);
+    }
+
+    @Transactional
+    public void unfollow(Long followerId, Long followingId) {
+
+        if (followerId.equals(followingId)) {
+            throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
+        }
+
+        memberMapper.deleteByFollow(followerId, followingId);
     }
 }

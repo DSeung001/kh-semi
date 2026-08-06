@@ -1,0 +1,17 @@
+.zt-follow-button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #ff4d3d;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.zt-follow-button.is-following {
+    color: #6c757d;
+}
+
+.zt-follow-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
