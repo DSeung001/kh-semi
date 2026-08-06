@@ -16,6 +16,7 @@ public class CommentDto {
     private Long postId;
     private Long parentCommentId;
     private String content;
+    private boolean deleted;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
     private String nickname;

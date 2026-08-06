@@ -97,10 +97,13 @@ public class CommentService {
     }
 
     public void delete(Long commentId, Long userId) {
-        int deletedCount =
-                commentMapper.deleteByIdAndUserId(commentId, userId);
+        int updatedCount =
+                commentMapper.updateDeleteByIdAndUserId(
+                        commentId,
+                        userId
+                );
 
-        if (deletedCount == 0) {
+        if (updatedCount == 0) {
             throw new IllegalArgumentException(
                     "댓글을 삭제할 권한이 없습니다."
             );

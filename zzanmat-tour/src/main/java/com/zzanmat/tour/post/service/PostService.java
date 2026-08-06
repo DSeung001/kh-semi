@@ -272,16 +272,22 @@ public class PostService {
 
     public List<PostDto> findPage(
             String sort,
+            String keyword,
             int page,
             int size
     ) {
         int offset = (page - 1) * size;
 
-        return postMapper.findPage(sort, offset, size);
+        return postMapper.findPage(
+                sort,
+                keyword,
+                offset,
+                size
+        );
     }
 
-    public int countAll() {
-        return postMapper.countAll();
+    public int countAll(String keyword) {
+        return postMapper.countAll(keyword);
     }
 
     public int countLikes(Long postId) {

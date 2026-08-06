@@ -23,7 +23,7 @@ public interface CommentMapper {
 
     int updateByIdAndUserId(CommentDto comment);
 
-    int deleteByIdAndUserId(
+    int updateDeleteByIdAndUserId(
             @Param("commentId") Long commentId,
             @Param("userId") Long userId
     );

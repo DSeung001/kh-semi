@@ -14,6 +14,7 @@
         <result property="postId" column="POST_ID"/>
         <result property="parentCommentId" column="PARENT_COMMENT_ID"/>
         <result property="content" column="CONTENT"/>
+        <result property="deleted" column="IS_DELETED"/>
         <result property="createAt" column="CREATE_AT"/>
         <result property="updateAt" column="UPDATE_AT"/>
         <result property="nickname" column="NICKNAME"/>
@@ -31,6 +32,7 @@
             C.POST_ID,
             C.PARENT_COMMENT_ID,
             C.CONTENT,
+            C.IS_DELETED,
             C.CREATE_AT,
             C.UPDATE_AT,
             U.NICKNAME,
@@ -108,11 +110,16 @@
 
     </update>
 
-    <delete id="deleteByIdAndUserId">
+    <update id="updateDeleteByIdAndUserId">
 
-        DELETE FROM `COMMENT`
+        UPDATE `COMMENT`
+        SET
+            CONTENT = '삭제된 댓글입니다.',
+            IS_DELETED = TRUE,
+            UPDATE_AT = NOW()
         WHERE COMMENT_ID = #{commentId}
             AND USER_ID = #{userId}
+            AND IS_DELETED = FALSE
 
-    </delete>
+    </update>
 </mapper>

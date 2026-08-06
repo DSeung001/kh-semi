@@ -13,11 +13,12 @@ public interface PostMapper {
 
     List<PostDto> findPage(
             @Param("sort") String sort,
+            @Param("keyword") String keyword,
             @Param("offset") int offset,
             @Param("size") int size
     );
 
-    int countAll();
+    int countAll(@Param("keyword") String keyword);
 
     PostDto findById(@Param("postId") Long postId);
 
