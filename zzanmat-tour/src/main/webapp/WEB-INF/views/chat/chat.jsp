@@ -36,7 +36,7 @@
 
     <main class="zt-content">
 
-<section class="zt-panel zt-chat-shell">
+<section class="zt-panel zt-chat-shell" data-chat-dropzone>
   <header class="zt-chat-header d-flex align-items-center justify-content-between gap-2">
     <div class="flex-grow-1">
       <h1 class="h5 mb-1">Talk for Travel</h1>
@@ -55,17 +55,21 @@
 
   <form id="chat-form" class="zt-chat-compose">
     <div class="input-group">
-      <label class="btn btn-light border disabled" for="chat-image" aria-label="이미지 업로드" aria-disabled="true">
-        <i class="bi bi-image"></i>
-      </label>
-      <input id="chat-image" type="file" class="d-none" accept="image/*" disabled>
       <c:choose>
         <c:when test="${not empty loginMember}">
+          <label class="btn btn-light border" for="chat-image" aria-label="이미지 업로드">
+            <i class="bi bi-image"></i>
+          </label>
+          <input id="chat-image" type="file" class="d-none" accept="image/jpeg,image/png,image/*">
           <input id="chat-input" class="form-control bg-white" type="text" maxlength="300"
                  placeholder="메시지를 입력하세요" aria-label="메시지" autocomplete="off">
           <button class="btn btn-primary zt-primary-btn" type="submit">전송</button>
         </c:when>
         <c:otherwise>
+          <label class="btn btn-light border disabled" for="chat-image" aria-label="이미지 업로드" aria-disabled="true">
+            <i class="bi bi-image"></i>
+          </label>
+          <input id="chat-image" type="file" class="d-none" accept="image/*" disabled>
           <input id="chat-input" class="form-control bg-white" type="text" maxlength="300" disabled
                  placeholder="로그인 후 전송할 수 있습니다" aria-label="메시지" autocomplete="off">
           <button class="btn btn-primary zt-primary-btn" type="submit" disabled>전송</button>
@@ -87,14 +91,17 @@
 (function () {
   const contextPath = "${pageContext.request.contextPath}";
   const avatarSrc = contextPath + "/assets/images/profile-sora.svg";
+  const chatShell = document.querySelector("[data-chat-dropzone]");
   const chatList = document.getElementById("chat-list");
   const chatForm = document.getElementById("chat-form");
   const chatInput = document.getElementById("chat-input");
+  const chatImageInput = document.getElementById("chat-image");
   const statusEl = document.getElementById("chat-status");
   const isLoggedIn = "${not empty loginMember}" === "true";
   const myUserId = ${not empty loginMember ? loginMember.id : 'null'};
 
   let stompClient = null;
+  let uploading = false;
 
   function setStatus(connected) {
     statusEl.innerHTML = connected
@@ -106,10 +113,36 @@
     chatList.scrollTop = chatList.scrollHeight;
   }
 
+  function goLogin() {
+    window.location.href = contextPath + "/member/login?redirectURL=" +
+      encodeURIComponent(contextPath + "/chat");
+  }
+
+  function isAllowedImage(file) {
+    if (!file) {
+      return false;
+    }
+    return file.type === "image/jpeg" || file.type === "image/png";
+  }
+
   function appendMessage(message) {
     const isMine = myUserId != null && Number(message.userId) === Number(myUserId);
     const article = document.createElement("article");
     article.className = isMine ? "zt-chat-item zt-chat-item-mine" : "zt-chat-item";
+
+    let bubbleHtml = "";
+    if (message.content) {
+      bubbleHtml += '<div class="zt-chat-text">' + escapeHtml(message.content) + "</div>";
+    }
+    if (message.imageUrl) {
+      const src = contextPath + message.imageUrl;
+      bubbleHtml +=
+        '<img src="' + escapeHtml(src) + '" alt="채팅 이미지" loading="lazy">';
+    }
+    if (!bubbleHtml) {
+      bubbleHtml = '<div class="zt-chat-text"></div>';
+    }
+
     article.innerHTML =
       '<img class="zt-avatar" src="' + avatarSrc + '" alt="">' +
       "<div>" +
@@ -117,10 +150,51 @@
           '<strong class="small">' + escapeHtml(message.sender || "익명") + "</strong>" +
           '<span class="zt-muted small">' + escapeHtml(message.time || "") + "</span>" +
         "</div>" +
-        '<div class="zt-chat-bubble">' + escapeHtml(message.content || "") + "</div>" +
+        '<div class="zt-chat-bubble">' + bubbleHtml + "</div>" +
       "</div>";
     chatList.appendChild(article);
     scrollToLatest();
+  }
+
+  async function uploadChatImage(file) {
+    if (!isLoggedIn) {
+      goLogin();
+      return;
+    }
+    if (!file || uploading) {
+      return;
+    }
+    if (!isAllowedImage(file)) {
+      alert("JPG 또는 PNG 이미지만 업로드할 수 있습니다.");
+      return;
+    }
+
+    uploading = true;
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(contextPath + "/api/chat/images", {
+        method: "POST",
+        body: formData
+      });
+      if (res.status === 401) {
+        goLogin();
+        return;
+      }
+      if (!res.ok) {
+        const body = await res.json().catch(function () { return null; });
+        alert((body && body.message) || "이미지 업로드에 실패했습니다.");
+      }
+      // 성공 시 서버가 /topic/public 으로 브로드캐스트하므로 여기서 append 하지 않음
+    } catch (e) {
+      alert("이미지 업로드에 실패했습니다.");
+    } finally {
+      uploading = false;
+      if (chatImageInput) {
+        chatImageInput.value = "";
+      }
+    }
   }
 
   function connect() {
@@ -159,8 +233,7 @@
   chatForm.addEventListener("submit", function (event) {
     event.preventDefault();
     if (!isLoggedIn) {
-      window.location.href = contextPath + "/member/login?redirectURL=" +
-        encodeURIComponent(contextPath + "/chat");
+      goLogin();
       return;
     }
     if (!stompClient || !stompClient.connected) {
@@ -174,6 +247,55 @@
     chatInput.value = "";
     chatInput.focus();
   });
+
+  if (chatImageInput) {
+    chatImageInput.addEventListener("change", function () {
+      const file = chatImageInput.files && chatImageInput.files[0];
+      if (file) {
+        uploadChatImage(file);
+      }
+    });
+  }
+
+  if (chatShell) {
+    chatShell.addEventListener("dragenter", function (event) {
+      event.preventDefault();
+      if (isLoggedIn) {
+        chatShell.classList.add("is-dragover");
+      }
+    });
+
+    chatShell.addEventListener("dragover", function (event) {
+      event.preventDefault();
+      if (isLoggedIn) {
+        chatShell.classList.add("is-dragover");
+      }
+    });
+
+    chatShell.addEventListener("dragleave", function (event) {
+      if (!chatShell.contains(event.relatedTarget)) {
+        chatShell.classList.remove("is-dragover");
+      }
+    });
+
+    chatShell.addEventListener("drop", function (event) {
+      event.preventDefault();
+      chatShell.classList.remove("is-dragover");
+      if (!isLoggedIn) {
+        goLogin();
+        return;
+      }
+      const files = event.dataTransfer && event.dataTransfer.files
+        ? Array.from(event.dataTransfer.files)
+        : [];
+      const file = files.find(function (f) {
+        return f.type.indexOf("image/") === 0;
+      });
+      if (file) {
+        uploadChatImage(file);
+      }
+    });
+  }
 
   loadHistory().finally(connect);
 })();

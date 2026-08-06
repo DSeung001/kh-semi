@@ -12,5 +12,6 @@ public class ChatMessage {
     private Long userId;
     private String sender;
     private String content;
+    private String imageUrl;
     private String time;
 }
