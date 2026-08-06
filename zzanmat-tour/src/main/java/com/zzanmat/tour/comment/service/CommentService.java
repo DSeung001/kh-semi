@@ -1,4 +1,4 @@
-package com.zzanmat.tour.comment;
+package com.zzanmat.tour.comment.service;
 
 import com.zzanmat.tour.comment.dto.CommentDto;
 import com.zzanmat.tour.comment.mapper.CommentMapper;
@@ -49,6 +49,23 @@ public class CommentService {
         }
 
         comment.setContent(content.trim());
+
+        Long parentCommentId = comment.getParentCommentId();
+
+        if (parentCommentId != null) {
+            boolean parentExists =
+                    commentMapper.existsRootByIdAndPostId(
+                            parentCommentId,
+                            comment.getPostId()
+                    );
+
+            if (!parentExists) {
+                throw new IllegalArgumentException(
+                        "답글을 작성할 댓글을 찾을 수 없습니다."
+                );
+            }
+        }
+        
         commentMapper.save(comment);
     }
 
@@ -80,10 +97,13 @@ public class CommentService {
     }
 
     public void delete(Long commentId, Long userId) {
-        int deletedCount =
-                commentMapper.deleteByIdAndUserId(commentId, userId);
+        int updatedCount =
+                commentMapper.updateDeleteByIdAndUserId(
+                        commentId,
+                        userId
+                );
 
-        if (deletedCount == 0) {
+        if (updatedCount == 0) {
             throw new IllegalArgumentException(
                     "댓글을 삭제할 권한이 없습니다."
             );

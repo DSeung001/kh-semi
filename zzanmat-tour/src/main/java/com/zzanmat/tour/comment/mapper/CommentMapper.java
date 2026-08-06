@@ -14,11 +14,16 @@ public interface CommentMapper {
             @Param("loginUserId") Long loginUserId
     );
 
+    boolean existsRootByIdAndPostId(
+            @Param("commentId") Long commentId,
+            @Param("postId") Long postId
+    );
+
     void save(CommentDto comment);
 
     int updateByIdAndUserId(CommentDto comment);
 
-    int deleteByIdAndUserId(
+    int updateDeleteByIdAndUserId(
             @Param("commentId") Long commentId,
             @Param("userId") Long userId
     );

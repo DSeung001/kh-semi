@@ -377,6 +377,54 @@ button, input, textarea, select { font: inherit; }
   font-weight: 750;
 }
 
+.zt-travel-toolbar{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 120px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--zt-border);
+  border-radius: var(--zt-radius);
+  background: #fff;
+}
+
+.zt-travel-search-input,
+.zt-travel-sort {
+  height: 42px;
+}
+
+.zt-travel-search-input {
+  min-width:0;
+  border-radius: 12px;
+}
+
+.zt-travel-search-button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 16px;
+  border-color: var(--zt-primary);
+  color: #fff;
+  background: var(--zt-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.zt-travel-search-button:hover,
+.zt-travel-search-button:focus {
+  border-color: #1877f2;
+  color: #fff;
+  background: #1877f2;
+}
+
+.zt-travel-sort {
+  min-width: 120px;
+  border-radius: 12px;
+}
+
 .zt-travel-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1250,3 +1298,16 @@ button, input, textarea, select { font: inherit; }
   cursor: default;
   opacity: 0.5;
 }
+
+.zt-comment-row.is-reply {
+    margin-left: 48px;
+    padding-left: 16px;
+    border-left: 2px solid #e5e7eb;
+}
+
+.zt-deleted-comment {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.zt

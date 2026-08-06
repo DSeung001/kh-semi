@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const contextPath = grid.dataset.contextPath;
     const sort = grid.dataset.sort;
+    const keyword = grid.dataset.keyword;
     const totalPages = Number(grid.dataset.totalPages);
 
     let nextPage = 2;
@@ -68,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const params = new URLSearchParams({
                 sort: sort,
+                keyword: keyword,
                 page: String(nextPage)
             });
 

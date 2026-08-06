@@ -1,6 +1,6 @@
 package com.zzanmat.tour.post.controller;
 
-import com.zzanmat.tour.comment.CommentService;
+import com.zzanmat.tour.comment.service.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
@@ -111,12 +111,15 @@ public class PostController {
     @GetMapping("/my-travel")
     public String myTravel(
             @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "1") int page,
             Model model
     ) {
         int size = 9;
-        int totalCount = postService.countAll();
-        int totalPages = (int) Math.ceil((double) totalCount / size);
+        int totalCount = postService.countAll(keyword);
+        int totalPages = (int) Math.ceil(
+                (double) totalCount / size
+        );
 
         if (page < 1) {
             page = 1;
@@ -126,8 +129,17 @@ public class PostController {
             page = totalPages;
         }
 
-        model.addAttribute("posts", postService.findPage(sort, page, size));
+        model.addAttribute(
+                "posts",
+                postService.findPage(
+                        sort,
+                        keyword,
+                        page,
+                        size
+                )
+        );
         model.addAttribute("sort", sort);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);
         model.addAttribute("totalPages", totalPages);
 
@@ -221,21 +233,32 @@ public class PostController {
     @ResponseBody
     public ApiResponse<Map<String, Object>> getPostPage(
             @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "1") int page
     ) {
         int size = 9;
-        int totalCount = postService.countAll();
-        int totalPages = (int) Math.ceil((double) totalCount / size);
+        int totalCount = postService.countAll(keyword);
+        int totalPages = (int) Math.ceil(
+                (double) totalCount / size
+        );
 
         if (page < 1) {
             page = 1;
         }
 
         Map<String, Object> result = new HashMap<>();
-        result.put("posts", postService.findPage(sort, page, size));
+        result.put(
+                "posts",
+                postService.findPage(
+                        sort,
+                        keyword,
+                        page,
+                        size
+                )
+        );
         result.put("page", page);
         result.put("totalPages", totalPages);
-        result.put("hasNext", page < totalPages);
+        result.put("hashNext", page < totalPages);
 
         return ApiResponse.success(result);
     }

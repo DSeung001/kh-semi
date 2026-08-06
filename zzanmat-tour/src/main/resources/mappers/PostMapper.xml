@@ -148,6 +148,13 @@
         FROM POST P
         WHERE P.IS_BLOCK = FALSE
 
+        <if test="keyword != null and keyword != ''">
+            AND (
+                P.TITLE LIKE CONCAT('%', #{keyword}, '%')
+                OR P.CONTENT LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+
         <choose>
             <when test="sort == 'views'">
                 ORDER BY P.VIEW_COUNT DESC, P.POST_ID DESC
@@ -168,8 +175,15 @@
 
     <select id="countAll" resultType="int">
         SELECT COUNT(*)
-        FROM POST
-        WHERE IS_BLOCK = FALSE
+        FROM POST P
+        WHERE P.IS_BLOCK = FALSE
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+                P.TITLE LIKE CONCAT('%', #{keyword}, '%')
+                OR P.CONTENT LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
     </select>
 
     <insert id="saveImage"
