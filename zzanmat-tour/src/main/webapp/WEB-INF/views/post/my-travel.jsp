@@ -109,7 +109,7 @@
                 </c:when>
 
                 <c:otherwise>
-                    <img src="${pageContext.request.contextPath}/assets/images/seoul.svg"
+                    <img src="${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg"
                          alt="${post.title}">
                 </c:otherwise>
             </c:choose>

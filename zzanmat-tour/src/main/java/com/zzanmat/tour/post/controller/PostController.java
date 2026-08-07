@@ -256,7 +256,7 @@ public class PostController {
         );
         result.put("page", page);
         result.put("totalPages", totalPages);
-        result.put("hashNext", page < totalPages);
+        result.put("hasNext", page < totalPages);
 
         return ApiResponse.success(result);
     }

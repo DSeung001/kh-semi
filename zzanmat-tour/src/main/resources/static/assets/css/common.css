@@ -69,6 +69,13 @@ textarea {
   letter-spacing: -1.6px;
 }
 
+.zt-brand-logo {
+  display: block;
+  width: 145px;
+  height: auto;
+  object-fit: contain;
+}
+
 
 .zt-nav {
   display: flex;
@@ -1348,4 +1355,24 @@ textarea {
     font-style: italic;
 }
 
-.zt
+.zt-main-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: #212529;
+  text-decoration: none;
+}
+
+.zt-main-stat .zt-icon-btn {
+  padding: 0;
+}
+
+.zt-main-stat span {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.zt-main-like-form .bi-heart-fill {
+  color: #ff5a1f !important;
+}

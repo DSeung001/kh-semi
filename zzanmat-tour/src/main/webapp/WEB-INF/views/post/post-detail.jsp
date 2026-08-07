@@ -228,7 +228,9 @@
     </c:when>
 
     <c:otherwise>
-      <img class="zt-detail-image" src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="등록된 사진이 없습니다">
+      <img class="zt-detail-image"
+           src="${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg"
+           alt="등록된 사진이 없습니다">
     </c:otherwise>
   </c:choose>
 
@@ -240,11 +242,13 @@
           <button type="submit" class="zt-icon-btn" aria-label="좋아요">
             <c:choose>
               <c:when test="${liked}">
-                <i class="bi bi-heart-fill text-danger"></i>
+                <i class="bi bi-heart-fill text-danger"
+                   data-like-icon></i>
               </c:when>
 
               <c:otherwise>
-                <i class="bi bi-heart"></i>
+                <i class="bi bi-heart"
+                   data-like-icon></i>
               </c:otherwise>
             </c:choose>
           </button>
@@ -272,8 +276,12 @@
     </button>--%>
   </div>
 
-  <p id="detail-likes" class="fw-bold px-3 mb-2">
-    좋아요 <c:out value="${likeCount}"/>개
+  <p id="detail-likes"
+     class="fw-bold px-3 mb-2">
+    좋아요
+    <span data-like-count>
+      <c:out value="${likeCount}"/>
+    </span>개
   </p>
 
   <div class="zt-post-body">
