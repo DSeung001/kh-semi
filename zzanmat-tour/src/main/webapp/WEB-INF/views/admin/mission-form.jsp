@@ -25,7 +25,7 @@
     <main class="zt-content">
       <header class="zt-page-header">
         <h1>${isEdit ? '미션 수정' : '미션 등록'}</h1>
-        <p>폼 퍼블리싱만 제공됩니다. 저장 시 DB에 반영되지 않습니다.</p>
+        <p>미션 정보를 입력하고 등록하거나 수정할 수 있습니다.</p>
       </header>
 
       <section class="zt-panel">
@@ -40,19 +40,19 @@
           <div class="col-md-8">
             <label class="form-label" for="title">제목</label>
             <input type="text" class="form-control" id="title" name="title"
-                   value="${isEdit ? '샘플 미션 제목' : ''}" placeholder="미션 제목" required>
+                   placeholder="미션 제목" required>
           </div>
 
           <div class="col-md-4">
             <label class="form-label" for="rewardPoint">보상 포인트</label>
             <input type="number" class="form-control" id="rewardPoint" name="rewardPoint"
-                   value="${isEdit ? '1000' : '500'}" min="0" required>
+                   value="500" min="0" required>
           </div>
 
           <div class="col-12">
             <label class="form-label" for="description">설명</label>
             <textarea class="form-control" id="description" name="description" rows="3"
-                      placeholder="미션 설명">${isEdit ? '샘플 미션 설명입니다.' : ''}</textarea>
+                      placeholder="미션 설명"></textarea>
           </div>
 
           <div class="col-md-4">
@@ -102,9 +102,80 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  document.getElementById('missionForm').addEventListener('submit', function (e) {
+  const isEdit = ${isEdit};
+  const missionId = "${param.missionId}";
+
+  // 수정 모드일 경우, 기존 데이터 로드
+  if (isEdit) {
+    fetch(`/api/admin/missions/\${missionId}`)
+            .then(res => res.json())
+            .then(result => {
+              const m = result.data || result;
+              if (m) {
+                document.getElementById('title').value = m.title || '';
+                document.getElementById('rewardPoint').value = m.rewardPoint || 0;
+                document.getElementById('description').value = m.description || '';
+                document.getElementById('missionType').value = m.missionType || 'POST';
+                document.getElementById('triggerEvent').value = m.triggerEvent || 'CREATE_POST';
+                document.getElementById('targetCount').value = m.targetCount || 1;
+
+                if (m.startAt) document.getElementById('startAt').value = m.startAt.substring(0, 16);
+                if (m.endAt) document.getElementById('endAt').value = m.endAt.substring(0, 16);
+              }
+            }).catch(err => console.log("상세 정보 로드 생략 또는 오류", err));
+  }
+
+  // 미션 등록 및 수정 폼 제출 핸들러
+
+  document.getElementById('missionForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    alert('${isEdit ? "수정" : "등록"} 기능은 아직 연결되지 않았습니다. (퍼블리싱만)');
+
+    const startVal = document.getElementById('startAt').value;
+    const endVal = document.getElementById('endAt').value;
+
+    const missionData = {
+      title: document.getElementById('title').value,
+      description: document.getElementById('description').value,
+      rewardPoint: Number(document.getElementById('rewardPoint').value),
+      missionType: document.getElementById('missionType').value,
+      triggerEvent: document.getElementById('triggerEvent').value,
+      targetCount: Number(document.getElementById('targetCount').value),
+      // datetime-local 값에 초(:00)를 붙여주어 서버 LocalDateTime 매핑 오류 방지
+      startAt: startVal ? startVal + ':00' : null,
+      endAt: endVal ? endVal + ':00' : null
+    };
+
+    const url = isEdit ? `/api/admin/missions/\${missionId}` : '/api/admin/missions';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
+        body: JSON.stringify(missionData)
+      });
+
+      const text = await response.text();
+      let result = {};
+      try {
+        result = text ? JSON.parse(text) : {};
+      } catch (err) {
+        console.log("JSON 파싱 스킵");
+      }
+
+      if (response.ok) {
+        const msg = result.message || result.msg || (isEdit ? '미션이 성공적으로 수정되었습니다.' : '미션이 성공적으로 등록되었습니다.');
+        alert(msg);
+        location.href = '${pageContext.request.contextPath}/admin/missions';
+      } else {
+        const errorMsg = result.message || result.msg || '알 수 없는 오류가 발생했습니다.';
+        alert('처리 실패: ' + errorMsg);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('서버 통신 중 오류가 발생했습니다.');
+    }
   });
 </script>
 </body>

@@ -10,17 +10,17 @@ public class MissionResponseDto {
     @Getter
     @Setter
     public static class Info {
+        private Long id;
         private Long missionId;
-        private String title;
+        private String title;     //
         private String description;
-        private String missionType;
-        private String triggerEvent;
-        private int targetCount;
-        private int rewardPoint;
-        private LocalDateTime startAt;
-        private LocalDateTime endAt;
-        private String createdAt;
-        /** ACTIVE | EXPIRED | UPCOMING */
+        private String missionType;   // 미션 종류
+        private String triggerEvent;    // 이벤트
+        private int targetCount;      // 횟수
+        private int rewardPoint;     // 포인트 지급
+        private LocalDateTime startAt;   // 시작일
+        private LocalDateTime endAt;   // 종료일
+        private String createdAt;        /** ACTIVE | EXPIRED | UPCOMING */
         private String periodStatus;
         private boolean available;
     }
@@ -59,3 +59,5 @@ public class MissionResponseDto {
         private boolean available;
     }
 }
+
+
