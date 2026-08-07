@@ -304,6 +304,27 @@ button, input, textarea, select { font: inherit; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+}
+
+.zt-chat-shell.is-dragover {
+  outline: 2px dashed #4dabf7;
+  outline-offset: -8px;
+  background: rgba(231, 245, 255, 0.55);
+}
+
+.zt-chat-shell.is-dragover::after {
+  content: "이미지를 여기에 놓으세요";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+  font-weight: 600;
+  color: #0b3d5c;
+  background: rgba(231, 245, 255, 0.35);
 }
 
 .zt-chat-header {
@@ -351,6 +372,19 @@ button, input, textarea, select { font: inherit; }
   background: #f2f3f5;
   display: inline-block;
   text-align: left;
+  max-width: min(100%, 320px);
+}
+
+.zt-chat-bubble img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.zt-chat-bubble .zt-chat-text + img,
+.zt-chat-bubble img + .zt-chat-text {
+  margin-top: 8px;
 }
 
 .zt-chat-item-mine .zt-chat-bubble {
@@ -375,6 +409,54 @@ button, input, textarea, select { font: inherit; }
   text-align: center;
   font-size: 20px;
   font-weight: 750;
+}
+
+.zt-travel-toolbar{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 120px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--zt-border);
+  border-radius: var(--zt-radius);
+  background: #fff;
+}
+
+.zt-travel-search-input,
+.zt-travel-sort {
+  height: 42px;
+}
+
+.zt-travel-search-input {
+  min-width:0;
+  border-radius: 12px;
+}
+
+.zt-travel-search-button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 16px;
+  border-color: var(--zt-primary);
+  color: #fff;
+  background: var(--zt-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.zt-travel-search-button:hover,
+.zt-travel-search-button:focus {
+  border-color: #1877f2;
+  color: #fff;
+  background: #1877f2;
+}
+
+.zt-travel-sort {
+  min-width: 120px;
+  border-radius: 12px;
 }
 
 .zt-travel-grid {
@@ -1250,3 +1332,16 @@ button, input, textarea, select { font: inherit; }
   cursor: default;
   opacity: 0.5;
 }
+
+.zt-comment-row.is-reply {
+    margin-left: 48px;
+    padding-left: 16px;
+    border-left: 2px solid #e5e7eb;
+}
+
+.zt-deleted-comment {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.zt

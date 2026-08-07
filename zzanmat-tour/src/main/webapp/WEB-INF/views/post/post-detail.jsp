@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="zt-app">
-  
+
 <header class="zt-mobile-header">
   <a class="zt-brand" href="${pageContext.request.contextPath}/home">
     <span>짠맛투어</span>
@@ -32,7 +32,7 @@
 </nav>
 
   <div class="zt-layout">
-    
+
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
   <jsp:param name="activePage" value="home" />
 </jsp:include>
@@ -274,7 +274,7 @@
 
         <c:otherwise>
           <c:forEach var="comment" items="${comments}">
-            <div class="zt-comment-row">
+            <div class="zt-comment-row ${not empty comment.parentCommentId ? 'is-reply' : ''}">
               <img class="zt-avatar zt-avatar-sm"
                    src="${pageContext.request.contextPath}/assets/images/profile-sora.svg"
                    alt="댓글 작성자 프로필">
@@ -285,19 +285,46 @@
                     <c:out value="${comment.nickname}"/>
                   </strong>
 
-                  <span data-comment-content>
-                    <c:out value="${comment.content}"/>
-                  </span>
+                  <c:choose>
+                    <c:when test="${comment.deleted}">
+                      <span class="zt-deleted-comment">
+                        삭제된 댓글입니다.
+                      </span>
+                    </c:when>
+
+                    <c:otherwise>
+                      <span data-comment-content>
+                        <c:out value="${comment.content}"/>
+                      </span>
+                    </c:otherwise>
+                  </c:choose>
                 </p>
 
+                <c:if test="${not comment.deleted}">
                 <div class="zt-comment-like-count">
                   좋아요
                   <span data-comment-like-count>
                     <c:out value="${comment.likeCount}"/>
                   </span>개
                 </div>
+                </c:if>
 
-                <c:if test="${sessionScope.loginMember.id eq comment.userId}">
+                <c:if test="${not empty sessionScope.loginMember
+                              and empty comment.parentCommentId
+                              and not comment.deleted}">
+
+                  <button class="zt-comment-action-button"
+                          type="button"
+                          data-comment-reply-button
+                          data-comment-id="${comment.commentId}"
+                          data-comment-nickname="${comment.nickname}">
+                    답글 달기
+                  </button>
+                </c:if>
+
+                <c:if test="${sessionScope.loginMember.id eq comment.userId
+                              and not comment.deleted}">
+
                   <div class="zt-comment-actions">
 
                     <button class="zt-comment-action-button"
@@ -328,6 +355,8 @@
                   </div>
                 </c:if>
               </div>
+
+              <c:if test="${not comment.deleted}">
               <button class="zt-comment-like-button ${comment.liked ? 'is-liked' : ''}"
                       type="button"
                       data-comment-like-button
@@ -339,7 +368,8 @@
 
                 <i class="bi ${comment.liked ? 'bi-heart-fill' : 'bi-heart'}"
                    data-comment-like-icon></i>
-              </button>
+                </button>
+              </c:if>
 
             </div>
           </c:forEach>
@@ -360,6 +390,11 @@
         <input type="hidden"
                name="postId"
                value="${post.postId}">
+
+        <input id="comment-parent-id"
+               type="hidden"
+               name="parentCommentId"
+               disabled>
 
         <input id="comment-edit-id"
                type="hidden"
@@ -402,7 +437,7 @@
 </article>
 
     </main>
-    
+
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>

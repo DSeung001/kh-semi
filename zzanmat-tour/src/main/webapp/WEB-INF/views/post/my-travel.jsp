@@ -43,7 +43,25 @@
 </header>
     <form action="${pageContext.request.contextPath}/my-travel"
           method="get"
-          class="d-flex align-items-center mb-2 px-2">
+          class="zt-travel-toolbar">
+
+        <label for="post-keyword" class="visually-hidden">
+            게시글 제목 또는 내용 검색
+        </label>
+
+        <input id="post-keyword"
+               type="search"
+               name="keyword"
+               value="${keyword}"
+               class="form-control zt-travel-search-input"
+               placeholder="제목 또는 내용을 검색하세요"
+               aria-label="게시글 제목 또는 내용 검색">
+
+        <button type="submit"
+                class="btn zt-travel-search-button">
+            <i class="bi bi-search"></i>
+            <span>검색</span>
+        </button>
 
         <label for="post-sort" class="visually-hidden">
             게시글 정렬 기준
@@ -51,7 +69,7 @@
 
         <select id="post-sort"
                 name="sort"
-                class="form-select form-select-sm w-auto ms-auto"
+                class="form-select zt-travel-sort"
                 aria-label="게시글 정렬 기준"
                 onchange="this.form.submit()">
             <option value = "latest"
@@ -77,6 +95,7 @@
          aria-label="나만의 여행 게시글"
          data-context-path="${pageContext.request.contextPath}"
          data-sort="${sort}"
+         data-keyword="${keyword}"
          data-total-pages="${totalPages}">
 
     <c:forEach var="post" items="${posts}">
@@ -104,9 +123,29 @@
         </a>
     </c:forEach>
 
-
-
 </section>
+
+<c:if test="${empty posts}">
+    <div class="zt-panel text-center py-5">
+        <i class="bi bi-search fs-2 text-secondary"></i>
+
+        <p class="mt-3 mb-2">
+            검색 결과가 없습니다.
+        </p>
+
+        <c:if test="${not empty keyword}">
+            <p class="text-secondary small">
+                '<c:out value="${keyword}"/>'이(가)
+                포함된 게시글을 찾지 못했습니다.
+            </p>
+
+            <a class="btn btn-sm btn-outline-secondary"
+               href="${pageContext.request.contextPath}/my-travel">
+                전체 게시글 보기
+            </a>
+        </c:if>
+    </div>
+</c:if>
         <div id="post-scroll-sentinel"
              class="text-center py-4">
             <div id="post-loading"

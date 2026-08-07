@@ -58,11 +58,12 @@ public class WebConfig implements WebMvcConfigurer {
                         "/new-post",
                         "/edit-post",
                         "/delete-post",
-                        "/member/follow/**"
+                        "/member/follow/**",
                         "/post-like",
                         "/comment-like",
                         "/comments",
-                        "/comments/**"
+                        "/comments/**",
+                        "/api/chat/images"
                 );
 
         registry.addInterceptor(new AdminInterceptor())
