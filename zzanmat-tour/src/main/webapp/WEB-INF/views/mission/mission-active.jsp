@@ -89,15 +89,29 @@
 
         <span class="status-text" id="missionStatus">상태: -</span>
 
+        <c:if test="${mission != null}">
+          <div class="mb-4" id="mission-conditions">
+            <strong>수행 조건</strong>
+            <ul class="mb-0 mt-2">
+              <c:if test="${not empty mission.placeKeyword}">
+                <li>장소에 &quot;<c:out value="${mission.placeKeyword}"/>&quot; 포함</li>
+              </c:if>
+              <c:if test="${mission.maxTotalCost != null and mission.maxTotalCost > 0}">
+                <li>총 경비 <c:out value="${mission.maxTotalCost}"/>원 이하</li>
+              </c:if>
+              <c:if test="${empty mission.placeKeyword and (mission.maxTotalCost == null or mission.maxTotalCost == 0)}">
+                <li>별도 조건 없음</li>
+              </c:if>
+            </ul>
+            <p class="zt-muted small mt-2 mb-0">조건에 맞는 게시글을 올리면 자동으로 진행됩니다. 목표 달성 시 보상이 지급됩니다.</p>
+          </div>
+        </c:if>
+
         <p id="progress-summary" class="text-secondary mb-4">진행 정보를 불러오는 중입니다.</p>
 
         <!-- 팀원이 작업한 실제 작성 페이지(/new-post)로 미션 ID를 들고 이동하는 버튼 -->
-        <button type="button" id="authPostBtn" class="btn btn-primary zt-primary-btn w-100 py-3 fw-bold mb-3">
-          📝 게시글 올리기 (미션 인증하기)
-        </button>
-
-        <button type="button" id="completeBtn" class="btn btn-outline-success w-100 py-3 fw-bold mb-3" style="display:none;">
-          미션 완료하기
+        <button type="button" id="authPostBtn" class="btn btn-primary zt-primary-btn w-100 py-3 fw-bold mb-3" style="display:none;">
+          게시글 올리기 (미션 인증하기)
         </button>
 
       </section>
@@ -144,37 +158,7 @@
         window.location.href = contextPath + '/new-post?missionId=' + missionId;
       });
     }
-
-    // 미션 완료 버튼 이벤트
-    const completeBtn = document.getElementById("completeBtn");
-    if (completeBtn) {
-      completeBtn.addEventListener("click", function () {
-        completeMission();
-      });
-    }
   });
-
-  // 미션 완료 처리 API 호출
-  function completeMission() {
-    fetch(contextPath + '/api/mission/complete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ missionId: Number(missionId) })
-    })
-            .then(res => res.json())
-            .then(data => {
-              if (data && data.success) {
-                alert("미션이 완료되었습니다.");
-                refreshMissionProgress();
-              } else {
-                alert((data && data.message) ? data.message : "미션 완료에 실패했습니다.");
-              }
-            })
-            .catch(err => {
-              console.error("미션 완료 처리 에러:", err);
-              alert("미션 완료 중 오류가 발생했습니다.");
-            });
-  }
 
   function statusLabel(status, periodStatus) {
     if (periodStatus === 'EXPIRED') return '기간 종료';
@@ -210,27 +194,23 @@
 
               const summary = document.getElementById("progress-summary");
               if (!data.loggedIn) {
-                summary.innerText = "로그인하면 기간 내 미션이 자동으로 시작됩니다.";
+                summary.innerText = "로그인하면 조건에 맞는 게시글로 미션을 진행할 수 있습니다.";
               } else if (data.periodStatus === 'EXPIRED') {
                 summary.innerText = "이 미션은 수행 기간이 종료되었습니다.";
               } else if (data.periodStatus === 'UPCOMING') {
-                summary.innerText = "아직 시작 전인 미션입니다. 기간이 되면 자동으로 수행됩니다.";
+                summary.innerText = "아직 시작 전인 미션입니다. 기간이 되면 수행할 수 있습니다.";
               } else if (data.status === 'DONE') {
                 summary.innerText = "미션을 완료했습니다." + (data.rewardReceived ? " 보상이 지급되었습니다." : "");
               } else if (!data.status) {
-                summary.innerText = "진행 정보를 준비하는 중입니다.";
+                summary.innerText = "조건에 맞는 게시글을 올리면 자동으로 진행됩니다. 목표 달성 시 보상이 지급됩니다.";
               } else {
                 summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행했습니다. (보상 " + (data.rewardPoint || 0) + "P)";
               }
 
-              const canAct = data.loggedIn && data.available && data.status === 'IN_PROGRESS';
+              const canPost = data.loggedIn && data.available && data.status !== 'DONE';
               const authPostBtn = document.getElementById("authPostBtn");
-              const completeBtn = document.getElementById("completeBtn");
               if (authPostBtn) {
-                authPostBtn.style.display = canAct ? "block" : "none";
-              }
-              if (completeBtn) {
-                completeBtn.style.display = canAct ? "block" : "none";
+                authPostBtn.style.display = canPost ? "block" : "none";
               }
             })
             .catch(err => {

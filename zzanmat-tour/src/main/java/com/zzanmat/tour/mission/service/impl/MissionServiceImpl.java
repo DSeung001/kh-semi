@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,10 +35,10 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public List<MissionResponseDto.Info> getAllMissions(Long userId) {
-        List<MissionResponseDto.Info> missions = missionMapper.findAll();
-        if (missions == null) {
-            return List.of();
-        }
+        List<MissionResponseDto.Info> found = missionMapper.findAll();
+        List<MissionResponseDto.Info> missions = found == null
+                ? new ArrayList<>()
+                : new ArrayList<>(found);
         for (MissionResponseDto.Info mission : missions) {
             applyPeriodStatus(mission);
         }
@@ -143,19 +145,7 @@ public class MissionServiceImpl implements MissionService {
             throw new IllegalStateException("미션 목표를 아직 달성하지 않았습니다.");
         }
 
-        if (!STATUS_DONE.equals(userMission.getStatus())) {
-            missionMapper.updateStatus(userMission.getUserMissionId(), STATUS_DONE);
-        }
-
-        if (!userMission.isRewardReceived()) {
-            missionMapper.updateRewardReceived(userMission.getUserMissionId());
-            missionMapper.savePointHistory(
-                    userId,
-                    missionId,
-                    mission.getRewardPoint(),
-                    POINT_REASON_MISSION
-            );
-        }
+        grantMissionRewardIfNeeded(userId, missionId, mission, userMission);
 
         return missionMapper.findUserMissionByUserAndMission(userId, missionId);
     }
@@ -194,13 +184,21 @@ public class MissionServiceImpl implements MissionService {
         int targetCount = mission.getTargetCount() > 0 ? mission.getTargetCount() : 1;
         int newCount = detail.getCurrentCount() + 1;
         int percent = Math.min(100, (int) Math.round((newCount * 100.0) / targetCount));
+        boolean completed = newCount >= targetCount;
 
         missionMapper.updateProgressCounts(
                 detail.getUserMissionId(),
                 newCount,
                 percent,
-                STATUS_IN_PROGRESS
+                completed ? STATUS_DONE : STATUS_IN_PROGRESS
         );
+
+        if (completed) {
+            detail.setStatus(STATUS_DONE);
+            detail.setCurrentCount(newCount);
+            detail.setProgress(percent);
+            grantMissionRewardIfNeeded(userId, missionId, mission, detail);
+        }
     }
 
     @Override
@@ -209,11 +207,22 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
+    public int countActiveMissions() {
+        return missionMapper.countActiveMissions();
+    }
+
+    @Override
     public int getUserPointBalance(Long userId) {
         if (userId == null) {
             return 0;
         }
         return missionMapper.sumPointsByUserId(userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> sumPointsByDayLast14() {
+        List<Map<String, Object>> rows = missionMapper.sumPointsByDayLast14();
+        return rows != null ? rows : List.of();
     }
 
     @Override
@@ -248,34 +257,77 @@ public class MissionServiceImpl implements MissionService {
     }
 
     private void validateMissionConditions(MissionRequestDto.SaveOrUpdate requestDto) {
-        if (!StringUtils.hasText(requestDto.getPlaceKeyword())) {
-            throw new IllegalArgumentException("장소 키워드를 입력해 주세요.");
+        String placeKeyword = StringUtils.hasText(requestDto.getPlaceKeyword())
+                ? requestDto.getPlaceKeyword().trim()
+                : "";
+        requestDto.setPlaceKeyword(placeKeyword);
+
+        Long maxTotalCost = requestDto.getMaxTotalCost();
+        if (maxTotalCost == null || maxTotalCost < 0) {
+            maxTotalCost = 0L;
         }
-        requestDto.setPlaceKeyword(requestDto.getPlaceKeyword().trim());
-        if (requestDto.getMaxTotalCost() == null || requestDto.getMaxTotalCost() < 0) {
-            throw new IllegalArgumentException("총 경비 상한을 0 이상으로 입력해 주세요.");
+        requestDto.setMaxTotalCost(maxTotalCost);
+
+        boolean hasPlace = StringUtils.hasText(placeKeyword);
+        boolean hasCost = maxTotalCost > 0;
+        if (!hasPlace && !hasCost) {
+            throw new IllegalArgumentException("장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.");
         }
     }
 
     private boolean matchesMissionConditions(MissionResponseDto.Info mission, PostDto post) {
         String keyword = mission.getPlaceKeyword();
-        String place = post.getPlace();
-        if (!StringUtils.hasText(keyword) || !StringUtils.hasText(place)) {
-            return false;
-        }
-        if (!place.contains(keyword.trim())) {
+        boolean hasPlaceCondition = StringUtils.hasText(keyword);
+        Long maxTotalCost = mission.getMaxTotalCost();
+        boolean hasCostCondition = maxTotalCost != null && maxTotalCost > 0;
+
+        if (!hasPlaceCondition && !hasCostCondition) {
             return false;
         }
 
-        long transport = post.getTransportCost() == null ? 0L : post.getTransportCost();
-        long food = post.getFoodCost() == null ? 0L : post.getFoodCost();
-        long other = post.getOtherCost() == null ? 0L : post.getOtherCost();
-        long total = transport + food + other;
-        Long maxTotalCost = mission.getMaxTotalCost();
-        if (maxTotalCost == null) {
-            return false;
+        if (hasPlaceCondition) {
+            String place = post.getPlace();
+            if (!StringUtils.hasText(place) || !place.contains(keyword.trim())) {
+                return false;
+            }
         }
-        return total <= maxTotalCost;
+
+        if (hasCostCondition) {
+            long transport = post.getTransportCost() == null ? 0L : post.getTransportCost();
+            long food = post.getFoodCost() == null ? 0L : post.getFoodCost();
+            long other = post.getOtherCost() == null ? 0L : post.getOtherCost();
+            long total = transport + food + other;
+            if (total > maxTotalCost) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void grantMissionRewardIfNeeded(
+            Long userId,
+            Long missionId,
+            MissionResponseDto.Info mission,
+            MissionResponseDto.UserMissionDetail userMission
+    ) {
+        if (userMission == null || userMission.getUserMissionId() == null) {
+            return;
+        }
+
+        if (!STATUS_DONE.equals(userMission.getStatus())) {
+            missionMapper.updateStatus(userMission.getUserMissionId(), STATUS_DONE);
+        }
+
+        if (!userMission.isRewardReceived()) {
+            missionMapper.updateRewardReceived(userMission.getUserMissionId());
+            missionMapper.savePointHistory(
+                    userId,
+                    missionId,
+                    mission.getRewardPoint(),
+                    POINT_REASON_MISSION
+            );
+        }
     }
 
     private void ensureInProgress(Long userId, Long missionId) {

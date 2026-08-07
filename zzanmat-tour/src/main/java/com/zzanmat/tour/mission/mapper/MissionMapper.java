@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface MissionMapper {
@@ -34,7 +35,11 @@ public interface MissionMapper {
 
     int countAllMissions();
 
+    int countActiveMissions();
+
     int sumPointsByUserId(@Param("userId") Long userId);
+
+    List<Map<String, Object>> sumPointsByDayLast14();
 
     void savePointHistory(
             @Param("userId") Long userId,

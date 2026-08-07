@@ -72,7 +72,7 @@
         </div>
         <div class="col-6 col-lg-3">
           <div class="zt-admin-stat">
-            <div class="label">등록 미션</div>
+            <div class="label">활성 미션</div>
             <div class="value">${missionCount}</div>
           </div>
         </div>
@@ -81,7 +81,7 @@
       <section class="row g-3">
         <div class="col-12">
           <div class="zt-admin-chart">
-            <h2 class="h6 mb-3">최근 14일 게시글·댓글 작성 추이</h2>
+            <h2 class="h6 mb-3">최근 14일 게시글·댓글·포인트 추이</h2>
             <canvas id="activityChart" height="120"></canvas>
           </div>
         </div>
@@ -111,7 +111,8 @@
           ],
           borderColor: '#0d6efd',
           tension: 0.3,
-          fill: false
+          fill: false,
+          yAxisID: 'y'
         },
         {
           label: '댓글',
@@ -122,13 +123,40 @@
           ],
           borderColor: '#198754',
           tension: 0.3,
-          fill: false
+          fill: false,
+          yAxisID: 'y'
+        },
+        {
+          label: '지급 포인트',
+          data: [
+            <c:forEach var="value" items="${pointDailyCounts}" varStatus="st">
+              ${value}<c:if test="${!st.last}">,</c:if>
+            </c:forEach>
+          ],
+          borderColor: '#fd7e14',
+          tension: 0.3,
+          fill: false,
+          yAxisID: 'yPoints'
         }
       ]
     },
     options: {
       plugins: { legend: { position: 'bottom' } },
-      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          position: 'left',
+          title: { display: true, text: '건수' }
+        },
+        yPoints: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: '포인트' }
+        }
+      }
     }
   });
 </script>

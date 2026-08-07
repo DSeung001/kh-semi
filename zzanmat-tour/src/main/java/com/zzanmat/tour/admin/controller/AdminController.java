@@ -34,14 +34,16 @@ public class AdminController {
         model.addAttribute("memberCount", memberService.countAllMembers());
         model.addAttribute("postCount", postService.countAll(""));
         model.addAttribute("commentCount", commentService.countAll());
-        model.addAttribute("missionCount", missionService.countAllMissions());
+        model.addAttribute("missionCount", missionService.countActiveMissions());
 
         Map<LocalDate, Long> postByDay = toDayCountMap(postService.countPostsByDayLast14());
         Map<LocalDate, Long> commentByDay = toDayCountMap(commentService.countCommentsByDayLast14());
+        Map<LocalDate, Long> pointByDay = toDayCountMap(missionService.sumPointsByDayLast14());
 
         List<String> activityLabels = new ArrayList<>();
         List<Long> postValues = new ArrayList<>();
         List<Long> commentValues = new ArrayList<>();
+        List<Long> pointValues = new ArrayList<>();
         DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("M/d");
         LocalDate today = LocalDate.now();
         for (int i = 13; i >= 0; i--) {
@@ -49,10 +51,12 @@ public class AdminController {
             activityLabels.add(day.format(labelFmt));
             postValues.add(postByDay.getOrDefault(day, 0L));
             commentValues.add(commentByDay.getOrDefault(day, 0L));
+            pointValues.add(pointByDay.getOrDefault(day, 0L));
         }
         model.addAttribute("activityLabels", activityLabels);
         model.addAttribute("postDailyCounts", postValues);
         model.addAttribute("commentDailyCounts", commentValues);
+        model.addAttribute("pointDailyCounts", pointValues);
         return "admin/dashboard";
     }
 

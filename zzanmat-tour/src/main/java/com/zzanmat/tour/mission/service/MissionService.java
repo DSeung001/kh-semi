@@ -5,6 +5,7 @@ import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.post.dto.PostDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MissionService {
 
@@ -20,7 +21,11 @@ public interface MissionService {
 
     int countAllMissions();
 
+    int countActiveMissions();
+
     int getUserPointBalance(Long userId);
+
+    List<Map<String, Object>> sumPointsByDayLast14();
 
     void createMission(MissionRequestDto.SaveOrUpdate requestDto);
 

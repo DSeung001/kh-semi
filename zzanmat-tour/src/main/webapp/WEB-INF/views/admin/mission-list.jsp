@@ -40,6 +40,7 @@
             <tr>
               <th>ID</th>
               <th>제목</th>
+              <th>상태</th>
               <th>장소 키워드</th>
               <th>경비 상한</th>
               <th>보상</th>
@@ -48,15 +49,40 @@
             </tr>
             </thead>
             <tbody>
-            <!-- 컨트롤러에서 전달된 missions 변수명으로 매칭 -->
+            <!-- 컨트롤러에서 전달된 missions 변수명으로 매칭 (사용자 /mission 과 동일: ACTIVE → UPCOMING → EXPIRED) -->
             <c:choose>
               <c:when test="${not empty missions}">
                 <c:forEach var="mission" items="${missions}">
                   <tr>
                     <td>${mission.id}</td>
                     <td>${mission.title}</td>
-                    <td><span class="zt-chip">${mission.placeKeyword}</span></td>
-                    <td>${mission.maxTotalCost}원</td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${mission.periodStatus == 'EXPIRED'}">
+                          <span class="badge bg-secondary">기간 종료</span>
+                        </c:when>
+                        <c:when test="${mission.periodStatus == 'UPCOMING'}">
+                          <span class="badge bg-info-subtle text-info border border-info-subtle">예정</span>
+                        </c:when>
+                        <c:otherwise>
+                          <span class="badge bg-primary-subtle text-primary border border-primary-subtle">진행 가능</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${not empty mission.placeKeyword}">
+                          <span class="zt-chip">${mission.placeKeyword}</span>
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${mission.maxTotalCost != null and mission.maxTotalCost > 0}">${mission.maxTotalCost}원</c:when>
+                        <c:otherwise>-</c:otherwise>
+                      </c:choose>
+                    </td>
                     <td>${mission.rewardPoint}P</td>
                     <td class="small text-secondary">${mission.startAt} ~ ${mission.endAt}</td>
                     <td class="text-end">
@@ -68,7 +94,7 @@
               </c:when>
               <c:otherwise>
                 <tr>
-                  <td colspan="7" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
+                  <td colspan="8" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
                 </tr>
               </c:otherwise>
             </c:choose>

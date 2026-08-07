@@ -93,10 +93,26 @@
         SELECT COUNT(*) FROM `mission`
     </select>
 
+    <select id="countActiveMissions" resultType="int">
+        SELECT COUNT(*)
+          FROM `mission`
+         WHERE (start_at IS NULL OR start_at &lt;= NOW())
+           AND (end_at IS NULL OR end_at &gt;= NOW())
+    </select>
+
     <select id="sumPointsByUserId" resultType="int">
         SELECT COALESCE(SUM(point), 0)
           FROM `point_history`
          WHERE user_id = #{userId}
+    </select>
+
+    <select id="sumPointsByDayLast14" resultType="java.util.HashMap">
+        SELECT DATE(created_at) AS day
+             , COALESCE(SUM(point), 0) AS cnt
+          FROM `point_history`
+         WHERE created_at &gt;= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+         GROUP BY DATE(created_at)
+         ORDER BY day ASC
     </select>
 
     <update id="updateRewardReceived">

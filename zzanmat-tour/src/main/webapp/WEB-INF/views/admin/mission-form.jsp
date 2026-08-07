@@ -25,7 +25,7 @@
     <main class="zt-content">
       <header class="zt-page-header">
         <h1>${isEdit ? '미션 수정' : '미션 등록'}</h1>
-        <p>게시글 장소 키워드와 총 경비 상한으로 미션 조건을 설정합니다.</p>
+        <p>장소 키워드 또는 총 경비 상한 중 하나 이상으로 미션 조건을 설정합니다.</p>
       </header>
 
       <section class="zt-panel">
@@ -56,17 +56,20 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label" for="placeKeyword">장소 키워드</label>
+            <label class="form-label" for="placeKeyword">장소 키워드 (선택)</label>
             <input type="text" class="form-control" id="placeKeyword" name="placeKeyword"
-                   placeholder="예: 서울" maxlength="100" required>
-            <div class="form-text">게시글 장소에 이 키워드가 포함되어야 진행됩니다.</div>
+                   placeholder="예: 서울" maxlength="100">
+            <div class="form-text">입력 시 게시글 장소에 이 키워드가 포함되어야 진행됩니다.</div>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label" for="maxTotalCost">총 경비 상한 (원)</label>
+            <label class="form-label" for="maxTotalCost">총 경비 상한 (원, 선택)</label>
             <input type="number" class="form-control" id="maxTotalCost" name="maxTotalCost"
-                   value="30000" min="0" required>
-            <div class="form-text">교통비+식비+기타 합계가 상한 이하일 때만 인정됩니다.</div>
+                   placeholder="예: 30000" min="0">
+            <div class="form-text">비우면 경비 제한 없음. 입력 시 교통비+식비+기타 합계가 상한 이하일 때만 인정됩니다.</div>
+          </div>
+          <div class="col-12">
+            <div class="form-text">장소 키워드 또는 총 경비 상한 중 하나 이상 입력해야 합니다.</div>
           </div>
 
           <div class="col-md-4">
@@ -110,7 +113,8 @@
                 document.getElementById('rewardPoint').value = m.rewardPoint || 0;
                 document.getElementById('description').value = m.description || '';
                 document.getElementById('placeKeyword').value = m.placeKeyword || '';
-                document.getElementById('maxTotalCost').value = m.maxTotalCost != null ? m.maxTotalCost : 0;
+                document.getElementById('maxTotalCost').value =
+                        (m.maxTotalCost != null && m.maxTotalCost > 0) ? m.maxTotalCost : '';
                 document.getElementById('targetCount').value = m.targetCount || 1;
 
                 if (m.startAt) document.getElementById('startAt').value = m.startAt.substring(0, 16);
@@ -124,13 +128,21 @@
 
     const startVal = document.getElementById('startAt').value;
     const endVal = document.getElementById('endAt').value;
+    const placeKeyword = document.getElementById('placeKeyword').value.trim();
+    const maxTotalCostRaw = document.getElementById('maxTotalCost').value;
+    const maxTotalCost = maxTotalCostRaw === '' ? 0 : Number(maxTotalCostRaw);
+
+    if (!placeKeyword && !(maxTotalCost > 0)) {
+      alert('장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.');
+      return;
+    }
 
     const missionData = {
       title: document.getElementById('title').value,
       description: document.getElementById('description').value,
       rewardPoint: Number(document.getElementById('rewardPoint').value),
-      placeKeyword: document.getElementById('placeKeyword').value,
-      maxTotalCost: Number(document.getElementById('maxTotalCost').value),
+      placeKeyword: placeKeyword,
+      maxTotalCost: maxTotalCost,
       targetCount: Number(document.getElementById('targetCount').value),
       missionType: 'POST',
       triggerEvent: 'CREATE_POST',
