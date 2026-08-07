@@ -34,6 +34,8 @@ public interface MissionMapper {
 
     int countAllMissions();
 
+    int sumPointsByUserId(@Param("userId") Long userId);
+
     void savePointHistory(
             @Param("userId") Long userId,
             @Param("missionId") Long missionId,

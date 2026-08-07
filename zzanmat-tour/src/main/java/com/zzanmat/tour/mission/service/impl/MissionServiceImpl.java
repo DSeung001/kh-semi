@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -31,7 +32,6 @@ public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
 
     @Override
-    @Transactional
     public List<MissionResponseDto.Info> getAllMissions(Long userId) {
         List<MissionResponseDto.Info> missions = missionMapper.findAll();
         if (missions == null) {
@@ -39,39 +39,39 @@ public class MissionServiceImpl implements MissionService {
         }
         for (MissionResponseDto.Info mission : missions) {
             applyPeriodStatus(mission);
-            if (userId != null && mission.isAvailable()) {
-                ensureInProgress(userId, mission.getMissionId());
-            }
         }
+        missions.sort(
+                Comparator
+                        .comparingInt((MissionResponseDto.Info m) -> periodSortOrder(m.getPeriodStatus()))
+                        .thenComparing(
+                                MissionResponseDto.Info::getEndAt,
+                                Comparator.nullsLast(Comparator.reverseOrder())
+                        )
+                        .thenComparing(
+                                MissionResponseDto.Info::getMissionId,
+                                Comparator.nullsLast(Comparator.reverseOrder())
+                        )
+        );
         return missions;
     }
 
     @Override
-    @Transactional
     public MissionResponseDto.Info getMissionById(Long missionId, Long userId) {
         MissionResponseDto.Info mission = missionMapper.findById(missionId);
         if (mission == null) {
             return null;
         }
         applyPeriodStatus(mission);
-        if (userId != null && mission.isAvailable()) {
-            ensureInProgress(userId, missionId);
-        }
         return mission;
     }
 
     @Override
-    @Transactional
     public MissionResponseDto.Progress getUserMissionProgress(Long userId, Long missionId) {
         MissionResponseDto.Info mission = missionMapper.findById(missionId);
         if (mission == null) {
             throw new IllegalArgumentException("미션을 찾을 수 없습니다.");
         }
         applyPeriodStatus(mission);
-
-        if (userId != null && mission.isAvailable()) {
-            ensureInProgress(userId, missionId);
-        }
 
         MissionResponseDto.Progress progress = new MissionResponseDto.Progress();
         progress.setMissionId(mission.getMissionId());
@@ -209,6 +209,14 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
+    public int getUserPointBalance(Long userId) {
+        if (userId == null) {
+            return 0;
+        }
+        return missionMapper.sumPointsByUserId(userId);
+    }
+
+    @Override
     @Transactional
     public void createMission(MissionRequestDto.SaveOrUpdate requestDto) {
         applyMissionDefaults(requestDto);
@@ -236,9 +244,6 @@ public class MissionServiceImpl implements MissionService {
         }
         if (!StringUtils.hasText(requestDto.getTriggerEvent())) {
             requestDto.setTriggerEvent(DEFAULT_TRIGGER_EVENT);
-        }
-        if (requestDto.getAutoComplete() == null) {
-            requestDto.setAutoComplete(false);
         }
     }
 
@@ -283,6 +288,16 @@ public class MissionServiceImpl implements MissionService {
         if (STATUS_READY.equals(existing.getStatus())) {
             missionMapper.updateStatus(existing.getUserMissionId(), STATUS_IN_PROGRESS);
         }
+    }
+
+    private int periodSortOrder(String periodStatus) {
+        if (PERIOD_ACTIVE.equals(periodStatus)) {
+            return 0;
+        }
+        if (PERIOD_UPCOMING.equals(periodStatus)) {
+            return 1;
+        }
+        return 2;
     }
 
     private void applyPeriodStatus(MissionResponseDto.Info mission) {

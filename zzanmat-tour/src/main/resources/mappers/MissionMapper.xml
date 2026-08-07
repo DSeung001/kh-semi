@@ -15,7 +15,6 @@
         , reward_point
         , place_keyword
         , max_total_cost
-        , auto_complete
         , start_at
         , end_at
         , created_at
@@ -34,7 +33,6 @@
         , reward_point
         , place_keyword
         , max_total_cost
-        , auto_complete
         , start_at
         , end_at
         , created_at
@@ -58,7 +56,7 @@
         AND mission_id = #{missionId}
     </select>
 
-    <insert id="saveProgress" parameterType="com.zzanmat.tour.mission.dto.MissionProgressDto">
+    <insert id="saveProgress">
         INSERT INTO `mission_progress` (
         user_id
         , mission_id
@@ -95,6 +93,12 @@
         SELECT COUNT(*) FROM `mission`
     </select>
 
+    <select id="sumPointsByUserId" resultType="int">
+        SELECT COALESCE(SUM(point), 0)
+          FROM `point_history`
+         WHERE user_id = #{userId}
+    </select>
+
     <update id="updateRewardReceived">
         UPDATE `mission_progress`
         SET reward_received = TRUE
@@ -129,7 +133,6 @@
         , trigger_event
         , target_count
         , reward_point
-        , auto_complete
         , place_keyword
         , max_total_cost
         , start_at
@@ -143,7 +146,6 @@
         , #{triggerEvent}
         , #{targetCount}
         , #{rewardPoint}
-        , #{autoComplete}
         , #{placeKeyword}
         , #{maxTotalCost}
         , #{startAt}
@@ -171,9 +173,6 @@
             </if>
             <if test="rewardPoint != null">
                 reward_point = #{rewardPoint},
-            </if>
-            <if test="autoComplete != null">
-                auto_complete = #{autoComplete},
             </if>
             <if test="placeKeyword != null">
                 place_keyword = #{placeKeyword},

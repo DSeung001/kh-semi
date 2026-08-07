@@ -20,6 +20,8 @@ public interface MissionService {
 
     int countAllMissions();
 
+    int getUserPointBalance(Long userId);
+
     void createMission(MissionRequestDto.SaveOrUpdate requestDto);
 
     void updateMission(MissionRequestDto.SaveOrUpdate requestDto);

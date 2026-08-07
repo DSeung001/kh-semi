@@ -30,7 +30,6 @@ public class MissionRequestDto {
         private String missionType;
         private String triggerEvent;
         private int targetCount;
-        private Boolean autoComplete;
         private String placeKeyword;
         private Long maxTotalCost;
         private String startAt;
