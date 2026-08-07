@@ -13,6 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MissionServiceImpl implements MissionService {
 
     private static final String STATUS_DONE = "DONE";
@@ -148,22 +149,28 @@ public class MissionServiceImpl implements MissionService {
         return missionMapper.findUserMissionByUserAndMission(userId, missionId);
     }
 
+    // 1. 미션 생성 (원본 저장 + 생성 이력 기록)
     @Override
     @Transactional
     public void createMission(MissionRequestDto.SaveOrUpdate requestDto) {
-        missionMapper.save(requestDto);
+        missionMapper.save(requestDto); // 원본 저장 (자동 생성된 ID가 requestDto에 주입됨)
+        missionMapper.saveCreateHistory(requestDto); // 생성 이력 기록
     }
 
+    // 2. 미션 수정 (수정 이력 백업 + 본문 수정)
     @Override
     @Transactional
     public void updateMission(MissionRequestDto.SaveOrUpdate requestDto) {
-        missionMapper.update(requestDto);
+        missionMapper.saveUpdateHistory(requestDto.getId()); // 수정 전 이력 백업
+        missionMapper.update(requestDto); // 본문 업데이트
     }
 
+    // 3. 미션 삭제 (삭제 아카이브 백업 + 원본 삭제)
     @Override
     @Transactional
     public void deleteMission(Long missionId) {
-        missionMapper.deleteById(missionId);
+        missionMapper.saveDeleteArchive(missionId); // 삭제 전 백업
+        missionMapper.deleteById(missionId); // 원본 삭제
     }
 
     private void ensureInProgress(Long userId, Long missionId) {

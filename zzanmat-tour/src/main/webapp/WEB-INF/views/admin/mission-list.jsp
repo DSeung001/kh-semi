@@ -25,7 +25,7 @@
       <header class="zt-page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
           <h1>미션 관리</h1>
-          <p class="mb-0">등록·수정·삭제 화면 퍼블리싱 (실제 저장 없음)</p>
+          <p class="mb-0">DB와 연동된 미션 목록을 관리합니다.</p>
         </div>
         <div class="d-flex gap-2">
           <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin">대시보드</a>
@@ -47,39 +47,29 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-              <td>1</td>
-              <td>첫 여행 게시글 작성</td>
-              <td><span class="zt-chip">POST</span></td>
-              <td>2,000P</td>
-              <td class="small text-secondary">2026-08-01 ~ 2027-08-01</td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/admin/missions/edit?missionId=1">수정</a>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-mission-delete>삭제</button>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>여행 사진 업로드</td>
-              <td><span class="zt-chip">PHOTO</span></td>
-              <td>500P</td>
-              <td class="small text-secondary">2026-08-01 ~ 2027-08-01</td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/admin/missions/edit?missionId=2">수정</a>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-mission-delete>삭제</button>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>쇼츠 영상 업로드</td>
-              <td><span class="zt-chip">SHORTS</span></td>
-              <td>3,000P</td>
-              <td class="small text-secondary">기간 종료</td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/admin/missions/edit?missionId=3">수정</a>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-mission-delete>삭제</button>
-              </td>
-            </tr>
+            <!-- 컨트롤러에서 전달된 missions 변수명으로 매칭 -->
+            <c:choose>
+              <c:when test="${not empty missions}">
+                <c:forEach var="mission" items="${missions}">
+                  <tr>
+                    <td>${mission.id}</td>
+                    <td>${mission.title}</td>
+                    <td><span class="zt-chip">${mission.missionType}</span></td>
+                    <td>${mission.rewardPoint}P</td>
+                    <td class="small text-secondary">${mission.startAt} ~ ${mission.endAt}</td>
+                    <td class="text-end">
+                      <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/admin/missions/edit?missionId=${mission.id}">수정</a>
+                      <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteMission(${mission.id})">삭제</button>
+                    </td>
+                  </tr>
+                </c:forEach>
+              </c:when>
+              <c:otherwise>
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
+                </tr>
+              </c:otherwise>
+            </c:choose>
             </tbody>
           </table>
         </div>
@@ -90,13 +80,25 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  document.querySelectorAll('[data-mission-delete]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (confirm('삭제하시겠습니까? (퍼블리싱용 — 실제 삭제되지 않습니다)')) {
-        alert('삭제 기능은 아직 연결되지 않았습니다.');
-      }
-    });
-  });
+  // 실제 DB와 연동되어 미션을 삭제하는 함수
+
+  function deleteMission(missionId) {
+    if (!confirm("정말 이 미션을 삭제하시겠습니까?")) return;
+
+    fetch(`/api/admin/missions/\${missionId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+            .then(res => res.json())
+            .then(result => {
+              alert("미션이 성공적으로 삭제되었습니다.");
+              location.reload(); // 성공 시 새로고침하여 DB 반영 결과 확인
+            })
+            .catch(err => {
+              console.error("삭제 오류:", err);
+              alert("미션 삭제 중 오류가 발생했습니다.");
+            });
+  }
 </script>
 </body>
 </html>

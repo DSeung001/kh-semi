@@ -91,8 +91,9 @@
 
         <p id="progress-summary" class="text-secondary mb-4">진행 정보를 불러오는 중입니다.</p>
 
+        <!-- 팀원이 작업한 실제 작성 페이지(/new-post)로 미션 ID를 들고 이동하는 버튼 -->
         <button type="button" id="authPostBtn" class="btn btn-primary zt-primary-btn w-100 py-3 fw-bold mb-3">
-          인증 게시물 작성하고 미션 인증하기
+          📝 게시글 올리기 (미션 인증하기)
         </button>
 
         <button type="button" id="completeBtn" class="btn btn-outline-success w-100 py-3 fw-bold mb-3" style="display:none;">
@@ -130,6 +131,8 @@
       document.getElementById("progress-summary").innerText = "조회할 미션 정보가 없습니다. 미션 목록에서 미션을 선택해주세요.";
     }
 
+
+    // 게시글 작성 페이지로 이동 (missionId 파라미터 포함)
     const authPostBtn = document.getElementById("authPostBtn");
     if (authPostBtn) {
       authPostBtn.addEventListener("click", function (e) {
@@ -138,10 +141,11 @@
           alert("미션 정보가 올바르지 않습니다.");
           return;
         }
-        checkLoginAndMovePost(missionId);
+        window.location.href = contextPath + '/new-post?missionId=' + missionId;
       });
     }
 
+    // 미션 완료 버튼 이벤트
     const completeBtn = document.getElementById("completeBtn");
     if (completeBtn) {
       completeBtn.addEventListener("click", function () {
@@ -150,46 +154,26 @@
     }
   });
 
-  function checkLoginAndMovePost(targetMissionId) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = contextPath + '/mission/check-auth-and-move';
-
-    const missionInput = document.createElement('input');
-    missionInput.type = 'hidden';
-    missionInput.name = 'missionId';
-    missionInput.value = targetMissionId;
-    form.appendChild(missionInput);
-
-    const urlInput = document.createElement('input');
-    urlInput.type = 'hidden';
-    urlInput.name = 'redirectUrl';
-    urlInput.value = window.location.pathname + window.location.search;
-    form.appendChild(urlInput);
-
-    document.body.appendChild(form);
-    form.submit();
-  }
-
+  // 미션 완료 처리 API 호출
   function completeMission() {
     fetch(contextPath + '/api/mission/complete', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({missionId: Number(missionId)})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ missionId: Number(missionId) })
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.success) {
-          alert("미션이 완료되었습니다.");
-          refreshMissionProgress();
-        } else {
-          alert((data && data.message) ? data.message : "미션 완료에 실패했습니다.");
-        }
-      })
-      .catch(err => {
-        console.error("미션 완료 처리 에러:", err);
-        alert("미션 완료 중 오류가 발생했습니다.");
-      });
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.success) {
+                alert("미션이 완료되었습니다.");
+                refreshMissionProgress();
+              } else {
+                alert((data && data.message) ? data.message : "미션 완료에 실패했습니다.");
+              }
+            })
+            .catch(err => {
+              console.error("미션 완료 처리 에러:", err);
+              alert("미션 완료 중 오류가 발생했습니다.");
+            });
   }
 
   function statusLabel(status, periodStatus) {
@@ -202,56 +186,56 @@
     return status;
   }
 
+  // 서버로부터 실시간 미션 진행 상태를 가져와 동적으로 화면 갱신
   function refreshMissionProgress() {
     if (!missionId) return;
 
     fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
-      .then(res => res.json())
-      .then(response => {
-        if (!response || !response.success || !response.data) return;
+            .then(res => res.json())
+            .then(response => {
+              if (!response || !response.success || !response.data) return;
 
-        const data = response.data;
-        const currentCount = data.currentCount || 0;
-        const targetCount = data.targetCount || 0;
-        const percent = data.percent || 0;
+              const data = response.data;
+              const currentCount = data.currentCount || 0;
+              const targetCount = data.targetCount || 0;
+              const percent = data.percent || 0;
 
-        document.getElementById("progress-text-display").innerText = currentCount + " / " + targetCount;
+              document.getElementById("progress-text-display").innerText = currentCount + " / " + targetCount;
 
-        const bar = document.getElementById("progress-bar-element");
-        bar.style.width = percent + "%";
-        bar.setAttribute("aria-valuenow", percent);
+              const bar = document.getElementById("progress-bar-element");
+              bar.style.width = percent + "%";
+              bar.setAttribute("aria-valuenow", percent);
 
-        document.getElementById("missionStatus").innerText =
-          "상태: " + statusLabel(data.status, data.periodStatus);
+              document.getElementById("missionStatus").innerText = "상태: " + statusLabel(data.status, data.periodStatus);
 
-        const summary = document.getElementById("progress-summary");
-        if (!data.loggedIn) {
-          summary.innerText = "로그인하면 기간 내 미션이 자동으로 시작됩니다.";
-        } else if (data.periodStatus === 'EXPIRED') {
-          summary.innerText = "이 미션은 수행 기간이 종료되었습니다.";
-        } else if (data.periodStatus === 'UPCOMING') {
-          summary.innerText = "아직 시작 전인 미션입니다. 기간이 되면 자동으로 수행됩니다.";
-        } else if (data.status === 'DONE') {
-          summary.innerText = "미션을 완료했습니다." + (data.rewardReceived ? " 보상이 지급되었습니다." : "");
-        } else if (!data.status) {
-          summary.innerText = "진행 정보를 준비하는 중입니다.";
-        } else {
-          summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행했습니다. (보상 " + (data.rewardPoint || 0) + "P)";
-        }
+              const summary = document.getElementById("progress-summary");
+              if (!data.loggedIn) {
+                summary.innerText = "로그인하면 기간 내 미션이 자동으로 시작됩니다.";
+              } else if (data.periodStatus === 'EXPIRED') {
+                summary.innerText = "이 미션은 수행 기간이 종료되었습니다.";
+              } else if (data.periodStatus === 'UPCOMING') {
+                summary.innerText = "아직 시작 전인 미션입니다. 기간이 되면 자동으로 수행됩니다.";
+              } else if (data.status === 'DONE') {
+                summary.innerText = "미션을 완료했습니다." + (data.rewardReceived ? " 보상이 지급되었습니다." : "");
+              } else if (!data.status) {
+                summary.innerText = "진행 정보를 준비하는 중입니다.";
+              } else {
+                summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행했습니다. (보상 " + (data.rewardPoint || 0) + "P)";
+              }
 
-        const canAct = data.loggedIn && data.available && data.status === 'IN_PROGRESS';
-        const authPostBtn = document.getElementById("authPostBtn");
-        const completeBtn = document.getElementById("completeBtn");
-        if (authPostBtn) {
-          authPostBtn.style.display = canAct ? "block" : "none";
-        }
-        if (completeBtn) {
-          completeBtn.style.display = canAct ? "block" : "none";
-        }
-      })
-      .catch(err => {
-        console.error("진행 상황 동기화 실패:", err);
-      });
+              const canAct = data.loggedIn && data.available && data.status === 'IN_PROGRESS';
+              const authPostBtn = document.getElementById("authPostBtn");
+              const completeBtn = document.getElementById("completeBtn");
+              if (authPostBtn) {
+                authPostBtn.style.display = canAct ? "block" : "none";
+              }
+              if (completeBtn) {
+                completeBtn.style.display = canAct ? "block" : "none";
+              }
+            })
+            .catch(err => {
+              console.error("진행 상황 동기화 실패:", err);
+            });
   }
 </script>
 </body>
