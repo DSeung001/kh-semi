@@ -4,17 +4,14 @@ import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.mapper.MissionMapper;
 import com.zzanmat.tour.mission.service.MissionService;
+import com.zzanmat.tour.post.dto.PostDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +25,8 @@ public class MissionServiceImpl implements MissionService {
     private static final String PERIOD_ACTIVE = "ACTIVE";
     private static final String PERIOD_EXPIRED = "EXPIRED";
     private static final String PERIOD_UPCOMING = "UPCOMING";
+    private static final String DEFAULT_MISSION_TYPE = "POST";
+    private static final String DEFAULT_TRIGGER_EVENT = "CREATE_POST";
 
     private final MissionMapper missionMapper;
 
@@ -163,8 +162,8 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     @Transactional
-    public void recordPostProgress(Long userId, Long missionId) {
-        if (userId == null || missionId == null) {
+    public void recordPostProgress(Long userId, Long missionId, PostDto post) {
+        if (userId == null || missionId == null || post == null) {
             return;
         }
 
@@ -174,6 +173,10 @@ public class MissionServiceImpl implements MissionService {
         }
         applyPeriodStatus(mission);
         if (!mission.isAvailable()) {
+            return;
+        }
+
+        if (!matchesMissionConditions(mission, post)) {
             return;
         }
 
@@ -201,67 +204,73 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public Map<String, Object> getAdminDashboardStats() {
-        int readyCount = missionMapper.countProgressByStatus(STATUS_READY);
-        int inProgressCount = missionMapper.countProgressByStatus(STATUS_IN_PROGRESS);
-        int doneCount = missionMapper.countProgressByStatus(STATUS_DONE);
-
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("missionCount", missionMapper.countAllMissions());
-        stats.put("readyCount", readyCount);
-        stats.put("inProgressCount", inProgressCount);
-        stats.put("doneCount", doneCount);
-
-        Map<LocalDate, Long> pointByDay = new HashMap<>();
-        List<Map<String, Object>> rows = missionMapper.sumPointsByDayLast14();
-        if (rows != null) {
-            for (Map<String, Object> row : rows) {
-                Object dayObj = row.get("day");
-                Object totalObj = row.get("total_point");
-                if (dayObj == null) {
-                    continue;
-                }
-                LocalDate day = dayObj instanceof LocalDate
-                        ? (LocalDate) dayObj
-                        : LocalDate.parse(dayObj.toString().substring(0, 10));
-                long total = totalObj == null ? 0L : ((Number) totalObj).longValue();
-                pointByDay.put(day, total);
-            }
-        }
-
-        List<String> pointLabels = new ArrayList<>();
-        List<Long> pointValues = new ArrayList<>();
-        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("M/d");
-        LocalDate today = LocalDate.now();
-        for (int i = 13; i >= 0; i--) {
-            LocalDate day = today.minusDays(i);
-            pointLabels.add(day.format(labelFmt));
-            pointValues.add(pointByDay.getOrDefault(day, 0L));
-        }
-        stats.put("pointLabels", pointLabels);
-        stats.put("pointValues", pointValues);
-        return stats;
+    public int countAllMissions() {
+        return missionMapper.countAllMissions();
     }
 
     @Override
     @Transactional
     public void createMission(MissionRequestDto.SaveOrUpdate requestDto) {
+        applyMissionDefaults(requestDto);
+        validateMissionConditions(requestDto);
         missionMapper.save(requestDto);
-        missionMapper.saveCreateHistory(requestDto);
     }
 
     @Override
     @Transactional
     public void updateMission(MissionRequestDto.SaveOrUpdate requestDto) {
-        missionMapper.saveUpdateHistory(requestDto.getId());
+        applyMissionDefaults(requestDto);
+        validateMissionConditions(requestDto);
         missionMapper.update(requestDto);
     }
 
     @Override
     @Transactional
     public void deleteMission(Long missionId) {
-        missionMapper.saveDeleteArchive(missionId);
         missionMapper.deleteById(missionId);
+    }
+
+    private void applyMissionDefaults(MissionRequestDto.SaveOrUpdate requestDto) {
+        if (!StringUtils.hasText(requestDto.getMissionType())) {
+            requestDto.setMissionType(DEFAULT_MISSION_TYPE);
+        }
+        if (!StringUtils.hasText(requestDto.getTriggerEvent())) {
+            requestDto.setTriggerEvent(DEFAULT_TRIGGER_EVENT);
+        }
+        if (requestDto.getAutoComplete() == null) {
+            requestDto.setAutoComplete(false);
+        }
+    }
+
+    private void validateMissionConditions(MissionRequestDto.SaveOrUpdate requestDto) {
+        if (!StringUtils.hasText(requestDto.getPlaceKeyword())) {
+            throw new IllegalArgumentException("장소 키워드를 입력해 주세요.");
+        }
+        requestDto.setPlaceKeyword(requestDto.getPlaceKeyword().trim());
+        if (requestDto.getMaxTotalCost() == null || requestDto.getMaxTotalCost() < 0) {
+            throw new IllegalArgumentException("총 경비 상한을 0 이상으로 입력해 주세요.");
+        }
+    }
+
+    private boolean matchesMissionConditions(MissionResponseDto.Info mission, PostDto post) {
+        String keyword = mission.getPlaceKeyword();
+        String place = post.getPlace();
+        if (!StringUtils.hasText(keyword) || !StringUtils.hasText(place)) {
+            return false;
+        }
+        if (!place.contains(keyword.trim())) {
+            return false;
+        }
+
+        long transport = post.getTransportCost() == null ? 0L : post.getTransportCost();
+        long food = post.getFoodCost() == null ? 0L : post.getFoodCost();
+        long other = post.getOtherCost() == null ? 0L : post.getOtherCost();
+        long total = transport + food + other;
+        Long maxTotalCost = mission.getMaxTotalCost();
+        if (maxTotalCost == null) {
+            return false;
+        }
+        return total <= maxTotalCost;
     }
 
     private void ensureInProgress(Long userId, Long missionId) {

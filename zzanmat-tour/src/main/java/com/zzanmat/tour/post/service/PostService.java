@@ -260,5 +260,8 @@ public class PostService {
     public int countByUserPost(Long userId) {
         return postMapper.countByUserPost(userId);
     }
-    
+
+    public java.util.List<java.util.Map<String, Object>> countPostsByDayLast14() {
+        return postMapper.countPostsByDayLast14();
+    }
 }

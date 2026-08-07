@@ -43,7 +43,7 @@
       <header class="zt-page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
           <h1>관리자 대시보드</h1>
-          <p class="mb-0">미션·포인트 추이 요약</p>
+          <p class="mb-0">전체 유저 활동 요약</p>
         </div>
         <div class="d-flex gap-2">
           <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/missions">미션 관리</a>
@@ -60,35 +60,29 @@
         </div>
         <div class="col-6 col-lg-3">
           <div class="zt-admin-stat">
+            <div class="label">게시글 수</div>
+            <div class="value">${postCount}</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="zt-admin-stat">
+            <div class="label">댓글 수</div>
+            <div class="value">${commentCount}</div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="zt-admin-stat">
             <div class="label">등록 미션</div>
             <div class="value">${missionCount}</div>
-          </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="zt-admin-stat">
-            <div class="label">진행 중</div>
-            <div class="value">${inProgressCount}</div>
-          </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="zt-admin-stat">
-            <div class="label">완료</div>
-            <div class="value">${doneCount}</div>
           </div>
         </div>
       </section>
 
       <section class="row g-3">
-        <div class="col-lg-5">
+        <div class="col-12">
           <div class="zt-admin-chart">
-            <h2 class="h6 mb-3">미션 진행 상태</h2>
-            <canvas id="statusChart" height="220"></canvas>
-          </div>
-        </div>
-        <div class="col-lg-7">
-          <div class="zt-admin-chart">
-            <h2 class="h6 mb-3">포인트 지급 추이 (최근 14일)</h2>
-            <canvas id="pointChart" height="220"></canvas>
+            <h2 class="h6 mb-3">최근 14일 게시글·댓글 작성 추이</h2>
+            <canvas id="activityChart" height="120"></canvas>
           </div>
         </div>
       </section>
@@ -99,45 +93,42 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
 <script>
-  new Chart(document.getElementById('statusChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['READY', 'IN_PROGRESS', 'DONE'],
-      datasets: [{
-        data: [
-          Number('${readyCount}'),
-          Number('${inProgressCount}'),
-          Number('${doneCount}')
-        ],
-        backgroundColor: ['#adb5bd', '#ffc107', '#198754']
-      }]
-    },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
-
-  new Chart(document.getElementById('pointChart'), {
+  new Chart(document.getElementById('activityChart'), {
     type: 'line',
     data: {
       labels: [
-        <c:forEach var="label" items="${pointLabels}" varStatus="st">
+        <c:forEach var="label" items="${activityLabels}" varStatus="st">
           '${label}'<c:if test="${!st.last}">,</c:if>
         </c:forEach>
       ],
-      datasets: [{
-        label: '지급 포인트',
-        data: [
-          <c:forEach var="value" items="${pointValues}" varStatus="st">
-            ${value}<c:if test="${!st.last}">,</c:if>
-          </c:forEach>
-        ],
-        borderColor: '#0d6efd',
-        tension: 0.3,
-        fill: false
-      }]
+      datasets: [
+        {
+          label: '게시글',
+          data: [
+            <c:forEach var="value" items="${postDailyCounts}" varStatus="st">
+              ${value}<c:if test="${!st.last}">,</c:if>
+            </c:forEach>
+          ],
+          borderColor: '#0d6efd',
+          tension: 0.3,
+          fill: false
+        },
+        {
+          label: '댓글',
+          data: [
+            <c:forEach var="value" items="${commentDailyCounts}" varStatus="st">
+              ${value}<c:if test="${!st.last}">,</c:if>
+            </c:forEach>
+          ],
+          borderColor: '#198754',
+          tension: 0.3,
+          fill: false
+        }
+      ]
     },
     options: {
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
     }
   });
 </script>

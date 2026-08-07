@@ -1,0 +1,5 @@
+USE `zad`;
+
+-- 댓글 soft-delete 플래그 (앱 CommentMapper IS_DELETED 사용)
+ALTER TABLE `COMMENT`
+    ADD COLUMN `IS_DELETED` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '삭제 여부' AFTER `CONTENT`;

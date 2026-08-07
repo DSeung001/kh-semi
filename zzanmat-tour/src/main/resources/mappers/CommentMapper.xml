@@ -122,4 +122,20 @@
             AND IS_DELETED = FALSE
 
     </update>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*)
+          FROM `COMMENT`
+         WHERE IS_DELETED = FALSE
+    </select>
+
+    <select id="countCommentsByDayLast14" resultType="java.util.HashMap">
+        SELECT DATE(CREATE_AT) AS day
+             , COUNT(*) AS cnt
+          FROM `COMMENT`
+         WHERE IS_DELETED = FALSE
+           AND CREATE_AT &gt;= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+         GROUP BY DATE(CREATE_AT)
+         ORDER BY day ASC
+    </select>
 </mapper>

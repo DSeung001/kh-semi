@@ -170,7 +170,7 @@ public class PostController {
         postService.save(post, imageFiles);
 
         if (missionId != null) {
-            missionService.recordPostProgress(loginMember.getId(), missionId);
+            missionService.recordPostProgress(loginMember.getId(), missionId, post);
             return "redirect:/mission/active?missionId=" + missionId;
         }
 
@@ -214,6 +214,7 @@ public class PostController {
         post.setPostId(request.getPostId());
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
+        post.setPlace(request.getPlace());
         post.setTransportCost(request.getTransportCost());
         post.setFoodCost(request.getFoodCost());
         post.setOtherCost(request.getOtherCost());

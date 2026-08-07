@@ -4,8 +4,8 @@ import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface MissionMapper {
@@ -34,10 +34,6 @@ public interface MissionMapper {
 
     int countAllMissions();
 
-    int countProgressByStatus(@Param("status") String status);
-
-    List<Map<String, Object>> sumPointsByDayLast14();
-
     void savePointHistory(
             @Param("userId") Long userId,
             @Param("missionId") Long missionId,
@@ -47,13 +43,7 @@ public interface MissionMapper {
 
     void save(MissionRequestDto.SaveOrUpdate requestDto);
 
-    void saveCreateHistory(MissionRequestDto.SaveOrUpdate requestDto);
-
-    void saveUpdateHistory(Long id);
-
     void update(MissionRequestDto.SaveOrUpdate requestDto);
-
-    void saveDeleteArchive(Long missionId);
 
     void deleteById(Long missionId);
 }

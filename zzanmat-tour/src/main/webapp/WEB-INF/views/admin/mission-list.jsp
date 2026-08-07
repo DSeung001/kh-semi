@@ -40,7 +40,8 @@
             <tr>
               <th>ID</th>
               <th>제목</th>
-              <th>유형</th>
+              <th>장소 키워드</th>
+              <th>경비 상한</th>
               <th>보상</th>
               <th>기간</th>
               <th class="text-end">관리</th>
@@ -54,7 +55,8 @@
                   <tr>
                     <td>${mission.id}</td>
                     <td>${mission.title}</td>
-                    <td><span class="zt-chip">${mission.missionType}</span></td>
+                    <td><span class="zt-chip">${mission.placeKeyword}</span></td>
+                    <td>${mission.maxTotalCost}원</td>
                     <td>${mission.rewardPoint}P</td>
                     <td class="small text-secondary">${mission.startAt} ~ ${mission.endAt}</td>
                     <td class="text-end">
@@ -66,7 +68,7 @@
               </c:when>
               <c:otherwise>
                 <tr>
-                  <td colspan="6" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
+                  <td colspan="7" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
                 </tr>
               </c:otherwise>
             </c:choose>

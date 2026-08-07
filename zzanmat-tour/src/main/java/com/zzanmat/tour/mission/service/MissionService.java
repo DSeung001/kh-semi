@@ -2,12 +2,11 @@ package com.zzanmat.tour.mission.service;
 
 import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
+import com.zzanmat.tour.post.dto.PostDto;
 
 import java.util.List;
-import java.util.Map;
 
 public interface MissionService {
-
 
     List<MissionResponseDto.Info> getAllMissions(Long userId);
 
@@ -17,9 +16,9 @@ public interface MissionService {
 
     MissionResponseDto.UserMissionDetail completeMission(Long userId, Long missionId);
 
-    void recordPostProgress(Long userId, Long missionId);
+    void recordPostProgress(Long userId, Long missionId, PostDto post);
 
-    Map<String, Object> getAdminDashboardStats();
+    int countAllMissions();
 
     void createMission(MissionRequestDto.SaveOrUpdate requestDto);
 

@@ -47,20 +47,7 @@ CREATE TABLE mission_progress (
     FOREIGN KEY(mission_id) REFERENCES mission(id) ON DELETE CASCADE
 );
 
--- 3. 미션 기록 --
-CREATE TABLE mission_history (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    mission_id BIGINT NOT NULL,
-    post_id BIGINT COMMENT '게시글 ID',
-    action_type VARCHAR(50) COMMENT 'CREATE_POST 등',
-    completed_at DATETIME NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES `USER`(ID) ON DELETE CASCADE,
-    FOREIGN KEY(mission_id) REFERENCES mission(id) ON DELETE CASCADE
-);
-
--- 4. 포인트 내역 --
+-- 3. 포인트 내역 --
 CREATE TABLE point_history (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -72,11 +59,9 @@ CREATE TABLE point_history (
     FOREIGN KEY(mission_id) REFERENCES mission(id)
 );
 
--- 5. 인덱스 --
+-- 4. 인덱스 --
 CREATE INDEX idx_progress_user_status ON mission_progress(user_id, status);
-CREATE INDEX idx_history_user ON mission_history(user_id);
 CREATE INDEX idx_mission_trigger ON mission(trigger_event);
-CREATE INDEX idx_history_user_mission ON mission_history(user_id, mission_id);
 CREATE INDEX idx_point_history_user ON point_history(user_id);
 
 -- 6. 기본 미션 데이터 등록 --

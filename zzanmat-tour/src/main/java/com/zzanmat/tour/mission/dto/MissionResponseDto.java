@@ -18,9 +18,11 @@ public class MissionResponseDto {
         private String triggerEvent;    // 이벤트
         private int targetCount;      // 횟수
         private int rewardPoint;     // 포인트 지급
+        private String placeKeyword;
+        private Long maxTotalCost;
         private LocalDateTime startAt;   // 시작일
         private LocalDateTime endAt;   // 종료일
-        private String createdAt;        /** ACTIVE | EXPIRED | UPCOMING */
+        private String createdAt;
         private String periodStatus;
         private boolean available;
     }
