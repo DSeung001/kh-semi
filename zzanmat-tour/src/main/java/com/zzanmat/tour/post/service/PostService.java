@@ -50,8 +50,7 @@ public class PostService {
             return null;
         }
 
-        List<PostImageDto> images =
-                postMapper.findImagesByPostId(postId);
+        List<PostImageDto> images = postMapper.findImagesByPostId(postId);
 
         post.setImages(images);
 
@@ -59,20 +58,14 @@ public class PostService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void save(
-            PostDto post,
-            List<MultipartFile> imageFiles
-    ) throws IOException {
+    public void save(PostDto post, List<MultipartFile> imageFiles) throws IOException {
         long imageCount = imageFiles == null
                 ? 0
                 : imageFiles.stream()
                 .filter(file -> !file.isEmpty())
                 .count();
 
-        if (imageCount > MAX_IMAGE_COUNT) {
-            throw new IllegalArgumentException(
-                    "이미지는 최대 5장까지 등록할 수 있습니다."
-            );
+        if (imageCount > MAX_IMAGE_COUNT) {throw new IllegalArgumentException("이미지는 최대 5장까지 등록할 수 있습니다.");
         }
 
         postMapper.save(post);
@@ -90,18 +83,11 @@ public class PostService {
 
             String contentType = imageFile.getContentType();
 
-            if (!"image/jpeg".equals(contentType)
-                    && !"image/png".equals(contentType)) {
-                throw new IllegalArgumentException(
-                        "JPG 또는 PNG 이미지만 등록할 수 있습니다."
-                );
+            if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+                throw new IllegalArgumentException("JPG 또는 PNG 이미지만 등록할 수 있습니다.");
             }
 
-            SavedFile savedFile = fileUploadUtil.save(
-                    imageFile,
-                    postUploadDir,
-                    "/uploads/post"
-            );
+            SavedFile savedFile = fileUploadUtil.save(imageFile, postUploadDir,"/uploads/post");
 
             PostImageDto postImage = new PostImageDto();
             postImage.setPostId(post.getPostId());
@@ -110,10 +96,7 @@ public class PostService {
             postImage.setImageOrder(imageOrder);
 
             postMapper.saveImage(postImage);
-            postMapper.savePostImage(
-                    post.getPostId(),
-                    postImage.getUploadId()
-            );
+            postMapper.savePostImage(post.getPostId(), postImage.getUploadId());
 
             imageOrder++;
         }
@@ -129,14 +112,9 @@ public class PostService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void update(
-            PostDto post,
-            List<Long> deleteImageIds,
-            List<MultipartFile> imageFiles
-    ) throws IOException {
+    public void update(PostDto post, List<Long> deleteImageIds, List<MultipartFile> imageFiles) throws IOException {
 
-        List<PostImageDto> existingImages =
-                postMapper.findImagesByPostId(post.getPostId());
+        List<PostImageDto> existingImages = postMapper.findImagesByPostId(post.getPostId());
 
         List<PostImageDto> imagesToDelete = existingImages.stream()
                 .filter(image ->
@@ -151,13 +129,10 @@ public class PostService {
                 .filter(file -> !file.isEmpty())
                 .count();
 
-        int remainingImageCount =
-                existingImages.size() - imagesToDelete.size();
+        int remainingImageCount = existingImages.size() - imagesToDelete.size();
 
         if (remainingImageCount + newImageCount > MAX_IMAGE_COUNT) {
-            throw new IllegalArgumentException(
-                    "이미지는 최대 5장까지 등록할 수 있습니다."
-            );
+            throw new IllegalArgumentException("이미지는 최대 5장까지 등록할 수 있습니다.");
         }
 
         if (imageFiles != null) {
@@ -168,11 +143,8 @@ public class PostService {
 
                 String contentType = imageFile.getContentType();
 
-                if (!"image/jpeg".equals(contentType)
-                        && !"image/png".equals(contentType)) {
-                    throw new IllegalArgumentException(
-                            "JPG 또는 PNG 이미지만 등록할 수 있습니다."
-                    );
+                if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+                    throw new IllegalArgumentException("JPG 또는 PNG 이미지만 등록할 수 있습니다.");
                 }
             }
         }
@@ -209,25 +181,18 @@ public class PostService {
 
         for (PostImageDto image : imagesToDelete) {
 
-            postMapper.deleteByPostIdAndUploadId(
-                    post.getPostId(),
-                    image.getUploadId()
-            );
+            postMapper.deleteByPostIdAndUploadId(post.getPostId(), image.getUploadId());
 
             postMapper.deleteImage(image.getUploadId());
 
         }
 
-        List<PostImageDto> remainingImages =
-                postMapper.findImagesByPostId(post.getPostId());
+        List<PostImageDto> remainingImages = postMapper.findImagesByPostId(post.getPostId());
 
         int imageOrder = 1;
 
         for (PostImageDto image : remainingImages) {
-            postMapper.updateImageOrder(
-                    image.getUploadId(),
-                    imageOrder
-            );
+            postMapper.updateImageOrder(image.getUploadId(), imageOrder);
 
             imageOrder++;
         }
@@ -241,11 +206,7 @@ public class PostService {
                 continue;
             }
 
-            SavedFile savedFile = fileUploadUtil.save(
-                    imageFile,
-                    postUploadDir,
-                    "/uploads/post"
-            );
+            SavedFile savedFile = fileUploadUtil.save(imageFile, postUploadDir,"/uploads/post");
 
             newlySavedPaths.add(savedFile.getPath());
 
@@ -257,10 +218,7 @@ public class PostService {
 
             postMapper.saveImage(postImage);
 
-            postMapper.savePostImage(
-                    post.getPostId(),
-                    postImage.getUploadId()
-            );
+            postMapper.savePostImage(post.getPostId(), postImage.getUploadId());
 
             imageOrder++;
         }
@@ -270,20 +228,10 @@ public class PostService {
         postMapper.deleteById(postId);
     }
 
-    public List<PostDto> findPage(
-            String sort,
-            String keyword,
-            int page,
-            int size
-    ) {
+    public List<PostDto> findPage(String sort, String keyword, int page, int size) {
         int offset = (page - 1) * size;
 
-        return postMapper.findPage(
-                sort,
-                keyword,
-                offset,
-                size
-        );
+        return postMapper.findPage(sort, keyword, offset, size);
     }
 
     public int countAll(String keyword) {
@@ -294,34 +242,19 @@ public class PostService {
         return postLikeMapper.countByPostId(postId);
     }
 
-    public boolean isLiked(
-            Long postId,
-            Long userId
-    ) {
-        return postLikeMapper.existsByPostIdAndUserId(
-                postId,
-                userId
-        );
+    public boolean isLiked(Long postId, Long userId) {
+        return postLikeMapper.existsByPostIdAndUserId(postId, userId);
     }
 
     @Transactional
-    public void toggleLike(
-            Long postId,
-            Long userId
-    ) {
+    public void toggleLike(Long postId, Long userId) {
         if (isLiked(postId, userId)) {
-            postLikeMapper.deleteByPostIdAndUserId(
-                    postId,
-                    userId
-            );
+            postLikeMapper.deleteByPostIdAndUserId(postId, userId);
 
             return;
         }
 
-        postLikeMapper.save(
-                postId,
-                userId
-        );
+        postLikeMapper.save(postId, userId);
     }
 
     public int countByUserPost(Long userId) {

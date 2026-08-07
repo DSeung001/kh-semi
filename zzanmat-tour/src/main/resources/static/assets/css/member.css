@@ -90,6 +90,14 @@
     display: block;
 }
 
+.signup-message.is-error {
+    color: #dc3545;
+}
+
+.signup-message.is-success {
+    color: #198754;
+}
+
 .form-message {
     display: none;
     margin: 0.4rem 0 0;
@@ -108,26 +116,52 @@
     color: #198754;
 }
 
-textarea {
-    resize: none;
+/* 회원가입 아이디 중복 및 비밀번호 형식 오류 메시지 */
+#signupIdMessage.is-error,
+#passwordValidationMessage.is-error {
+    color: #dc3545;
 }
 
-.logoutArea{
-    margin-top: 100px;
+.logoutArea {
+    align-self: flex-end;
+    margin-left: auto;
 }
 
-.logout{
-    width: 18px;
-    height: 18px;
-    /*flex: 0 0 auto;*/
-    overflow: hidden;
-    /*border-radius: 50%;*/
-    background: #eee;
-    object-fit: cover;
+.logoutArea a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 13px;
+    border: 1px solid var(--zt-border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--zt-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    transition: border-color .2s ease, background-color .2s ease, color .2s ease, transform .2s ease;
 }
 
-.logoutArea a span {
-    font-size: 10px;
+.logoutArea a:hover {
+    border-color: #f1b4b9;
+    background: #fff7f7;
+    color: var(--zt-danger);
+    transform: translateY(-1px);
+}
+
+.logoutArea i {
+    font-size: 1rem;
+}
+
+@media (max-width: 575.98px) {
+    .logoutArea {
+        margin-top: 4px;
+    }
+
+    .logoutArea a {
+        padding: 8px 10px;
+    }
 }
 
 .my-profile{

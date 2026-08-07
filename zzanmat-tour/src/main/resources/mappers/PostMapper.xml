@@ -12,6 +12,7 @@
         <result property="content" column="CONTENT"/>
         <result property="viewCount" column="VIEW_COUNT"/>
         <result property="createAt" column="CREATE_AT"/>
+        <result property="formattedCreateAt" column="FORMATTED_CREATE_AT"/>
         <result property="isBlock" column="IS_BLOCK"/>
         <result property="transportCost" column="TRANSPORT_COST"/>
         <result property="foodCost" column="FOOD_COST"/>
@@ -61,6 +62,7 @@
                P.CONTENT,
                P.VIEW_COUNT,
                P.CREATE_AT,
+               DATE_FORMAT(P.CREATE_AT, '%Y.%m.%d %H:%i') AS FORMATTED_CREATE_AT,
                P.IS_BLOCK,
                P.TRANSPORT_COST,
                P.FOOD_COST,
@@ -109,8 +111,7 @@
         WHERE POST_ID = #{postId}
     </update>
 
-    <update id="update"
-            parameterType="com.zzanmat.tour.post.dto.PostDto">
+    <update id="update" parameterType="com.zzanmat.tour.post.dto.PostDto">
         UPDATE POST
         SET
             TITLE = #{title},

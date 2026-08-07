@@ -4,6 +4,26 @@ if (followButton) {
     followButton.addEventListener("click", async () => {
         const contextPath = followButton.dataset.contextPath;
         const followingId = followButton.dataset.followingId;
+        const isLoggedIn = followButton.dataset.loggedIn === "true";
+
+        const moveToLogin = () => {
+            const wantsToLogin = confirm(
+                "팔로우하려면 로그인이 필요합니다. 로그인하시겠습니까?"
+            );
+
+            if (!wantsToLogin) {
+                return false;
+            }
+
+            const currentURL = window.location.pathname + window.location.search;
+            window.location.href = `${contextPath}/member/login?redirectURL=${encodeURIComponent(currentURL)}`;
+            return true;
+        };
+
+        if (!isLoggedIn) {
+            moveToLogin();
+            return;
+        }
 
         const isFollowing = followButton.dataset.following === "true";
 
@@ -23,8 +43,7 @@ if (followButton) {
             );
 
             if (response.status === 401) {
-                const currentURL = window.location.pathname + window.location.search;
-                window.location.href = `${contextPath}/member/login?redirectURL=${encodeURIComponent(currentURL)}`;
+                moveToLogin();
                 return;
             }
 

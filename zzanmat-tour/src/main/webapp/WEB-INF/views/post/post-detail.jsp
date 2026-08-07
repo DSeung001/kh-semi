@@ -38,10 +38,92 @@
 </jsp:include>
 
     <main class="zt-content">
-
+    <c:url var="commentLoginUrl" value="/member/login">
+      <c:param name="redirectURL" value="/post-detail?postId=${post.postId}#comments"/>
+    </c:url>
 <article class="zt-panel overflow-hidden">
-  <header class="zt-post-header">
-    <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">
+  <header class="zt-post-header zt-detail-author-header">
+
+    <div class="zt-detail-author">
+      <c:choose>
+        <c:when test="${not empty post.authorProfile}">
+          <img class="zt-avatar" src="${pageContext.request.contextPath}${post.authorProfile}" alt="작성자 프로필">
+        </c:when>
+
+        <c:otherwise>
+          <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="기본 프로필">
+        </c:otherwise>
+      </c:choose>
+
+      <div class="zt-user-meta">
+
+        <!-- 첫 번째 줄: 닉네임 + 팔로우 -->
+        <div class="zt-detail-author-main">
+          <strong>
+            <c:out value="${post.authorNickname}" default="알 수 없는 사용자"/>
+          </strong>
+
+          <c:if test="${not empty sessionScope.loginMember and not isOwnPost}">
+            <button type="button" class="zt-follow-button ${isFollowing ? 'is-following' : ''}"
+                    data-follow-button
+                    data-logged-in="true"
+                    data-context-path="${pageContext.request.contextPath}"
+                    data-following-id="${post.userId}"
+                    data-following="${isFollowing}">
+
+              <c:choose>
+                <c:when test="${isFollowing}">팔로잉</c:when>
+                <c:otherwise>팔로우</c:otherwise>
+              </c:choose>
+            </button>
+          </c:if>
+
+          <c:if test="${empty sessionScope.loginMember}">
+            <button type="button"
+                    class="zt-follow-button"
+                    data-follow-button
+                    data-logged-in="false"
+                    data-context-path="${pageContext.request.contextPath}"
+                    data-following-id="${post.userId}"
+                    data-following="false">
+              팔로우
+            </button>
+          </c:if>
+        </div>
+
+        <!-- 두 번째 줄: 작성일 + 조회수 -->
+        <div class="zt-detail-author-sub">
+          <span>
+            <c:out value="${post.formattedCreateAt}"/>
+          </span>
+          <span>조회수 <c:out value="${post.viewCount}" default="0"/></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 본인 게시글일 때만 수정·삭제 -->
+    <c:if test="${isOwnPost}">
+      <div class="zt-detail-owner-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="${pageContext.request.contextPath}/edit-post?postId=${post.postId}">수정</a>
+        <form action="${pageContext.request.contextPath}/delete-post" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+          <input type="hidden" name="postId" value="${post.postId}">
+          <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
+        </form>
+      </div>
+    </c:if>
+  </header>
+  <%--<header class="zt-post-header">
+    &lt;%&ndash;<img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="travel_ethan 프로필">&ndash;%&gt;
+      <c:choose>
+        <c:when test="${not empty post.authorProfile}">
+          <img class="zt-avatar" src="${pageContext.request.contextPath}${post.authorProfile}" alt="작성자 프로필">
+        </c:when>
+
+        <c:otherwise>
+          <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="기본 프로필">
+        </c:otherwise>
+      </c:choose>
+
     <div class="zt-user-meta">
       <div class="d-flex align-items-center gap-2">
         <strong>
@@ -69,18 +151,18 @@
           </button>
         </c:if>
 
-        <%--<c:if test="${empty sessionScope.loginMember}">
+        &lt;%&ndash;<c:if test="${empty sessionScope.loginMember}">
           <a href="${pageContext.request.contextPath}/member/login?redirectURL=${pageContext.request.contextPath}/post-detail?postId=${post.postId}"
              class="btn btn-link btn-sm p-0 text-decoration-none">
             팔로우
           </a>
-        </c:if>--%>
+        </c:if>&ndash;%&gt;
 
       </div>
     </div>
-  </header>
+  </header>--%>
 
-  <c:if test="${not empty sessionScope.loginMember
+  <%--<c:if test="${not empty sessionScope.loginMember
                 and sessionScope.loginMember.id == post.userId}">
 
     <div class="p-3 text-end">
@@ -105,17 +187,14 @@
       </form>
     </div>
 
-  </c:if>
+  </c:if>--%>
 
   <c:choose>
     <c:when test="${not empty post.images}">
-      <div class="zt-detail-carousel"
-           data-detail-carousel>
+      <div class="zt-detail-carousel" data-detail-carousel>
 
         <div class="zt-detail-slides">
-          <c:forEach var="image"
-                     items="${post.images}"
-                     varStatus="status">
+          <c:forEach var="image" items="${post.images}" varStatus="status">
 
             <img class="zt-detail-image zt-detail-slide ${status.first ? 'is-active' : ''}"
                  src="${pageContext.request.contextPath}${image.uploadPath}"
@@ -149,26 +228,16 @@
     </c:when>
 
     <c:otherwise>
-      <img class="zt-detail-image"
-           src="${pageContext.request.contextPath}/assets/images/seoul.svg"
-           alt="등록된 사진이 없습니다">
+      <img class="zt-detail-image" src="${pageContext.request.contextPath}/assets/images/seoul.svg" alt="등록된 사진이 없습니다">
     </c:otherwise>
   </c:choose>
 
   <div class="zt-post-actions">
     <c:choose>
       <c:when test="${not empty sessionScope.loginMember}">
-        <form action="${pageContext.request.contextPath}/post-like"
-              method="post"
-              class="d-inline">
-
-          <input type="hidden"
-                 name="postId"
-                 value="${post.postId}">
-
-          <button type="submit"
-                  class="zt-icon-btn"
-                  aria-label="좋아요">
+        <form action="${pageContext.request.contextPath}/post-like" method="post" class="d-inline">
+          <input type="hidden" name="postId" value="${post.postId}">
+          <button type="submit" class="zt-icon-btn" aria-label="좋아요">
             <c:choose>
               <c:when test="${liked}">
                 <i class="bi bi-heart-fill text-danger"></i>
@@ -183,15 +252,14 @@
       </c:when>
 
       <c:otherwise>
-        <a class="zt-icon-btn"
-           href="${pageContext.request.contextPath}/member/login"
-           aria-label="로그인 후 좋아요">
+        <a class="zt-icon-btn" href="${pageContext.request.contextPath}/member/login" aria-label="로그인 후 좋아요">
           <i class="bi bi-heart"></i>
         </a>
       </c:otherwise>
     </c:choose>
 
-    <button class="zt-icon-btn" type="button">
+    <%-- 동작하지 않는 버튼들 주석 처리 --%>
+    <%--<button class="zt-icon-btn" type="button">
       <i class="bi bi-chat"></i>
     </button>
 
@@ -201,12 +269,11 @@
 
     <button class="zt-icon-btn zt-save-btn" type="button">
       <i class="bi bi-bookmark"></i>
-    </button>
+    </button>--%>
   </div>
 
   <p id="detail-likes" class="fw-bold px-3 mb-2">
     좋아요 <c:out value="${likeCount}"/>개
-
   </p>
 
   <div class="zt-post-body">
@@ -248,18 +315,14 @@
     <div class="d-flex justify-content-between">
       <span class="fw-bold">총비용</span>
       <strong class="text-primary">
-        <fmt:formatNumber
-            value="${post.transportCost + post.foodCost + post.otherCost}"/>원
+        <fmt:formatNumber value="${post.transportCost + post.foodCost + post.otherCost}"/>원
       </strong>
     </div>
 
-    <p class="zt-muted small mb-0">
-      작성자 번호:
-      <c:out value="${post.userId}"/>
-
-      . 조회수:
-      <c:out value="${post.viewCount}"/>
-    </p>
+    <%-- 조회 수 상단으로 옮김 추후 삭제 --%>
+    <%--<p class="zt-muted small mb-0">
+      조회수: <c:out value="${post.viewCount}"/>
+    </p>--%>
   </div>
 
   <section id="comments" class="zt-comments-box border-top">
@@ -275,9 +338,7 @@
         <c:otherwise>
           <c:forEach var="comment" items="${comments}">
             <div class="zt-comment-row ${not empty comment.parentCommentId ? 'is-reply' : ''}">
-              <img class="zt-avatar zt-avatar-sm"
-                   src="${pageContext.request.contextPath}/assets/images/profile-sora.svg"
-                   alt="댓글 작성자 프로필">
+              <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="댓글 작성자 프로필">
 
               <div class="flex-grow-1">
                 <p class="small mb-1">
@@ -327,12 +388,7 @@
 
                   <div class="zt-comment-actions">
 
-                    <button class="zt-comment-action-button"
-                            type="button"
-                            data-comment-edit-button
-                            data-comment-id="${comment.commentId}">
-                      수정
-                    </button>
+                    <button class="zt-comment-action-button" type="button" data-comment-edit-button data-comment-id="${comment.commentId}">수정</button>
 
                     <form action="${pageContext.request.contextPath}/comments/delete"
                           method="post"
@@ -428,9 +484,7 @@
 
     <c:otherwise>
       <div class="zt-comment-form">
-        <a href="${pageContext.request.contextPath}/member/login">
-          로그인 후 댓글을 작성할 수 있습니다.
-        </a>
+        <a href="${commentLoginUrl}">로그인 후 댓글을 작성할 수 있습니다.</a>
       </div>
     </c:otherwise>
   </c:choose>

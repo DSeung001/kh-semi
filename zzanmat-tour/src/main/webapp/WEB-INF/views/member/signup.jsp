@@ -37,20 +37,22 @@
         <p>프로필을 설정하고 짠맛투어의 여행 기록을 시작해 보세요.</p>
       </header>
       <section class="zt-panel zt-auth-card zt-panel-shadow zt-signup-card">
-        <form id="signupBtn" class="row g-3" method="post" action="${pageContext.request.contextPath}/member/signup" enctype="multipart/form-data">
+        <c:if test="${not empty error}">
+          <div class="alert alert-danger" role="alert">
+            <c:out value="${error}"/>
+          </div>
+        </c:if>
+
+        <form id="signupBtn" class="row g-3" method="post" action="${pageContext.request.contextPath}/member/signup" enctype="multipart/form-data" novalidate>
           <div class="col-12">
             <fieldset class="zt-signup-profile">
               <legend class="form-label mb-3">프로필 설정 <span class="zt-optional">선택</span></legend>
               <div class="zt-signup-profile-content">
                 <label id="label_profile-preview" class="zt-profile-upload" for="signup-profile-image">
                   <img id="profile-preview" class="profile-preview" alt="프로필 미리보기" style="display:none;">
-                  <%--<span class="zt-profile-upload-icon">
-                    <i class="bi bi-person"></i>
-                  </span>--%>
-                  <%--<span id="profile-preview-placeholder" class="zt-profile-upload-text">사진 추가</span>--%>
                 </label>
                 <div class="flex-grow-1">
-                  <input id="signup-profile-image" name="profileImage" class="form-control" type="file" accept="image/*">
+                  <input id="signup-profile-image" name="profileImage" class="form-control" type="file" accept="image/jpeg,image/png">
                   <p class="form-text mb-0">JPG, PNG 등 이미지 파일을 선택할 수 있습니다.</p>
                 </div>
               </div>
@@ -59,7 +61,7 @@
           <div class="col-12">
             <label class="form-label" for="signup-id">아이디</label>
             <div class="input-group">
-              <input id="signup-id" name="userId" class="form-control" type="text" required>
+              <input id="signup-id" name="userId" class="form-control" type="text" maxlength="20" required>
               <button id="checkUsernameDuplicateBtn" class="btn btn-outline-secondary" type="button">중복 확인</button>
             </div>
             <p id="signupIdMessage" class="signup-message" role="alert"></p>
@@ -67,13 +69,12 @@
           <div class="col-12">
             <label class="form-label" for="signup-email">이메일</label>
             <div class="input-group">
-              <input id="signup-email" name="email" class="form-control" type="email" required>
+              <input id="signup-email" name="email" class="form-control" type="email" maxlength="30" required>
               <button id="sendCodeBtn" class="btn btn-outline-secondary" type="button">인증</button>
             </div>
             <p id="signupEmailMessage" class="signup-message" role="alert"></p>
           </div>
           <div class="col-12">
-            <%--<label class="form-label" for="signup-email"></label>--%>
             <div class="input-group auth-email auth-email-area">
               <input id="email-auth-section" name="auth-email" class="form-control" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="인증번호 6자리 입력" disabled>
               <span id="emailAuthTimer" class="input-group-text email-auth-timer" aria-live="polite">03:00</span>
@@ -83,21 +84,22 @@
           </div>
           <div class="col-md-6">
             <label class="form-label" for="signup-password">비밀번호</label>
-            <input id="signup-password" name="userPassword" class="form-control" type="password" required>
+            <input id="signup-password" name="userPassword" class="form-control" type="password" maxlength="20" required>
             <p id="passwordValidationMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-md-7">
             <label class="form-label" for="signup-password2">비밀번호 확인</label>
-            <input id="signup-password2" class="form-control" type="password" required>
+            <input id="signup-password2" class="form-control" type="password" maxlength="20" required>
             <p id="passwordConfirmMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-12">
             <label class="form-label" for="signup-nickname">닉네임</label>
-            <input id="signup-nickname" name="nickname" class="form-control" type="text" required>
+            <input id="signup-nickname" name="nickname" class="form-control" type="text" maxlength="30" required>
+            <p id="nicknameValidationMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="signup-name">이름</label>
-            <input id="signup-name" name="userName" class="form-control" type="text" autocomplete="name">
+            <input id="signup-name" name="userName" class="form-control" type="text" maxlength="10" autocomplete="name">
           </div>
           <div class="col-md-6">
             <label class="form-label" for="signup-bio">소개</label>
@@ -106,6 +108,7 @@
           <div class="col-12 form-check ms-2">
             <input id="terms" class="form-check-input" type="checkbox" required>
             <label for="terms" class="form-check-label small">이용약관과 개인정보처리방침에 동의합니다.</label>
+            <p id="termsValidationMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-12">
             <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">가입하기</button>
