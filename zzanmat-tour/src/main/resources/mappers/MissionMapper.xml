@@ -25,6 +25,7 @@
     <!-- 2. 특정 미션 상세 조회 -->
     <select id="findById" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$Info">
         SELECT mission_id AS id
+        , mission_id AS mission_id
         , title
         , description
         , mission_type
@@ -69,12 +70,20 @@
         , #{missionId}
         , 0
         , 0
-        , 'READY'
+        , 'IN_PROGRESS'
         )
     </insert>
 
-
-
+    <!-- 진행 횟수/진행률/상태 갱신 -->
+    <update id="updateProgressCounts">
+        UPDATE `mission_progress`
+        SET current_count = #{currentCount}
+        , progress = #{progress}
+        , status = #{status}
+        , updated_at = CURRENT_TIMESTAMP(6)
+        WHERE id = #{userMissionId}
+        AND status &lt;&gt; 'DONE'
+    </update>
 
     <!-- 5. 미션 상태 업데이트 -->
     <update id="updateStatus">
@@ -83,6 +92,25 @@
         , updated_at = CURRENT_TIMESTAMP(6)
         WHERE id = #{userMissionId}
     </update>
+
+    <select id="countAllMissions" resultType="int">
+        SELECT COUNT(*) FROM `mission_create`
+    </select>
+
+    <select id="countProgressByStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM `mission_progress`
+        WHERE status = #{status}
+    </select>
+
+    <select id="sumPointsByDayLast14" resultType="java.util.HashMap">
+        SELECT DATE(created_at) AS day
+        , COALESCE(SUM(point), 0) AS total_point
+        FROM `point_history`
+        WHERE created_at &gt;= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY day ASC
+    </select>
 
     <!-- 6. 보상 수령 여부 업데이트 -->
     <update id="updateRewardReceived">

@@ -11,6 +11,8 @@ public interface MemberService {
 
     boolean isMemberIdCheck(String userId);
 
+    int countAllMembers();
+
     MemberDto login(String userId, String userPassword) throws IllegalStateException;
 
     boolean update(MemberDto memberDto, MultipartFile profileImage, String originProfileName) throws IOException;

@@ -5,6 +5,7 @@ import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
+import com.zzanmat.tour.mission.service.MissionService;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.dto.PostUpdateRequest;
 import com.zzanmat.tour.post.service.PostService;
@@ -27,17 +28,24 @@ public class PostController {
 
     private final PostService postService;
     private final CommentService commentService;
+    private final MissionService missionService;
 
     public PostController(
             PostService postService,
-            CommentService commentService
+            CommentService commentService,
+            MissionService missionService
     ) {
         this.postService = postService;
         this.commentService = commentService;
+        this.missionService = missionService;
     }
 
     @GetMapping("/new-post")
-    public String newPost() {
+    public String newPost(
+            @RequestParam(required = false) Long missionId,
+            Model model
+    ) {
+        model.addAttribute("missionId", missionId);
         return "post/new-post";
     }
 
@@ -153,12 +161,18 @@ public class PostController {
                     name = "imageFiles",
                     required = false
             ) List<MultipartFile> imageFiles,
+            @RequestParam(required = false) Long missionId,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
     ) throws IOException {
         post.setUserId(loginMember.getId());
 
         postService.save(post, imageFiles);
+
+        if (missionId != null) {
+            missionService.recordPostProgress(loginMember.getId(), missionId);
+            return "redirect:/mission/active?missionId=" + missionId;
+        }
 
         return "redirect:/my-travel";
     }

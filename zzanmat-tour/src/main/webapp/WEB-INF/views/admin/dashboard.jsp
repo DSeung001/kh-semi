@@ -43,7 +43,7 @@
       <header class="zt-page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
           <h1>관리자 대시보드</h1>
-          <p class="mb-0">미션·포인트 추이 요약 (퍼블리싱)</p>
+          <p class="mb-0">미션·포인트 추이 요약</p>
         </div>
         <div class="d-flex gap-2">
           <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/missions">미션 관리</a>
@@ -55,25 +55,25 @@
         <div class="col-6 col-lg-3">
           <div class="zt-admin-stat">
             <div class="label">회원 수</div>
-            <div class="value">128</div>
+            <div class="value">${memberCount}</div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
           <div class="zt-admin-stat">
             <div class="label">등록 미션</div>
-            <div class="value">12</div>
+            <div class="value">${missionCount}</div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
           <div class="zt-admin-stat">
             <div class="label">진행 중</div>
-            <div class="value">46</div>
+            <div class="value">${inProgressCount}</div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
           <div class="zt-admin-stat">
             <div class="label">완료</div>
-            <div class="value">83</div>
+            <div class="value">${doneCount}</div>
           </div>
         </div>
       </section>
@@ -104,7 +104,11 @@
     data: {
       labels: ['READY', 'IN_PROGRESS', 'DONE'],
       datasets: [{
-        data: [20, 46, 83],
+        data: [
+          Number('${readyCount}'),
+          Number('${inProgressCount}'),
+          Number('${doneCount}')
+        ],
         backgroundColor: ['#adb5bd', '#ffc107', '#198754']
       }]
     },
@@ -114,10 +118,18 @@
   new Chart(document.getElementById('pointChart'), {
     type: 'line',
     data: {
-      labels: ['D-13','D-12','D-11','D-10','D-9','D-8','D-7','D-6','D-5','D-4','D-3','D-2','D-1','오늘'],
+      labels: [
+        <c:forEach var="label" items="${pointLabels}" varStatus="st">
+          '${label}'<c:if test="${!st.last}">,</c:if>
+        </c:forEach>
+      ],
       datasets: [{
         label: '지급 포인트',
-        data: [1200, 800, 1500, 900, 2100, 1700, 1300, 2500, 1800, 1600, 2200, 1400, 1900, 2300],
+        data: [
+          <c:forEach var="value" items="${pointValues}" varStatus="st">
+            ${value}<c:if test="${!st.last}">,</c:if>
+          </c:forEach>
+        ],
         borderColor: '#0d6efd',
         tension: 0.3,
         fill: false

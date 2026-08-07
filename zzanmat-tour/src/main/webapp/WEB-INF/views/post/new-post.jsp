@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -46,6 +47,9 @@
         action="${pageContext.request.contextPath}/new-post"
         method="post"
         enctype="multipart/form-data">
+    <c:if test="${not empty missionId}">
+      <input type="hidden" name="missionId" value="${missionId}">
+    </c:if>
 
   <div class="col-lg-6">
     <div class="zt-post-image-uploader"
