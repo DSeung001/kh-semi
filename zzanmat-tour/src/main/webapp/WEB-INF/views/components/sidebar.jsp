@@ -2,7 +2,9 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <aside class="zt-sidebar">
   <a class="zt-brand" href="${pageContext.request.contextPath}/home">
-    <span>짠맛투어</span>
+    <img class="zt-bran-logo"
+         src="${pageContext.request.contextPath}/assets/images/zzanmat-logo-trimmed.png"
+         alt="짠맛투어">
   </a>
 
   <nav class="zt-nav" aria-label="주요 메뉴">

@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (post.thumbnailPath) {
             image.src = contextPath + post.thumbnailPath;
         } else {
-            image.src = contextPath + "/assets/images/seoul.svg";
+            image.src = contextPath + "/assets/images/zzanmat-default.jpg";
         }
         
         image.alt = post.title ?? "";

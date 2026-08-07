@@ -17,6 +17,8 @@
         <result property="foodCost" column="FOOD_COST"/>
         <result property="otherCost" column="OTHER_COST"/>
         <result property="thumbnailPath" column="THUMBNAIL_PATH"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="commentCount" column="COMMENT_COUNT"/>
         <result property="authorNickname" column="AUTHOR_NICKNAME"/>
         <result property="authorProfile" column="AUTHOR_PROFILE"/>
     </resultMap>
@@ -144,7 +146,17 @@
                 WHERE PU.POST_ID = P.POST_ID
                 ORDER BY IU.IMAGE_ORDER ASC
                 LIMIT 1
-            ) AS THUMBNAIL_PATH
+        ) AS THUMBNAIL_PATH,
+        (
+                SELECT COUNT(*)
+                FROM POST_LIKE PL
+                WHERE PL.POST_ID = P.POST_ID
+        ) AS LIKE_COUNT,
+        (
+            SELECT COUNT(*)
+            FROM `COMMENT` C
+            WHERE C.POST_ID = P.POST_ID
+        ) AS COMMENT_COUNT
         FROM POST P
         WHERE P.IS_BLOCK = FALSE
 
