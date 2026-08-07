@@ -40,13 +40,13 @@
     <main class="zt-content">
       <c:if test="${not empty message}">
         <script>
-          alert("${message}");
+          alert("<c:out value="${message}"/>");
         </script>
       </c:if>
 
       <c:if test="${not empty error}">
         <script>
-          alert("${error}");
+          alert("<c:out value="${error}"/>");
         </script>
       </c:if>
 <header class="zt-page-header">
@@ -59,7 +59,7 @@
     <c:choose>
       <c:when test="${not empty userInfo.profile}">
         <img id="my-profile"
-              src="${pageContext.request.contextPath}${userInfo.profile}"
+              src="${pageContext.request.contextPath}<c:out value="${userInfo.profile}"/>"
               alt="프로필 이미지"
               class="my-profile">
       </c:when>
@@ -73,19 +73,19 @@
     </c:choose>
     <div class="flex-grow-1">
       <div class="d-flex flex-wrap gap-2 align-items-center">
-        <h2 class="h5 mb-0">${userInfo.userId}</h2>
+        <h2 class="h5 mb-0"><c:out value="${userInfo.userId}"/></h2>
       </div>
       <p class="zt-muted small mb-0 mt-2">가성비 좋은 여행 동선을 기록합니다.</p>
       <div class="zt-profile-stats">
-        <div><strong>${userPostCnt}</strong><span>게시물</span></div>
-        <div><strong>${userInfo.followerCount}</strong><span>팔로워</span></div>
-        <div><strong>${userInfo.followingCount}</strong><span>팔로잉</span></div>
+        <div><strong><c:out value="${userPostCnt}" default="0"/></strong><span>게시물</span></div>
+        <div><strong><c:out value="${userInfo.followerCount}" default="0"/></strong><span>팔로워</span></div>
+        <div><strong><c:out value="${userInfo.followingCount}" default="0"/></strong><span>팔로잉</span></div>
       </div>
     </div>
     <div class="logoutArea">
       <a href="${pageContext.request.contextPath}/member/logout">
-        <img class="logout" src="${pageContext.request.contextPath}/assets/images/logout.png" alt="로그아웃">
-        <span>logout</span>
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+        <span>로그아웃</span>
       </a>
     </div>
   </div>
@@ -93,28 +93,27 @@
   <form action="/member/update" method="post" id="profileForm" class="row g-3" enctype="multipart/form-data">
     <div class="col-12">
       <label for="profile-image_update" class="form-label">수정할 프로필 이미지</label>
-      <input type="hidden" name="originProfileName" value="${userInfo.profile}">
-      <input id="profile-image-inputUpdate" name="profileImage" class="form-control" type="file" accept="image/*">
+      <input type="hidden" name="originProfileName" value="<c:out value="${userInfo.profile}"/>">
+      <input id="profile-image-inputUpdate" name="profileImage" class="form-control" type="file" accept="image/jpeg,image/png">
     </div>
     <div class="col-md-6">
       <label for="nickname" class="form-label">닉네임</label>
-      <input id="nickname" name="nickname" class="form-control" type="text" value="${userInfo.nickname}">
+      <input id="nickname" name="nickname" class="form-control" maxlength="30" type="text" value="<c:out value="${userInfo.nickname}"/>">
     </div>
     <div class="col-md-6">
       <label for="name" class="form-label">이름</label>
-      <input type="hidden" name="userId" value="${userInfo.userId}">
-      <input id="name" name="userName" class="form-control" type="text" value="${userInfo.userName}">
+      <input type="hidden" name="userId" value="<c:out value="${userInfo.userId}"/>">
+      <input id="name" name="userName" class="form-control" type="text" maxlength="10" value="<c:out value="${userInfo.userName}"/>">
     </div>
     <div class="col-12">
       <label for="email" class="form-label">이메일</label>
       <div class="input-group">
-        <input disabled id="email" name="email" class="form-control" type="email" value="${userInfo.email}">
-        <%--<button class="btn btn-outline-secondary" type="button">인증</button>--%>
+        <input disabled id="email" name="email" class="form-control" type="email" value="<c:out value="${userInfo.email}"/>">
       </div>
     </div>
     <div class="col-12">
       <label for="bio" class="form-label">소개</label>
-      <textarea id="bio" name="bio" class="form-control" rows="4" maxlength="200">${userInfo.bio}</textarea>
+      <textarea id="bio" name="bio" class="form-control" rows="4" maxlength="150"><c:out value="${userInfo.bio}"/></textarea>
     </div>
     <div class="col-12 d-flex justify-content-center gap-3 mt-4">
       <c:choose>

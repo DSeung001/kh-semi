@@ -23,7 +23,7 @@
 
 <c:if test="${not empty error}">
   <script>
-    alert("${error}");
+    alert("<c:out value="${error}"/>");
   </script>
 </c:if>
 
@@ -63,7 +63,7 @@
     <form id="loginForm" method="post" action="/member/login">
       <div class="form-floating mb-3">
         <input id="login-id" name="userId" class="form-control" type="text" placeholder="아이디" required>
-        <input type="hidden" name="redirectURL" value="${param.redirectURL}">
+        <input type="hidden" name="redirectURL" value="<c:out value="${param.redirectURL}"/>">
         <label for="login-id">아이디</label>
       </div>
       <div class="form-floating mb-3">

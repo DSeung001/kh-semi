@@ -15,6 +15,10 @@ const emailAuthMessage = document.querySelector("#emailAuthMessage");
 const loginForm = document.querySelector("#loginForm");
 const savedIdInput = document.querySelector("#login-id");
 const rememberCheck = document.querySelector("#save-check");
+const nicknameInput = document.querySelector("#signup-nickname");
+const nicknameValidationResult = document.querySelector("#nicknameValidationMessage");
+const termsInput = document.querySelector("#terms");
+const termsValidationResult = document.querySelector("#termsValidationMessage");
 /*const withdrawBtn = document.querySelector("#withdrawBtn"); //*/
 
 /* 유효성 검사 */
@@ -29,11 +33,22 @@ let checkedPwd = false;
 let isEmailVerified = false;
 let emailTimerId = null;
 let emailRemainingSeconds = 0;
+//비밀번호 유효성 검사 통과 여부
+let isPasswordValid = false;
 
 function formatEmailAuthTime(seconds) {
     const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
     const remainingSeconds = String(seconds % 60).padStart(2, "0");
     return `${minutes}:${remainingSeconds}`;
+}
+
+function setEmailAuthMessage(message, isError = false) {
+    if (!emailAuthMessage) {
+        return;
+    }
+
+    emailAuthMessage.textContent = message;
+    emailAuthMessage.className = `signup-message is-visible ${isError ? "is-error" : "is-success"}`;
 }
 
 function stopEmailAuthTimer() {
@@ -61,7 +76,7 @@ function startEmailAuthTimer() {
             emailAuthTimer.classList.add("is-expired");
             emailAuthCode.disabled = true;
             authConfirmBtn.disabled = true;
-            emailAuthMessage.textContent = "인증 시간이 만료되었습니다. 다시 인증해주세요.";
+            setEmailAuthMessage("인증 시간이 만료되었습니다. 다시 인증해주세요.", true);
         }
     }, 1000);
 }
@@ -72,9 +87,18 @@ if(checkIdReult) {
         const userId = userIdInput.value.trim();
         // 아이디 표시하는 부분 체크
         if (userId.length === 0) {
-            checkIdResult.textContent = "아이디를 입력해주세요";
-            checkIdResult.classList.add('is-visible');
-            checkIdReult.focus();
+            checkIdResult.textContent = "아이디를 입력해주세요.";
+            checkIdResult.className = "signup-message is-visible is-error";
+            userIdInput.focus();
+            checkedMemberId = null;
+            return;
+        }
+
+        // 아이디 형식 검사를 통과한 경우에만 서버에 중복확인을 요청한다.
+        if (!idRegex.test(userId)) {
+            checkIdResult.textContent = "아이디는 영문과 숫자를 모두 포함해 8~20자로 입력해주세요.";
+            checkIdResult.className = "signup-message is-visible is-error";
+            userIdInput.focus();
             checkedMemberId = null;
             return;
         }
@@ -91,25 +115,25 @@ if(checkIdReult) {
             const isDuplicate = result.data;
 
             checkIdResult.textContent = result.message;
-            checkIdResult.className = isDuplicate ? "form-tip form-tip-error" : "form-tip form-tip-ok";
+            checkIdResult.className = isDuplicate
+                ? "signup-message is-visible is-error"
+                : "signup-message is-visible is-success";
 
             checkedMemberId = isDuplicate ? null : userId;
         } catch (err) {
             checkIdResult.textContent = "중복확인 중 오류가 발생했습니다.";
-            checkIdResult.className = "form-tip form-tip-error";
+            checkIdResult.className = "signup-message is-visible is-error";
         }
     })
 }
 
-/* 아이디 유효성 검사 */
+/* 아이디 입력값이 바뀌면 기존 중복확인 결과를 무효화 */
 if(userIdInput) {
-    userIdInput.addEventListener("focusout", function (ev) {
-        if (!(idRegex.test(ev.target.value))) {
-            checkIdResult.textContent = '아이디는 영문과 숫자를 모두 포함해 8~20자로 입력해주세요.';
-            checkIdResult.classList.add('is-visible');
+    userIdInput.addEventListener("input", function (ev) {
+        if (checkedMemberId !== ev.target.value.trim()) {
             checkedMemberId = null;
-        } else {
-            checkIdResult.textContent = '';
+            checkIdResult.textContent = "";
+            checkIdResult.className = "signup-message";
         }
     });
 }
@@ -118,24 +142,82 @@ if(userIdInput) {
 const signupBtn = document.querySelector("#signupBtn");
 if(signupBtn) {
     signupBtn.addEventListener("submit", function (ev) {
+        const userId = userIdInput.value.trim();
+        const password = pwInput.value;
+        const passwordConfirm = pwConfirmInput.value;
+        const email = emailInput.value.trim();
+        const nickname = nicknameInput.value.trim();
 
-        if (!checkedMemberId) {
+        const setResult = function (element, message, isValid) {
+            element.textContent = message;
+            element.className = `${element.classList.contains("signup-message") ? "signup-message" : "form-message"} is-visible ${isValid ? "is-success" : "is-error"}`;
+        };
+
+        const stopValidation = function (element, message, focusTarget) {
             ev.preventDefault();
-            alert("아이디 중복확인을 진행해주세요.");
+            setResult(element, message, false);
+            focusTarget.focus();
+        };
+
+        // 이전 제출 시도에서 표시된 결과를 지운 뒤 앞 항목부터 순서대로 검사한다.
+        [checkIdResult, pwPassValidationResult, pwConfirmResult, emailResult,
+            nicknameValidationResult, termsValidationResult].forEach(function (element) {
+            element.textContent = "";
+            element.className = element.classList.contains("signup-message")
+                ? "signup-message"
+                : "form-message";
+        });
+
+        const isIdFormatValid = idRegex.test(userId);
+        const isIdChecked = isIdFormatValid && checkedMemberId === userId;
+        if (!isIdFormatValid) {
+            stopValidation(checkIdResult, "아이디는 영문과 숫자를 모두 포함해 8~20자로 입력해주세요.", userIdInput);
             return;
         }
+        if (!isIdChecked) {
+            stopValidation(checkIdResult, "아이디 중복확인을 진행해주세요.", checkIdReult);
+            return;
+        }
+        setResult(checkIdResult, "사용 가능한 아이디입니다.", true);
 
+        const isEmailFormatValid = emailRegex.test(email);
+        if (!isEmailFormatValid) {
+            stopValidation(emailResult, "올바른 이메일 형식을 입력해주세요.", emailInput);
+            return;
+        }
+        if (!isEmailVerified) {
+            stopValidation(emailResult, "이메일 인증을 진행해주세요.", sendCodeBtn);
+            return;
+        }
+        setResult(emailResult, "이메일 인증이 완료되었습니다.", true);
+
+        isPasswordValid = passwordRegex.test(password);
+        if (!isPasswordValid) {
+            stopValidation(pwPassValidationResult, "영문, 숫자, 특수문자를 포함해 8자 이상 입력해주세요.", pwInput);
+            return;
+        }
+        setResult(pwPassValidationResult, "사용 가능한 비밀번호입니다.", true);
+
+        checkedPwd = password.length > 0 && password === passwordConfirm;
         if (!checkedPwd) {
-            ev.preventDefault();
-            alert("비밀번호가 일치하지 않습니다.");
+            stopValidation(pwConfirmResult, "비밀번호가 일치하지 않습니다.", pwConfirmInput);
             return;
         }
+        setResult(pwConfirmResult, "비밀번호가 일치합니다.", true);
 
-        if (!isEmailVerified){
-            ev.preventDefault();
-            alert("이메일 인증을 진행해주세요.");
+        const isNicknameValid = nickname.length > 0;
+        if (!isNicknameValid) {
+            stopValidation(nicknameValidationResult, "닉네임을 입력해주세요.", nicknameInput);
             return;
         }
+        setResult(nicknameValidationResult, "사용 가능한 닉네임입니다.", true);
+
+        const isTermsValid = termsInput.checked;
+        if (!isTermsValid) {
+            stopValidation(termsValidationResult, "이용약관과 개인정보처리방침에 동의해주세요.", termsInput);
+            return;
+        }
+        setResult(termsValidationResult, "약관에 동의하셨습니다.", true);
         // js에서의 검증은 UX관점일 뿐.
         // 우회가 얼마든지 가능하기 때문에 서버에서 재 검증이 필요하다.
         // (아이디 중복o, 비밀번호확인x)
@@ -168,20 +250,16 @@ function validatePwdConfirm(){
     //회원가입 버튼 클릭시에 비밀번호가 체크되었는지 확인하는 부분
     checkedPwd = pwInput.value === pwConfirmInput.value;
 
-    pwConfirmResult.textContent = checkedPwd ? "비밀번호가 일치합니다" : "비밀번호가 일치하지 않습니다";
-    pwConfirmResult.className = checkedPwd ? "form-message is-visible is-success" : "form-message is-visible is-erro";
+    pwConfirmResult.textContent = "";
+    pwConfirmResult.className = "form-message";
 }
 
 /* 비밀번호 유효성 검사 */
 if(pwInput) {
-    pwInput.addEventListener("focusout", function (ev) {
-        if (!(passwordRegex.test(ev.target.value))) {
-            pwPassValidationResult.textContent = '영문, 숫자, 특수문자 포함 8자 이상 입력해주세요.';
-            pwPassValidationResult.classList.add('is-visible');
-            checkedPwd = false;
-        } else {
-            pwPassValidationResult.textContent = '';
-        }
+    pwInput.addEventListener("input", function (ev) {
+        isPasswordValid = passwordRegex.test(ev.target.value);
+        pwPassValidationResult.textContent = "";
+        pwPassValidationResult.className = "form-message";
     });
 
     pwInput.addEventListener("input", validatePwdConfirm);
@@ -197,6 +275,29 @@ if(profileImageInput) {
             return;
         }
 
+        // JPG, JPEG, PNG 파일만 허용
+        const allowedTypes = ["image/jpeg", "image/png"];
+        const allowedExtensions = /\.(jpg|jpeg|png)$/i;
+
+        if (!allowedTypes.includes(file.type) || !allowedExtensions.test(file.name)) {
+            alert("JPG, JPEG, PNG 파일만 업로드할 수 있습니다.");
+            ev.target.value = "";
+
+            const profilePreview = document.querySelector("#profile-preview");
+            // const profilePlaceholder = document.querySelector("#profile-preview-placeholder");
+
+            if (profilePreview) {
+                profilePreview.removeAttribute("src");
+                profilePreview.style.display = "none";
+            }
+
+            // if (profilePlaceholder) {
+            //     profilePlaceholder.style.display = "";
+            // }
+
+            return;
+        }
+
         // FileReader - 아직 서버에 업로드하지 않은, 사용자 PC에 있는 파일을
         // 브라우저 메모리에 올리기위해 base64라는 문자열로 만들어주는 js객체
         // base64로 변경해야 img태그의 src속성에 넣어 사용이 가능
@@ -206,8 +307,8 @@ if(profileImageInput) {
             profilePreview.src = ev.target.result;
             profilePreview.style.display = "block";
 
-            const profilePlaceholder = document.querySelector("#profile-preview-placeholder");
-            profilePlaceholder.style.display = "none";
+            // const profilePlaceholder = document.querySelector("#profile-preview-placeholder");
+            // profilePlaceholder.style.display = "none";
         }
 
         // 업로드한 파일을 base64방식의 데이터URL로 변경.
@@ -221,6 +322,16 @@ if(profileImageInputUpdate) {
         //업로드한 파일중 첫번째 요소를 가져옴
         const file = ev.target.files[0];
         if (!file) {
+            return;
+        }
+
+        // 내 정보 페이지에서도 JPG, JPEG, PNG 파일만 허용
+        const allowedTypes = ["image/jpeg", "image/png"];
+        const allowedExtensions = /\.(jpg|jpeg|png)$/i;
+
+        if (!allowedTypes.includes(file.type) || !allowedExtensions.test(file.name)) {
+            alert("JPG, JPEG, PNG 파일만 업로드할 수 있습니다.");
+            ev.target.value = "";
             return;
         }
 
@@ -244,17 +355,9 @@ if(profileImageInputUpdate) {
 
 /* 이메일 유효성 검사 */
 if(emailInput) {
-    emailInput.addEventListener("focusout", function (ev) {
-        if (!(emailRegex.test(ev.target.value))) {
-            emailResult.textContent = '올바른 이메일 형식을 입력해주세요.';
-            emailResult.classList.add('is-visible');
-            checkedPwd = false;
-        } else {
-            emailResult.textContent = '';
-        }
-    });
-
     emailInput.addEventListener("input", function () {
+        emailResult.textContent = "";
+        emailResult.className = "signup-message";
         // 인증번호를 발송한 뒤 이메일을 바꾸면 기존 인증 상태를 사용할 수 없습니다.
         if (emailTimerId || isEmailVerified) {
             stopEmailAuthTimer();
@@ -264,7 +367,7 @@ if(emailInput) {
             authConfirmBtn.disabled = true;
             emailAuthTimer.textContent = "03:00";
             emailAuthTimer.classList.remove("is-expired");
-            emailAuthMessage.textContent = "이메일이 변경되었습니다. 인증번호를 다시 발송해주세요.";
+            setEmailAuthMessage("이메일이 변경되었습니다. 인증번호를 다시 발송해주세요.", true);
         }
     });
 }
@@ -277,8 +380,13 @@ if(sendCodeBtn){
         const authDiv = document.querySelector(".input-group.auth-email");
         if(!emailRegex.test(email)) {
             emailResult.textContent = "올바른 이메일 형식을 입력해주세요.";
+            emailResult.className = "signup-message is-visible is-error";
+            emailInput.focus();
             return;
         }
+
+        emailResult.textContent = "";
+        emailResult.className = "signup-message";
 
         sendCodeBtn.disabled = true;
 
@@ -300,12 +408,12 @@ if(sendCodeBtn){
                 isEmailVerified = false;
                 emailResult.textContent = "";
                 emailResult.className = "signup-message";
-                emailAuthMessage.textContent = (result.message || "인증번호가 성공적으로 전송되었습니다.") + " 3분 안에 인증번호를 입력해주세요.";
+                setEmailAuthMessage((result.message || "인증번호가 성공적으로 전송되었습니다.") + " 3분 안에 인증번호를 입력해주세요.");
                 startEmailAuthTimer();
             })
             .catch(error => {
                 console.error('Error:', error);
-                emailAuthMessage.textContent = error.message || "인증번호 발송 중 오류가 발생했습니다.";
+                setEmailAuthMessage(error.message || "인증번호 발송 중 오류가 발생했습니다.", true);
             })
             .finally(() => {
                 sendCodeBtn.disabled = false;
@@ -322,12 +430,12 @@ if(authConfirmBtn){
         const authCode = emailAuthCode.value.trim(); // 사용자가 입력한 6자리 번호
 
         if (emailRemainingSeconds <= 0) {
-            emailAuthMessage.textContent = "인증 시간이 만료되었습니다. 다시 인증해주세요.";
+            setEmailAuthMessage("인증 시간이 만료되었습니다. 다시 인증해주세요.", true);
             return;
         }
 
         if(!/^\d{6}$/.test(authCode)) {
-            emailAuthMessage.textContent = "인증번호 6자리를 입력해주세요.";
+            setEmailAuthMessage("인증번호 6자리를 입력해주세요.", true);
             return;
         }
 
@@ -344,21 +452,22 @@ if(authConfirmBtn){
                     emailAuthTimer.textContent = "완료";
                     elementDisabled();
                     isEmailVerified = true;
-                    emailAuthMessage.textContent = "이메일 인증이 완료되었습니다.";
+                    setEmailAuthMessage("이메일 인증이 완료되었습니다.");
                 } else {
-                    emailAuthMessage.textContent = result.message || "인증번호가 일치하지 않거나 만료되었습니다.";
+                    setEmailAuthMessage(result.message || "인증번호가 일치하지 않거나 만료되었습니다.", true);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                emailAuthMessage.textContent = "인증번호 확인 중 오류가 발생했습니다.";
+                setEmailAuthMessage("인증번호 확인 중 오류가 발생했습니다.", true);
             });
     });
 }
 
 // 이메일 인증은 1회만 처리하고 다시 인증하지 않도록 처리
 function elementDisabled(){
-    emailInput.disabled = true;
+    // disabled 상태의 input은 회원가입 요청에 포함되지 않으므로 읽기 전용으로 처리
+    emailInput.readOnly = true;
     emailAuthCode.disabled = true;
     authConfirmBtn.disabled = true;
     sendCodeBtn.disabled = true;
@@ -445,7 +554,7 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
     const setAccountMessage = (message, isError = false) => {
         accountMessageElement.textContent = message;
         accountMessageElement.className = isError
-            ? "form-message mt-2 mb-0 is-visible is-erro"
+            ? "form-message mt-2 mb-0 is-visible is-error"
             : "form-message mt-2 mb-0 is-visible is-success";
     };
 
@@ -603,7 +712,7 @@ if (findIdForm && findIdEmailInput && findIdMessage) {
         const email = findIdEmailInput.value.trim();
         if (!accountEmailRegex.test(email)) {
             findIdMessage.textContent = "올바른 이메일 형식을 입력해주세요.";
-            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-erro";
+            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-error";
             return;
         }
 
@@ -621,10 +730,10 @@ if (findIdForm && findIdEmailInput && findIdMessage) {
             findIdMessage.textContent = result.message;
             findIdMessage.className = result.success
                 ? "form-message mt-2 mb-0 is-visible is-success"
-                : "form-message mt-2 mb-0 is-visible is-erro";
+                : "form-message mt-2 mb-0 is-visible is-error";
         } catch (error) {
             findIdMessage.textContent = "아이디 찾기 요청 중 오류가 발생했습니다.";
-            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-erro";
+            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-error";
         } finally {
             submitButton.disabled = false;
         }

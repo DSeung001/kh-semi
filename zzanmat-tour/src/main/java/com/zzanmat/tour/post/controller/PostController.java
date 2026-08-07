@@ -215,10 +215,8 @@ public class PostController {
     }
 
     @PostMapping("/delete-post")
-    public String deletePost(
-            @RequestParam Long postId,
-            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember
-    ) {
+    public String deletePost(@RequestParam Long postId,
+                            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember) {
         PostDto post = postService.findById(postId);
 
         if (!post.getUserId().equals(loginMember.getId())) {

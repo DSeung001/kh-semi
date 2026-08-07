@@ -44,7 +44,7 @@ public class MemberController {
                          RedirectAttributes redirectAttributes){
         try {
             memberService.join(memberDto, profileImage);
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
 //             RedirectAttributes.addFlashAttribute
             // 리다이렉트 후 딱 한번 다음 요청에서만 살아있는 데이터
 
@@ -139,8 +139,11 @@ public class MemberController {
 
             // 리다이렉트 시점에 일회성으로 메시지 전달
             redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 수정되었습니다.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/member/profile";
         } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "프로필 이미지 업로드 중 오류가 발생했습니다.");
+            redirectAttributes.addFlashAttribute("error", "프로필 이미지 업로드 중 오류가 발생했습니다.");
             return "redirect:/member/profile";
         }
         return "redirect:/member/profile";
@@ -290,7 +293,10 @@ public class MemberController {
     }
 
     @GetMapping("/login")
-    public String login(){
+    public String login(HttpServletRequest request){
+        if (isLoggedIn(request)) {
+            return "redirect:/";
+        }
         return "member/login";
     }
 
@@ -307,8 +313,16 @@ public class MemberController {
     }
 
     @GetMapping("/signup")
-    public String signupForm(){
+    public String signupForm(HttpServletRequest request){
+        if (isLoggedIn(request)) {
+            return "redirect:/";
+        }
         return "member/signup";
+    }
+
+    private boolean isLoggedIn(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        return session != null && session.getAttribute(SessionConst.LOGIN_MEMBER) != null;
     }
 
     @GetMapping("/oauth2-login")

@@ -152,10 +152,7 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label"
-               for="food-cost">
-          식비
-        </label>
+        <label class="form-label" for="food-cost">식비</label>
 
         <input id="food-cost"
                name="foodCost"
@@ -167,10 +164,7 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label"
-               for="other-cost">
-          입장료 및 기타 비용
-        </label>
+        <label class="form-label" for="other-cost">입장료 및 기타 비용</label>
 
         <input id="other-cost"
                name="otherCost"

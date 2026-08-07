@@ -20,6 +20,7 @@ public class PostDto {
     private String content;
     private Integer viewCount;
     private LocalDateTime createAt;
+    private String formattedCreateAt;
     private Boolean isBlock;
 
     private Long transportCost;

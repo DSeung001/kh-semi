@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -48,6 +49,8 @@ public class MemberServiceImpl implements MemberService{
         if(isMemberIdCheck(memberDto.getUserId())){
             throw new IllegalStateException("이미 사용중인 아이디 입니다.");
         }
+
+        validateProfileImage(profileImage);
 
         //비밀번호는 항상 암호화해서 저장.
         String encodePwd = passwordEncoder.encode(memberDto.getUserPassword());
@@ -90,6 +93,8 @@ public class MemberServiceImpl implements MemberService{
         //새로운 프로필 이미지 등록
         boolean hasNewImages = newprofileImage != null && !newprofileImage.isEmpty();
         if(hasNewImages){
+            validateProfileImage(newprofileImage);
+
             fileUploadUtil.delete(originProfileName, profileUploadDir);
 
             SavedFile saved = fileUploadUtil.save(newprofileImage, profileUploadDir, "/uploads/profile");
@@ -99,6 +104,25 @@ public class MemberServiceImpl implements MemberService{
         }
 
         return memberMapper.update(memberDto) > 0;
+    }
+
+    private void validateProfileImage(MultipartFile profileImage) {
+        if (profileImage == null || profileImage.isEmpty()) {
+            return;
+        }
+
+        String originalFilename = profileImage.getOriginalFilename();
+        String contentType = profileImage.getContentType();
+
+        boolean validExtension = originalFilename != null && originalFilename.toLowerCase(Locale.ROOT).matches("^.*\\.(jpg|jpeg|png)$");
+
+        boolean validContentType = "image/jpeg".equals(contentType) || "image/png".equals(contentType);
+
+        if (!validExtension || !validContentType) {
+            throw new IllegalArgumentException(
+                    "JPG, JPEG, PNG 파일만 업로드할 수 있습니다."
+            );
+        }
     }
 
     @Override
