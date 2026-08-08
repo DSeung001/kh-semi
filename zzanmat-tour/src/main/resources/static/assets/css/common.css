@@ -160,6 +160,34 @@ textarea {
   background: var(--zt-surface);
   border: 1px solid var(--zt-border);
   border-radius: var(--zt-radius);
+  max-width: 100%;
+}
+
+.zt-panel .table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.zt-admin-table {
+  min-width: 720px;
+}
+
+.zt-admin-period {
+  white-space: nowrap;
+}
+
+.zt-admin-chart {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.zt-admin-chart canvas {
+  max-width: 100% !important;
+}
+
+/* Bootstrap row 안에서 조건부 컬럼 묶음용 */
+.contents {
+  display: contents;
 }
 
 .zt-panel-shadow { box-shadow: var(--zt-shadow); }
@@ -578,6 +606,16 @@ textarea {
   opacity: 0.55;
   background: #f7f7f7;
   filter: grayscale(0.35);
+}
+
+.zt-mission-card.is-done {
+  border-color: #a3cfbb;
+  background: #f3fbf6;
+}
+
+.zt-mission-card.is-done .zt-mission-icon {
+  background: #d1e7dd;
+  color: #146c43;
 }
 
 .zt-mission-card.is-expired .btn,

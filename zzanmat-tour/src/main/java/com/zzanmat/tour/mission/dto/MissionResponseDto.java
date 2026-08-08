@@ -25,6 +25,8 @@ public class MissionResponseDto {
         private String createdAt;
         private String periodStatus;
         private boolean available;
+        /** 로그인 유저의 mission_progress.status (DONE / IN_PROGRESS 등), 비로그인이면 null */
+        private String userStatus;
     }
 
     @Getter

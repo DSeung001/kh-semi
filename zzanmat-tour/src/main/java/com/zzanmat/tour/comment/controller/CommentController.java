@@ -5,6 +5,7 @@ import com.zzanmat.tour.comment.dto.*;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
+import com.zzanmat.tour.mission.service.MissionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 public class CommentController {
 
     private final CommentService commentService;
+    private final MissionService missionService;
 
-    public CommentController(CommentService commentService) {
+    public CommentController(CommentService commentService, MissionService missionService) {
         this.commentService = commentService;
+        this.missionService = missionService;
     }
 
     @PostMapping("/comments")
@@ -33,6 +36,7 @@ public class CommentController {
         comment.setContent(request.getContent());
 
         commentService.save(comment);
+        missionService.recordEventProgress(loginMember.getId(), "CREATE_COMMENT", null);
 
         return "redirect:/post-detail?postId="
                 + request.getPostId()
@@ -86,6 +90,10 @@ public class CommentController {
                 loginMember.getId(),
                 request.getPostId()
         );
+
+        if (liked) {
+            missionService.recordEventProgress(loginMember.getId(), "LIKE", null);
+        }
 
         int likeCount = commentService.countLikes(
                 request.getCommentId()

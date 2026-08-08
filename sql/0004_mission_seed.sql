@@ -20,8 +20,8 @@ CREATE TABLE mission (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL COMMENT '미션 제목',
     description TEXT COMMENT '미션 설명',
-    mission_type ENUM('POST', 'PHOTO', 'VIDEO', 'SHORTS') NOT NULL,
-    trigger_event ENUM('CREATE_POST', 'UPLOAD_IMAGE', 'UPLOAD_VIDEO', 'UPLOAD_SHORTS') NOT NULL,
+    mission_type ENUM('POST', 'COMMENT', 'LIKE', 'CHAT') NOT NULL,
+    trigger_event ENUM('CREATE_POST', 'CREATE_COMMENT', 'LIKE', 'OPEN_CHAT') NOT NULL,
     target_count INT NOT NULL DEFAULT 1 COMMENT '필요 수행 횟수',
     reward_point INT NOT NULL DEFAULT 0 COMMENT '획득 포인트',
     auto_complete BOOLEAN NOT NULL DEFAULT TRUE,
@@ -70,8 +70,8 @@ START TRANSACTION;
 INSERT INTO mission (title, description, mission_type, trigger_event, target_count, reward_point)
 VALUES
 ('첫 여행 게시글 작성', '여행 게시글 1개 작성하기', 'POST', 'CREATE_POST', 1, 2000),
-('여행 사진 업로드', '사진이 포함된 게시글 작성', 'PHOTO', 'UPLOAD_IMAGE', 1, 500),
-('여행 영상 업로드', '영상 게시글 작성', 'VIDEO', 'UPLOAD_VIDEO', 1, 1000),
-('쇼츠 영상 업로드', '짧은 여행 영상 작성', 'SHORTS', 'UPLOAD_SHORTS', 1, 3000);
+('여행 댓글 남기기', '게시글에 댓글 1개 작성하기', 'COMMENT', 'CREATE_COMMENT', 1, 500),
+('좋아요 누르기', '게시글 또는 댓글에 좋아요 1회', 'LIKE', 'LIKE', 1, 300),
+('오픈 채팅 메시지 보내기', '오픈 채팅에 메시지 1회 전송하기', 'CHAT', 'OPEN_CHAT', 1, 500);
 
 COMMIT;

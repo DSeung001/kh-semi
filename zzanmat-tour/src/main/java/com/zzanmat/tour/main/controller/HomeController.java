@@ -50,4 +50,14 @@ public class HomeController {
         return "main/index";
     }
 
+    @GetMapping("/terms")
+    public String terms() {
+        return "legal/terms";
+    }
+
+    @GetMapping("/privacy")
+    public String privacy() {
+        return "legal/privacy";
+    }
+
 }

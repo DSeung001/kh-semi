@@ -19,6 +19,8 @@ public interface MissionService {
 
     void recordPostProgress(Long userId, Long missionId, PostDto post);
 
+    void recordEventProgress(Long userId, String triggerEvent, PostDto post);
+
     int countAllMissions();
 
     int countActiveMissions();

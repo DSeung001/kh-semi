@@ -23,11 +23,13 @@
        aria-current="${param.activePage eq 'chat' ? 'page' : 'false'}">
       <i class="bi bi-chat-dots"></i><span>실시간 톡</span>
     </a>
-    <a class="zt-nav-link ${param.activePage eq 'mission' ? 'active' : ''}"
-       href="${pageContext.request.contextPath}/mission"
-       aria-current="${param.activePage eq 'mission' ? 'page' : 'false'}">
-      <i class="bi bi-flag"></i><span>Mission Possible</span>
-    </a>
+    <c:if test="${not empty loginMember}">
+      <a class="zt-nav-link ${param.activePage eq 'mission' ? 'active' : ''}"
+         href="${pageContext.request.contextPath}/mission"
+         aria-current="${param.activePage eq 'mission' ? 'page' : 'false'}">
+        <i class="bi bi-flag"></i><span>Mission</span>
+      </a>
+    </c:if>
     <c:if test="${not empty loginMember and loginMember.role eq 'ADMIN'}">
       <a class="zt-nav-link ${param.activePage eq 'admin' ? 'active' : ''}"
          href="${pageContext.request.contextPath}/admin"
@@ -64,8 +66,8 @@
   console.log("${pageContext.request.contextPath}");
 </script>
   <div class="zt-sidebar-footer">
-    <a href="#">이용약관</a><br>
-    <a href="#">개인정보처리방침</a><br>
+    <a href="${pageContext.request.contextPath}/terms">이용약관</a><br>
+    <a href="${pageContext.request.contextPath}/privacy">개인정보처리방침</a><br>
     <span>&copy; 2026 짠맛투어</span>
   </div>
 </aside>

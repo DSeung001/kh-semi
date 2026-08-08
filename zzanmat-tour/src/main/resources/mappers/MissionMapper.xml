@@ -56,6 +56,13 @@
         AND mission_id = #{missionId}
     </select>
 
+    <select id="findUserStatusesByUserId" resultType="java.util.HashMap">
+        SELECT mission_id AS missionId
+             , status AS status
+          FROM `mission_progress`
+         WHERE user_id = #{userId}
+    </select>
+
     <insert id="saveProgress">
         INSERT INTO `mission_progress` (
         user_id

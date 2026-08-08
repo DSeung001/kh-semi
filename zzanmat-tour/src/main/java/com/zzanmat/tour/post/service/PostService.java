@@ -247,14 +247,14 @@ public class PostService {
     }
 
     @Transactional
-    public void toggleLike(Long postId, Long userId) {
+    public boolean toggleLike(Long postId, Long userId) {
         if (isLiked(postId, userId)) {
             postLikeMapper.deleteByPostIdAndUserId(postId, userId);
-
-            return;
+            return false;
         }
 
         postLikeMapper.save(postId, userId);
+        return true;
     }
 
     public int countByUserPost(Long userId) {

@@ -99,19 +99,15 @@ public class PostController {
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
     ) {
-        postService.toggleLike(postId, loginMember.getId());
+        boolean liked = postService.toggleLike(postId, loginMember.getId());
+        if (liked) {
+            missionService.recordEventProgress(loginMember.getId(), "LIKE", null);
+        }
 
         Map<String, Object> result = new HashMap<>();
 
-        result.put(
-                "liked",
-                postService.isLiked(postId, loginMember.getId())
-        );
-
-        result.put(
-                "likeCount",
-                postService.countLikes(postId)
-        );
+        result.put("liked", liked);
+        result.put("likeCount", postService.countLikes(postId));
 
         return ApiResponse.success(result);
     }
@@ -174,6 +170,7 @@ public class PostController {
             return "redirect:/mission/active?missionId=" + missionId;
         }
 
+        missionService.recordEventProgress(loginMember.getId(), "CREATE_POST", post);
         return "redirect:/my-travel";
     }
 

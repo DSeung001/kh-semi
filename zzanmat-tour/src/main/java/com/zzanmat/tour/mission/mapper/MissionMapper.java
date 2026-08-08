@@ -20,6 +20,8 @@ public interface MissionMapper {
             @Param("missionId") Long missionId
     );
 
+    List<Map<String, Object>> findUserStatusesByUserId(@Param("userId") Long userId);
+
     void saveProgress(@Param("userId") Long userId, @Param("missionId") Long missionId);
 
     void updateProgressCounts(

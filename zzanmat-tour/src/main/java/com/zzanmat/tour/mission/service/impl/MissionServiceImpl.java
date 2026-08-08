@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,14 @@ public class MissionServiceImpl implements MissionService {
     private static final String PERIOD_UPCOMING = "UPCOMING";
     private static final String DEFAULT_MISSION_TYPE = "POST";
     private static final String DEFAULT_TRIGGER_EVENT = "CREATE_POST";
+    private static final String TRIGGER_CREATE_POST = "CREATE_POST";
+    private static final String TYPE_POST = "POST";
+    private static final String TYPE_COMMENT = "COMMENT";
+    private static final String TYPE_LIKE = "LIKE";
+    private static final String TYPE_CHAT = "CHAT";
+    private static final String TRIGGER_CREATE_COMMENT = "CREATE_COMMENT";
+    private static final String TRIGGER_LIKE = "LIKE";
+    private static final String TRIGGER_OPEN_CHAT = "OPEN_CHAT";
 
     private final MissionMapper missionMapper;
 
@@ -39,8 +48,12 @@ public class MissionServiceImpl implements MissionService {
         List<MissionResponseDto.Info> missions = found == null
                 ? new ArrayList<>()
                 : new ArrayList<>(found);
+        Map<Long, String> userStatuses = loadUserStatuses(userId);
         for (MissionResponseDto.Info mission : missions) {
             applyPeriodStatus(mission);
+            if (mission.getMissionId() != null) {
+                mission.setUserStatus(userStatuses.get(mission.getMissionId()));
+            }
         }
         missions.sort(
                 Comparator
@@ -64,6 +77,13 @@ public class MissionServiceImpl implements MissionService {
             return null;
         }
         applyPeriodStatus(mission);
+        if (userId != null) {
+            MissionResponseDto.UserMissionDetail detail =
+                    missionMapper.findUserMissionByUserAndMission(userId, missionId);
+            if (detail != null) {
+                mission.setUserStatus(detail.getStatus());
+            }
+        }
         return mission;
     }
 
@@ -165,8 +185,46 @@ public class MissionServiceImpl implements MissionService {
         if (!mission.isAvailable()) {
             return;
         }
-
+        if (!TRIGGER_CREATE_POST.equals(mission.getTriggerEvent())) {
+            return;
+        }
         if (!matchesMissionConditions(mission, post)) {
+            return;
+        }
+
+        applyProgressOnce(userId, mission);
+    }
+
+    @Override
+    @Transactional
+    public void recordEventProgress(Long userId, String triggerEvent, PostDto post) {
+        if (userId == null || !StringUtils.hasText(triggerEvent)) {
+            return;
+        }
+
+        List<MissionResponseDto.Info> missions = missionMapper.findAll();
+        if (missions == null || missions.isEmpty()) {
+            return;
+        }
+
+        for (MissionResponseDto.Info mission : missions) {
+            applyPeriodStatus(mission);
+            if (!mission.isAvailable()) {
+                continue;
+            }
+            if (!triggerEvent.equals(mission.getTriggerEvent())) {
+                continue;
+            }
+            if (!matchesMissionConditions(mission, post)) {
+                continue;
+            }
+            applyProgressOnce(userId, mission);
+        }
+    }
+
+    private void applyProgressOnce(Long userId, MissionResponseDto.Info mission) {
+        Long missionId = mission.getMissionId();
+        if (missionId == null) {
             return;
         }
 
@@ -254,9 +312,45 @@ public class MissionServiceImpl implements MissionService {
         if (!StringUtils.hasText(requestDto.getTriggerEvent())) {
             requestDto.setTriggerEvent(DEFAULT_TRIGGER_EVENT);
         }
+        normalizeTypeTriggerPair(requestDto);
+    }
+
+    private void normalizeTypeTriggerPair(MissionRequestDto.SaveOrUpdate requestDto) {
+        String type = requestDto.getMissionType().trim().toUpperCase();
+        String trigger = requestDto.getTriggerEvent().trim().toUpperCase();
+
+        if (TYPE_POST.equals(type) || TRIGGER_CREATE_POST.equals(trigger)) {
+            requestDto.setMissionType(TYPE_POST);
+            requestDto.setTriggerEvent(TRIGGER_CREATE_POST);
+            return;
+        }
+        if (TYPE_COMMENT.equals(type) || TRIGGER_CREATE_COMMENT.equals(trigger)) {
+            requestDto.setMissionType(TYPE_COMMENT);
+            requestDto.setTriggerEvent(TRIGGER_CREATE_COMMENT);
+            return;
+        }
+        if (TYPE_LIKE.equals(type) || TRIGGER_LIKE.equals(trigger)) {
+            requestDto.setMissionType(TYPE_LIKE);
+            requestDto.setTriggerEvent(TRIGGER_LIKE);
+            return;
+        }
+        if (TYPE_CHAT.equals(type) || TRIGGER_OPEN_CHAT.equals(trigger)) {
+            requestDto.setMissionType(TYPE_CHAT);
+            requestDto.setTriggerEvent(TRIGGER_OPEN_CHAT);
+            return;
+        }
+        throw new IllegalArgumentException("지원하지 않는 미션 방식입니다.");
     }
 
     private void validateMissionConditions(MissionRequestDto.SaveOrUpdate requestDto) {
+        String missionType = requestDto.getMissionType();
+
+        if (!TYPE_POST.equals(missionType)) {
+            requestDto.setPlaceKeyword("");
+            requestDto.setMaxTotalCost(0L);
+            return;
+        }
+
         String placeKeyword = StringUtils.hasText(requestDto.getPlaceKeyword())
                 ? requestDto.getPlaceKeyword().trim()
                 : "";
@@ -271,11 +365,20 @@ public class MissionServiceImpl implements MissionService {
         boolean hasPlace = StringUtils.hasText(placeKeyword);
         boolean hasCost = maxTotalCost > 0;
         if (!hasPlace && !hasCost) {
-            throw new IllegalArgumentException("장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.");
+            throw new IllegalArgumentException("포스트 미션은 장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.");
         }
     }
 
     private boolean matchesMissionConditions(MissionResponseDto.Info mission, PostDto post) {
+        if (!TRIGGER_CREATE_POST.equals(mission.getTriggerEvent())
+                && !TYPE_POST.equals(mission.getMissionType())) {
+            return true;
+        }
+
+        if (post == null) {
+            return false;
+        }
+
         String keyword = mission.getPlaceKeyword();
         boolean hasPlaceCondition = StringUtils.hasText(keyword);
         Long maxTotalCost = mission.getMaxTotalCost();
@@ -369,5 +472,34 @@ public class MissionServiceImpl implements MissionService {
         }
         mission.setPeriodStatus(PERIOD_ACTIVE);
         mission.setAvailable(true);
+    }
+
+    private Map<Long, String> loadUserStatuses(Long userId) {
+        if (userId == null) {
+            return Map.of();
+        }
+        List<Map<String, Object>> rows = missionMapper.findUserStatusesByUserId(userId);
+        if (rows == null || rows.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, String> statuses = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            Object missionId = firstNonNull(row, "missionId", "MISSIONID", "mission_id");
+            Object status = firstNonNull(row, "status", "STATUS");
+            if (missionId == null || status == null) {
+                continue;
+            }
+            statuses.put(((Number) missionId).longValue(), String.valueOf(status));
+        }
+        return statuses;
+    }
+
+    private static Object firstNonNull(Map<String, Object> row, String... keys) {
+        for (String key : keys) {
+            if (row.containsKey(key) && row.get(key) != null) {
+                return row.get(key);
+            }
+        }
+        return null;
     }
 }
