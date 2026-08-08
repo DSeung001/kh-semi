@@ -29,6 +29,11 @@
          aria-current="${param.activePage eq 'mission' ? 'page' : 'false'}">
         <i class="bi bi-flag"></i><span>Mission</span>
       </a>
+      <a class="zt-nav-link ${param.activePage eq 'shop' ? 'active' : ''}"
+         href="${pageContext.request.contextPath}/shop"
+         aria-current="${param.activePage eq 'shop' ? 'page' : 'false'}">
+        <i class="bi bi-shop"></i><span>포인트 상점</span>
+      </a>
     </c:if>
     <c:if test="${not empty loginMember and loginMember.role eq 'ADMIN'}">
       <a class="zt-nav-link ${param.activePage eq 'admin' ? 'active' : ''}"
