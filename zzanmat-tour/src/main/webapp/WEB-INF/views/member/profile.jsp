@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -80,6 +81,10 @@
         <div><strong><c:out value="${userPostCnt}" default="0"/></strong><span>게시물</span></div>
         <div><strong><c:out value="${userInfo.followerCount}" default="0"/></strong><span>팔로워</span></div>
         <div><strong><c:out value="${userInfo.followingCount}" default="0"/></strong><span>팔로잉</span></div>
+        <div><strong><fmt:formatNumber value="${empty pointBalance ? 0 : pointBalance}" type="number"/>P</strong><span>포인트</span></div>
+      </div>
+      <div class="mt-3">
+        <a class="btn btn-warning btn-sm fw-bold" href="${pageContext.request.contextPath}/shop">포인트 상점</a>
       </div>
     </div>
     <div class="logoutArea">

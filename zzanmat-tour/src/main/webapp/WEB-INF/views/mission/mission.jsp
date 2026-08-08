@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="여행 미션 목록">
-    <title>미션 | 짠맛투어</title>
+    <title>여행 미션 | 짠맛투어</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/common.css">
@@ -37,8 +37,8 @@
         <main class="zt-content">
 
             <header class="zt-page-header">
-                <h1>Mission Possible</h1>
-                <p>재미있는 여행 미션에 도전하고 인증 기록을 남겨보세요.</p>
+                <h1>여행 미션</h1>
+                <p>조건에 맞는 행동을 하면 포인트가 쌓여요.</p>
             </header>
 
             <section class="zt-panel zt-mission-list" id="missionListSection">
@@ -48,22 +48,28 @@
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="mission" items="${missions}">
+                            <c:set var="isDone" value="${mission.userStatus == 'DONE'}"/>
                             <c:set var="cardClass" value="zt-mission-card"/>
-                            <c:if test="${mission.periodStatus == 'EXPIRED'}">
-                                <c:set var="cardClass" value="zt-mission-card is-expired"/>
-                            </c:if>
-                            <c:if test="${mission.periodStatus == 'UPCOMING'}">
-                                <c:set var="cardClass" value="zt-mission-card is-upcoming"/>
-                            </c:if>
+                            <c:choose>
+                                <c:when test="${isDone}">
+                                    <c:set var="cardClass" value="zt-mission-card is-done"/>
+                                </c:when>
+                                <c:when test="${mission.periodStatus == 'EXPIRED'}">
+                                    <c:set var="cardClass" value="zt-mission-card is-expired"/>
+                                </c:when>
+                                <c:when test="${mission.periodStatus == 'UPCOMING'}">
+                                    <c:set var="cardClass" value="zt-mission-card is-upcoming"/>
+                                </c:when>
+                            </c:choose>
 
                             <article class="${cardClass}">
                                 <div class="zt-mission-icon">
                                     <i class="bi
                                         <c:choose>
-                                            <c:when test='${mission.missionType == "POST"}'>bi-wallet2</c:when>
-                                            <c:when test='${mission.missionType == "PHOTO"}'>bi-camera</c:when>
-                                            <c:when test='${mission.missionType == "VIDEO"}'>bi-camera-video</c:when>
-                                            <c:when test='${mission.missionType == "SHORTS"}'>bi-film</c:when>
+                                            <c:when test='${mission.missionType == "COMMENT"}'>bi-chat-left-text</c:when>
+                                            <c:when test='${mission.missionType == "LIKE"}'>bi-heart</c:when>
+                                            <c:when test='${mission.missionType == "CHAT"}'>bi-chat-dots</c:when>
+                                            <c:when test='${mission.missionType == "POST"}'>bi-pencil-square</c:when>
                                             <c:otherwise>bi-bookmark-check</c:otherwise>
                                         </c:choose>">
                                     </i>
@@ -71,11 +77,21 @@
                                 <div>
                                     <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
                                         <h2 class="h6 fw-bold mb-0">${mission.title}</h2>
-                                        <span class="zt-chip">${mission.missionType}</span>
+                                        <span class="zt-chip">
+                                            <c:choose>
+                                                <c:when test='${mission.missionType == "COMMENT"}'>댓글</c:when>
+                                                <c:when test='${mission.missionType == "LIKE"}'>좋아요</c:when>
+                                                <c:when test='${mission.missionType == "CHAT"}'>오픈 채팅</c:when>
+                                                <c:otherwise>포스트</c:otherwise>
+                                            </c:choose>
+                                        </span>
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                                             +<fmt:formatNumber value="${mission.rewardPoint}" type="number"/>P
                                         </span>
                                         <c:choose>
+                                            <c:when test="${isDone}">
+                                                <span class="badge bg-success">완료</span>
+                                            </c:when>
                                             <c:when test="${mission.periodStatus == 'EXPIRED'}">
                                                 <span class="badge bg-secondary">기간 종료</span>
                                             </c:when>
@@ -87,6 +103,15 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
+                                    <p class="small mb-1 fw-medium">
+                                        <c:choose>
+                                            <c:when test="${isDone}">미션 완료</c:when>
+                                            <c:when test='${mission.missionType == "COMMENT"}'>댓글 작성으로 도전</c:when>
+                                            <c:when test='${mission.missionType == "LIKE"}'>좋아요로 도전</c:when>
+                                            <c:when test='${mission.missionType == "CHAT"}'>채팅 메시지로 도전</c:when>
+                                            <c:otherwise>게시글 작성으로 도전</c:otherwise>
+                                        </c:choose>
+                                    </p>
                                     <p class="zt-muted small mb-1">${mission.description}</p>
                                     <p class="zt-muted small mb-0">
                                         <c:choose>
@@ -106,10 +131,16 @@
                                     </p>
                                 </div>
                                 <c:choose>
+                                    <c:when test="${isDone}">
+                                        <a class="btn btn-success fw-bold"
+                                           href="${pageContext.request.contextPath}/mission/active?missionId=${mission.missionId}">
+                                            완료
+                                        </a>
+                                    </c:when>
                                     <c:when test="${mission.available}">
                                         <a class="btn btn-warning fw-bold"
                                            href="${pageContext.request.contextPath}/mission/active?missionId=${mission.missionId}">
-                                            상세보기
+                                            도전하기
                                         </a>
                                     </c:when>
                                     <c:when test="${mission.periodStatus == 'EXPIRED'}">

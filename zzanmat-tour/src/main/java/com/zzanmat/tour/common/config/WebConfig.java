@@ -63,7 +63,11 @@ public class WebConfig implements WebMvcConfigurer {
                         "/comment-like",
                         "/comments",
                         "/comments/**",
-                        "/api/chat/images"
+                        "/api/chat/images",
+                        "/shop/purchase",
+                        "/api/shop/purchase",
+                        "/api/shop/my-coupons",
+                        "/api/shop/balance"
                 );
 
         registry.addInterceptor(new AdminInterceptor())

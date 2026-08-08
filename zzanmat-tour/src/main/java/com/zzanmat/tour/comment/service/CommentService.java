@@ -146,4 +146,12 @@ public class CommentService {
 
         return true;
     }
+
+    public int countAll() {
+        return commentMapper.countAll();
+    }
+
+    public java.util.List<java.util.Map<String, Object>> countCommentsByDayLast14() {
+        return commentMapper.countCommentsByDayLast14();
+    }
 }

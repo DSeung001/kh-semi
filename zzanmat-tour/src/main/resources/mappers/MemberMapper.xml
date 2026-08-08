@@ -36,6 +36,11 @@
          WHERE USER_ID = #{userId}
     </select>
 
+    <select id="countAllMembers" resultType="int">
+        SELECT COUNT(*)
+          FROM `USER`
+    </select>
+
     <select id="findByMemberId" resultType="MemberDto">
         SELECT id
               ,user_id

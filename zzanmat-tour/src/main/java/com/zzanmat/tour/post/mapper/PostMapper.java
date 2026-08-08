@@ -56,4 +56,6 @@ public interface PostMapper {
     );
 
     int countByUserPost(Long userId);
+
+    java.util.List<java.util.Map<String, Object>> countPostsByDayLast14();
 }

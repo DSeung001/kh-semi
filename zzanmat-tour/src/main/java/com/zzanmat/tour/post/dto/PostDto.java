@@ -26,6 +26,7 @@ public class PostDto {
     private Long transportCost;
     private Long foodCost;
     private Long otherCost;
+    private String place;
 
     private List<PostImageDto> images;
     private String thumbnailPath;

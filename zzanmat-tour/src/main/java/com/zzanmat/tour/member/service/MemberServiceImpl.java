@@ -71,6 +71,11 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
+    public int countAllMembers() {
+        return memberMapper.countAllMembers();
+    }
+
+    @Override
     public MemberDto login(String memberId, String memberPwd) throws IllegalStateException{
         MemberDto member = memberMapper.findByMemberId(memberId);
 

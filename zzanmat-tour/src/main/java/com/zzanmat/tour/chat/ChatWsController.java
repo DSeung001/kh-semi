@@ -4,6 +4,7 @@ import com.zzanmat.tour.chat.dto.ChatMessage;
 import com.zzanmat.tour.chat.service.ChatService;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
+import com.zzanmat.tour.mission.service.MissionService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -16,9 +17,11 @@ import java.util.Map;
 public class ChatWsController {
 
     private final ChatService chatService;
+    private final MissionService missionService;
 
-    public ChatWsController(ChatService chatService) {
+    public ChatWsController(ChatService chatService, MissionService missionService) {
         this.chatService = chatService;
+        this.missionService = missionService;
     }
 
     @MessageMapping("/chat.send")
@@ -41,6 +44,10 @@ public class ChatWsController {
         }
 
         // 채팅 메시지 저장
-        return chatService.save(loginMember, message.getContent());
+        ChatMessage saved = chatService.save(loginMember, message.getContent());
+        if (saved != null) {
+            missionService.recordEventProgress(loginMember.getId(), "OPEN_CHAT", null);
+        }
+        return saved;
     }
 }

@@ -160,6 +160,34 @@ textarea {
   background: var(--zt-surface);
   border: 1px solid var(--zt-border);
   border-radius: var(--zt-radius);
+  max-width: 100%;
+}
+
+.zt-panel .table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.zt-admin-table {
+  min-width: 720px;
+}
+
+.zt-admin-period {
+  white-space: nowrap;
+}
+
+.zt-admin-chart {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.zt-admin-chart canvas {
+  max-width: 100% !important;
+}
+
+/* Bootstrap row 안에서 조건부 컬럼 묶음용 */
+.contents {
+  display: contents;
 }
 
 .zt-panel-shadow { box-shadow: var(--zt-shadow); }
@@ -580,6 +608,16 @@ textarea {
   filter: grayscale(0.35);
 }
 
+.zt-mission-card.is-done {
+  border-color: #a3cfbb;
+  background: #f3fbf6;
+}
+
+.zt-mission-card.is-done .zt-mission-icon {
+  background: #d1e7dd;
+  color: #146c43;
+}
+
 .zt-mission-card.is-expired .btn,
 .zt-mission-card.is-upcoming .btn {
   pointer-events: none;
@@ -594,6 +632,32 @@ textarea {
   background: #fff7cc;
   font-size: 26px;
 }
+
+.zt-shop-balance {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--zt-border);
+  border-radius: 12px;
+  background: #fff8e8;
+}
+.zt-shop-balance .label {
+  color: var(--zt-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.zt-shop-balance strong {
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+  color: #b45309;
+}
+
+.zt-shop-icon.is-GIFT_CARD { background: #ffe4ec; color: #c9184a; }
+.zt-shop-icon.is-TRAVEL { background: #e7f5ff; color: #1971c2; }
+.zt-shop-icon.is-FLIGHT { background: #e6fcf5; color: #0b7285; }
+.zt-shop-icon.is-TRAIN { background: #fff3bf; color: #e67700; }
 
 .zt-mission-progress {
   height: 10px;

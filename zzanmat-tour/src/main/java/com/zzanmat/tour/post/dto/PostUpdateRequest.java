@@ -18,6 +18,7 @@ public class PostUpdateRequest {
     private Long transportCost;
     private Long foodCost;
     private Long otherCost;
+    private String place;
 
     private List<Long> deleteImageIds;
     private List<MultipartFile> imageFiles;
