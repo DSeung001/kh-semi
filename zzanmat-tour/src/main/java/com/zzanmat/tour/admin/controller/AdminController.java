@@ -6,6 +6,8 @@ import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.service.MissionService;
 import com.zzanmat.tour.post.service.PostService;
+import com.zzanmat.tour.shop.dto.ShopDto;
+import com.zzanmat.tour.shop.service.ShopService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +31,7 @@ public class AdminController {
     private final MemberService memberService;
     private final PostService postService;
     private final CommentService commentService;
+    private final ShopService shopService;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -77,6 +80,23 @@ public class AdminController {
     @GetMapping("/missions/edit")
     public String missionEdit(@RequestParam(required = false) Long missionId) {
         return "admin/mission-form";
+    }
+
+    @GetMapping("/shop")
+    public String shopList(Model model) {
+        List<ShopDto.Item> items = shopService.getAllItems();
+        model.addAttribute("items", items);
+        return "admin/shop-list";
+    }
+
+    @GetMapping("/shop/new")
+    public String shopNew() {
+        return "admin/shop-form";
+    }
+
+    @GetMapping("/shop/edit")
+    public String shopEdit(@RequestParam(required = false) Long itemId) {
+        return "admin/shop-form";
     }
 
     private Map<LocalDate, Long> toDayCountMap(List<Map<String, Object>> rows) {

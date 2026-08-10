@@ -3,6 +3,8 @@ package com.zzanmat.tour.admin.controller;
 import com.zzanmat.tour.mission.dto.MissionRequestDto;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.service.MissionService;
+import com.zzanmat.tour.shop.dto.ShopDto;
+import com.zzanmat.tour.shop.service.ShopService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,7 @@ import java.util.Map;
 public class AdminApiController {
 
     private final MissionService missionService;
-
-    // 미션 단건 조회 (GET)
+    private final ShopService shopService;
 
     @GetMapping("/missions/{id}")
     public ResponseEntity<MissionResponseDto.Info> getMissionApi(@PathVariable("id") Long id) {
@@ -30,8 +31,6 @@ public class AdminApiController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    // 미션 등록 (POST)
 
     @PostMapping("/missions")
     public ResponseEntity<?> createMission(@RequestBody MissionRequestDto.SaveOrUpdate requestDto) {
@@ -50,7 +49,6 @@ public class AdminApiController {
         }
     }
 
-    // 미션 수정 (PUT)
     @PutMapping("/missions/{id}")
     public ResponseEntity<?> updateMission(@PathVariable Long id, @RequestBody MissionRequestDto.SaveOrUpdate requestDto) {
         try {
@@ -69,7 +67,6 @@ public class AdminApiController {
         }
     }
 
-    // 미션 삭제 (DELETE)
     @DeleteMapping("/missions/{id}")
     public ResponseEntity<?> deleteMission(@PathVariable Long id) {
         try {
@@ -86,5 +83,69 @@ public class AdminApiController {
             ));
         }
     }
-}
 
+    @GetMapping("/shop/items/{id}")
+    public ResponseEntity<?> getShopItem(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.ok(shopService.getItemById(id));
+        } catch (Exception e) {
+            log.error("관리자 상점 상품 단건 조회 실패: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/shop/items")
+    public ResponseEntity<?> createShopItem(@RequestBody ShopDto.SaveOrUpdate requestDto) {
+        try {
+            shopService.createItem(requestDto);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "상품이 성공적으로 등록되었습니다."
+            ));
+        } catch (Exception e) {
+            log.error("상점 상품 등록 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "상품 등록에 실패했습니다: " + e.getMessage()
+            ));
+        }
+    }
+
+    @PutMapping("/shop/items/{id}")
+    public ResponseEntity<?> updateShopItem(
+            @PathVariable Long id,
+            @RequestBody ShopDto.SaveOrUpdate requestDto
+    ) {
+        try {
+            requestDto.setItemId(id);
+            shopService.updateItem(requestDto);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "상품이 성공적으로 수정되었습니다."
+            ));
+        } catch (Exception e) {
+            log.error("상점 상품 수정 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "상품 수정에 실패했습니다: " + e.getMessage()
+            ));
+        }
+    }
+
+    @DeleteMapping("/shop/items/{id}")
+    public ResponseEntity<?> deactivateShopItem(@PathVariable Long id) {
+        try {
+            shopService.deactivateItem(id);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "상품이 비활성화되었습니다."
+            ));
+        } catch (Exception e) {
+            log.error("상점 상품 비활성화 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "상품 비활성화에 실패했습니다: " + e.getMessage()
+            ));
+        }
+    }
+}

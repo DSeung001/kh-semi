@@ -11,7 +11,17 @@ public interface ShopMapper {
 
     List<ShopDto.Item> findActiveItems();
 
+    List<ShopDto.Item> findAllItems();
+
+    ShopDto.Item findItemById(@Param("itemId") Long itemId);
+
     ShopDto.Item findByIdForUpdate(@Param("itemId") Long itemId);
+
+    void saveItem(ShopDto.SaveOrUpdate request);
+
+    int updateItem(ShopDto.SaveOrUpdate request);
+
+    int deactivateItem(@Param("itemId") Long itemId);
 
     int decreaseStock(@Param("itemId") Long itemId);
 

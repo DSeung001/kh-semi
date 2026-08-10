@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -27,8 +28,10 @@
           <h1>미션 관리</h1>
           <p class="mb-0">DB와 연동된 미션 목록을 관리합니다.</p>
         </div>
-        <div class="d-flex gap-2">
-          <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin">대시보드</a>
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin">
+            <i class="bi bi-arrow-left me-1"></i>관리자 대시보드
+          </a>
           <a class="btn btn-warning fw-bold" href="${pageContext.request.contextPath}/admin/missions/new">미션 등록</a>
         </div>
       </header>
@@ -93,7 +96,25 @@
                       </c:choose>
                     </td>
                     <td>${mission.rewardPoint}P</td>
-                    <td class="small text-secondary zt-admin-period">${mission.startAt} ~ ${mission.endAt}</td>
+                    <td class="small text-secondary zt-admin-period">
+                      <c:choose>
+                        <c:when test="${mission.startAt != null && mission.endAt != null}">
+                          <c:set var="startAtText" value="${mission.startAt}"/>
+                          <c:set var="endAtText" value="${mission.endAt}"/>
+                          <span class="d-block">${fn:substring(fn:replace(startAtText, 'T', ' '), 0, 10)}</span>
+                          <span class="d-block">~ ${fn:substring(fn:replace(endAtText, 'T', ' '), 0, 10)}</span>
+                        </c:when>
+                        <c:when test="${mission.startAt != null}">
+                          <c:set var="startAtText" value="${mission.startAt}"/>
+                          ${fn:substring(fn:replace(startAtText, 'T', ' '), 0, 10)} ~
+                        </c:when>
+                        <c:when test="${mission.endAt != null}">
+                          <c:set var="endAtText" value="${mission.endAt}"/>
+                          ~ ${fn:substring(fn:replace(endAtText, 'T', ' '), 0, 10)}
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                      </c:choose>
+                    </td>
                     <td class="text-end">
                       <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/admin/missions/edit?missionId=${mission.id}">수정</a>
                       <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteMission(${mission.id})">삭제</button>
