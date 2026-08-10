@@ -4,7 +4,6 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zzanmat.tour.mission.mapper.MissionMapper">
 
-    <!-- 1. 전체 목록 조회 -->
     <select id="findAll" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$Info">
         SELECT mission_id AS id
         , mission_id AS mission_id
@@ -14,32 +13,33 @@
         , trigger_event
         , target_count
         , reward_point
-        , auto_complete
+        , place_keyword
+        , max_total_cost
         , start_at
         , end_at
         , created_at
-        FROM `mission_create`
+        FROM `mission`
         ORDER BY mission_id DESC
     </select>
 
-    <!-- 2. 특정 미션 상세 조회 -->
     <select id="findById" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$Info">
         SELECT mission_id AS id
+        , mission_id AS mission_id
         , title
         , description
         , mission_type
         , trigger_event
         , target_count
         , reward_point
-        , auto_complete
+        , place_keyword
+        , max_total_cost
         , start_at
         , end_at
         , created_at
-        FROM `mission_create`
+        FROM `mission`
         WHERE mission_id = #{missionId}
     </select>
 
-    <!-- 3. 회원별 미션 진행 상태 조회 -->
     <select id="findUserMissionByUserAndMission" resultType="com.zzanmat.tour.mission.dto.MissionResponseDto$UserMissionDetail">
         SELECT id AS user_mission_id
         , user_id
@@ -56,8 +56,14 @@
         AND mission_id = #{missionId}
     </select>
 
-    <!-- parameterType에 단순 클래스명 대신 전체 경로를 적어둠 -->
-    <insert id="saveProgress" parameterType="com.zzanmat.tour.mission.dto.MissionProgressDto">
+    <select id="findUserStatusesByUserId" resultType="java.util.HashMap">
+        SELECT mission_id AS missionId
+             , status AS status
+          FROM `mission_progress`
+         WHERE user_id = #{userId}
+    </select>
+
+    <insert id="saveProgress">
         INSERT INTO `mission_progress` (
         user_id
         , mission_id
@@ -69,14 +75,20 @@
         , #{missionId}
         , 0
         , 0
-        , 'READY'
+        , 'IN_PROGRESS'
         )
     </insert>
 
+    <update id="updateProgressCounts">
+        UPDATE `mission_progress`
+        SET current_count = #{currentCount}
+        , progress = #{progress}
+        , status = #{status}
+        , updated_at = CURRENT_TIMESTAMP(6)
+        WHERE id = #{userMissionId}
+        AND status &lt;&gt; 'DONE'
+    </update>
 
-
-
-    <!-- 5. 미션 상태 업데이트 -->
     <update id="updateStatus">
         UPDATE `mission_progress`
         SET status = #{status}
@@ -84,7 +96,32 @@
         WHERE id = #{userMissionId}
     </update>
 
-    <!-- 6. 보상 수령 여부 업데이트 -->
+    <select id="countAllMissions" resultType="int">
+        SELECT COUNT(*) FROM `mission`
+    </select>
+
+    <select id="countActiveMissions" resultType="int">
+        SELECT COUNT(*)
+          FROM `mission`
+         WHERE (start_at IS NULL OR start_at &lt;= NOW())
+           AND (end_at IS NULL OR end_at &gt;= NOW())
+    </select>
+
+    <select id="sumPointsByUserId" resultType="int">
+        SELECT COALESCE(SUM(point), 0)
+          FROM `point_history`
+         WHERE user_id = #{userId}
+    </select>
+
+    <select id="sumPointsByDayLast14" resultType="java.util.HashMap">
+        SELECT DATE(created_at) AS day
+             , COALESCE(SUM(point), 0) AS cnt
+          FROM `point_history`
+         WHERE created_at &gt;= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+         GROUP BY DATE(created_at)
+         ORDER BY day ASC
+    </select>
+
     <update id="updateRewardReceived">
         UPDATE `mission_progress`
         SET reward_received = TRUE
@@ -93,8 +130,7 @@
         WHERE id = #{userMissionId}
     </update>
 
-    <!-- 7. 포인트 내역 저장 -->
-    <insert id="savePointHistory" useGeneratedKeys="true" keyProperty="id">
+    <insert id="savePointHistory">
         INSERT INTO `point_history`
         (
         user_id
@@ -111,9 +147,8 @@
         )
     </insert>
 
-    <!-- 8. 미션 등록 -->
     <insert id="save" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO `mission_create`
+        INSERT INTO `mission`
         (
         title
         , description
@@ -121,7 +156,8 @@
         , trigger_event
         , target_count
         , reward_point
-        , auto_complete
+        , place_keyword
+        , max_total_cost
         , start_at
         , end_at
         )
@@ -133,15 +169,15 @@
         , #{triggerEvent}
         , #{targetCount}
         , #{rewardPoint}
-        , #{autoComplete}
+        , #{placeKeyword}
+        , #{maxTotalCost}
         , #{startAt}
         , #{endAt}
         )
     </insert>
 
-    <!-- 9. 미션 수정 -->
     <update id="update" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate">
-        UPDATE `mission_create`
+        UPDATE `mission`
         <set>
             <if test="title != null">
                 title = #{title},
@@ -161,8 +197,11 @@
             <if test="rewardPoint != null">
                 reward_point = #{rewardPoint},
             </if>
-            <if test="autoComplete != null">
-                auto_complete = #{autoComplete},
+            <if test="placeKeyword != null">
+                place_keyword = #{placeKeyword},
+            </if>
+            <if test="maxTotalCost != null">
+                max_total_cost = #{maxTotalCost},
             </if>
             <if test="startAt != null">
                 start_at = #{startAt},
@@ -174,54 +213,9 @@
         WHERE mission_id = #{id}
     </update>
 
-    <!-- 10. 미션 삭제 (아카이브 백업 후 원본 삭제) -->
-    <insert id="saveDeleteArchive">
-        INSERT INTO `mission_delete_archive` (
-        mission_id, title, description, mission_type,
-        trigger_event, target_count, reward_point,
-        auto_complete, start_at, end_at
-        )
-        SELECT
-        mission_id, title, description, mission_type,
-        trigger_event, target_count, reward_point,
-        auto_complete, start_at, end_at
-        FROM `mission_create`
-        WHERE mission_id = #{missionId}
-    </insert>
-
     <delete id="deleteById">
-        DELETE FROM `mission_create`
+        DELETE FROM `mission`
         WHERE mission_id = #{missionId}
     </delete>
-
-    <!-- 11. 미션 생성 이력 저장 -->
-    <insert id="saveCreateHistory" parameterType="com.zzanmat.tour.mission.dto.MissionRequestDto$SaveOrUpdate">
-        INSERT INTO `mission_create_history` (
-        mission_id, title, description, mission_type,
-        trigger_event, target_count, reward_point,
-        auto_complete, start_at, end_at
-        ) VALUES (
-        #{id}, #{title}, #{description}, #{missionType},
-        #{triggerEvent}, #{targetCount}, #{rewardPoint},
-        #{autoComplete}, #{startAt}, #{endAt}
-        )
-    </insert>
-
-    <!-- 12. 미션 수정 전 이력 백업 -->
-    <insert id="saveUpdateHistory">
-        INSERT INTO `mission_update_history` (
-        mission_id, title, description, mission_type,
-        trigger_event, target_count, reward_point,
-        auto_complete, start_at, end_at
-        )
-        SELECT
-        mission_id, title, description, mission_type,
-        trigger_event, target_count, reward_point,
-        auto_complete, start_at, end_at
-        FROM `mission_create`
-        WHERE mission_id = #{id}
-    </insert>
-
-
 
 </mapper>

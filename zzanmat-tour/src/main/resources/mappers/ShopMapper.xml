@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzanmat.tour.shop.mapper.ShopMapper">
+
+    <select id="findActiveItems" resultType="com.zzanmat.tour.shop.dto.ShopDto$Item">
+        SELECT item_id
+             , name
+             , description
+             , category
+             , cost_point
+             , stock
+             , is_active AS active
+             , created_at
+          FROM shop_item
+         WHERE is_active = 1
+         ORDER BY cost_point ASC, item_id ASC
+    </select>
+
+    <select id="findByIdForUpdate" resultType="com.zzanmat.tour.shop.dto.ShopDto$Item">
+        SELECT item_id
+             , name
+             , description
+             , category
+             , cost_point
+             , stock
+             , is_active AS active
+             , created_at
+          FROM shop_item
+         WHERE item_id = #{itemId}
+         FOR UPDATE
+    </select>
+
+    <update id="decreaseStock">
+        UPDATE shop_item
+           SET stock = stock - 1
+         WHERE item_id = #{itemId}
+           AND stock IS NOT NULL
+           AND stock &gt; 0
+    </update>
+
+    <insert id="insertUserCoupon"
+            parameterType="com.zzanmat.tour.shop.dto.ShopDto$Coupon"
+            useGeneratedKeys="true"
+            keyProperty="couponId">
+        INSERT INTO user_coupon (
+            user_id
+            , item_id
+            , coupon_code
+            , cost_point
+            , status
+        ) VALUES (
+            #{userId}
+            , #{itemId}
+            , #{couponCode}
+            , #{costPoint}
+            , 'AVAILABLE'
+        )
+    </insert>
+
+    <select id="findCouponsByUserId" resultType="com.zzanmat.tour.shop.dto.ShopDto$Coupon">
+        SELECT c.coupon_id
+             , c.item_id
+             , i.name AS item_name
+             , i.category
+             , c.coupon_code
+             , c.cost_point
+             , c.status
+             , c.purchased_at
+          FROM user_coupon c
+          JOIN shop_item i ON i.item_id = c.item_id
+         WHERE c.user_id = #{userId}
+         ORDER BY c.purchased_at DESC, c.coupon_id DESC
+    </select>
+
+    <insert id="savePurchasePointHistory">
+        INSERT INTO point_history (
+            user_id
+            , mission_id
+            , point
+            , reason
+        ) VALUES (
+            #{userId}
+            , NULL
+            , #{point}
+            , #{reason}
+        )
+    </insert>
+
+</mapper>

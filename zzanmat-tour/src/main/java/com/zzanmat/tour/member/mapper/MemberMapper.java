@@ -11,6 +11,8 @@ public interface MemberMapper {
 
     int countByMemberId(@Param("userId") String userId);
 
+    int countAllMembers();
+
     MemberDto findByMemberId(@Param("userId") String userId);
 
     int update(MemberDto memberDto);

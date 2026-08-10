@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -46,6 +47,9 @@
         action="${pageContext.request.contextPath}/new-post"
         method="post"
         enctype="multipart/form-data">
+    <c:if test="${not empty missionId}">
+      <input type="hidden" name="missionId" value="${missionId}">
+    </c:if>
 
   <div class="col-lg-6">
     <div class="zt-post-image-uploader"
@@ -102,7 +106,7 @@
       <div class="mb-3">
         <label class="form-label"
                for="post-place">여행 장소</label>
-        <input id="post-place" class="form-control" type="text" placeholder="예: 서울 망원동">
+        <input id="post-place" name="place" class="form-control" type="text" placeholder="예: 서울 망원동" required>
       </div>
       <div class="mb-3">
         <label class="form-label" for="post-content">내용</label>

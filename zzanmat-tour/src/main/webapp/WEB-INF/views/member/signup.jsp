@@ -107,7 +107,10 @@
           </div>
           <div class="col-12 form-check ms-2">
             <input id="terms" class="form-check-input" type="checkbox" required>
-            <label for="terms" class="form-check-label small">이용약관과 개인정보처리방침에 동의합니다.</label>
+            <label for="terms" class="form-check-label small">
+              <a href="${pageContext.request.contextPath}/terms" target="_blank" rel="noopener">이용약관</a>과
+              <a href="${pageContext.request.contextPath}/privacy" target="_blank" rel="noopener">개인정보처리방침</a>에 동의합니다.
+            </label>
             <p id="termsValidationMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-12">

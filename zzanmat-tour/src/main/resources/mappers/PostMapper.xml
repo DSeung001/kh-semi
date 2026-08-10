@@ -14,6 +14,7 @@
         <result property="createAt" column="CREATE_AT"/>
         <result property="formattedCreateAt" column="FORMATTED_CREATE_AT"/>
         <result property="isBlock" column="IS_BLOCK"/>
+        <result property="place" column="PLACE"/>
         <result property="transportCost" column="TRANSPORT_COST"/>
         <result property="foodCost" column="FOOD_COST"/>
         <result property="otherCost" column="OTHER_COST"/>
@@ -66,6 +67,7 @@
                P.CREATE_AT,
                DATE_FORMAT(P.CREATE_AT, '%Y.%m.%d %H:%i') AS FORMATTED_CREATE_AT,
                P.IS_BLOCK,
+               P.PLACE,
                P.TRANSPORT_COST,
                P.FOOD_COST,
                P.OTHER_COST,
@@ -90,6 +92,7 @@
             VIEW_COUNT,
             CREATE_AT,
             IS_BLOCK,
+            PLACE,
             TRANSPORT_COST,
             FOOD_COST,
             OTHER_COST
@@ -101,6 +104,7 @@
             0,
             now(),
             FALSE,
+            #{place},
             #{transportCost},
             #{foodCost},
             #{otherCost}
@@ -118,6 +122,7 @@
         SET
             TITLE = #{title},
             CONTENT = #{content},
+            PLACE = #{place},
             TRANSPORT_COST = #{transportCost},
             FOOD_COST = #{foodCost},
             OTHER_COST = #{otherCost}
@@ -265,5 +270,15 @@
         FROM POST
         WHERE IS_BLOCK = FALSE
             AND USER_ID = #{userId}
+    </select>
+
+    <select id="countPostsByDayLast14" resultType="java.util.HashMap">
+        SELECT DATE(CREATE_AT) AS day
+             , COUNT(*) AS cnt
+          FROM POST
+         WHERE IS_BLOCK = FALSE
+           AND CREATE_AT &gt;= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+         GROUP BY DATE(CREATE_AT)
+         ORDER BY day ASC
     </select>
 </mapper>

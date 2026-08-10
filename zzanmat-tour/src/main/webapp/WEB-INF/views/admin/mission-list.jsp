@@ -35,28 +35,65 @@
 
       <section class="zt-panel">
         <div class="table-responsive">
-          <table class="table align-middle mb-0">
+          <table class="table align-middle mb-0 zt-admin-table">
             <thead>
             <tr>
-              <th>ID</th>
+              <th>번호</th>
               <th>제목</th>
-              <th>유형</th>
+              <th>방식</th>
+              <th>상태</th>
+              <th>장소 키워드</th>
+              <th>경비 상한</th>
               <th>보상</th>
               <th>기간</th>
               <th class="text-end">관리</th>
             </tr>
             </thead>
             <tbody>
-            <!-- 컨트롤러에서 전달된 missions 변수명으로 매칭 -->
+            <!-- 컨트롤러에서 전달된 missions 변수명으로 매칭 (사용자 /mission 과 동일: ACTIVE → UPCOMING → EXPIRED) -->
             <c:choose>
               <c:when test="${not empty missions}">
-                <c:forEach var="mission" items="${missions}">
+                <c:forEach var="mission" items="${missions}" varStatus="st">
                   <tr>
-                    <td>${mission.id}</td>
+                    <td>${st.count}</td>
                     <td>${mission.title}</td>
-                    <td><span class="zt-chip">${mission.missionType}</span></td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${mission.missionType == 'COMMENT'}"><span class="zt-chip">댓글</span></c:when>
+                        <c:when test="${mission.missionType == 'LIKE'}"><span class="zt-chip">좋아요</span></c:when>
+                        <c:when test="${mission.missionType == 'CHAT'}"><span class="zt-chip">오픈 채팅</span></c:when>
+                        <c:otherwise><span class="zt-chip">포스트</span></c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${mission.periodStatus == 'EXPIRED'}">
+                          <span class="badge bg-secondary">기간 종료</span>
+                        </c:when>
+                        <c:when test="${mission.periodStatus == 'UPCOMING'}">
+                          <span class="badge bg-info-subtle text-info border border-info-subtle">예정</span>
+                        </c:when>
+                        <c:otherwise>
+                          <span class="badge bg-primary-subtle text-primary border border-primary-subtle">진행 가능</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${not empty mission.placeKeyword}">
+                          <span class="zt-chip">${mission.placeKeyword}</span>
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td>
+                      <c:choose>
+                        <c:when test="${mission.maxTotalCost != null and mission.maxTotalCost > 0}">${mission.maxTotalCost}원</c:when>
+                        <c:otherwise>-</c:otherwise>
+                      </c:choose>
+                    </td>
                     <td>${mission.rewardPoint}P</td>
-                    <td class="small text-secondary">${mission.startAt} ~ ${mission.endAt}</td>
+                    <td class="small text-secondary zt-admin-period">${mission.startAt} ~ ${mission.endAt}</td>
                     <td class="text-end">
                       <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/admin/missions/edit?missionId=${mission.id}">수정</a>
                       <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteMission(${mission.id})">삭제</button>
@@ -66,7 +103,7 @@
               </c:when>
               <c:otherwise>
                 <tr>
-                  <td colspan="6" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
+                  <td colspan="9" class="text-center py-4 text-secondary">등록된 미션이 없습니다.</td>
                 </tr>
               </c:otherwise>
             </c:choose>

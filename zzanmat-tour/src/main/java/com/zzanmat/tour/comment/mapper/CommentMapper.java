@@ -27,4 +27,8 @@ public interface CommentMapper {
             @Param("commentId") Long commentId,
             @Param("userId") Long userId
     );
+
+    int countAll();
+
+    java.util.List<java.util.Map<String, Object>> countCommentsByDayLast14();
 }

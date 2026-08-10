@@ -5,6 +5,7 @@ import com.zzanmat.tour.chat.service.ChatService;
 import com.zzanmat.tour.common.dto.ApiResponse;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
+import com.zzanmat.tour.mission.service.MissionService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,13 +24,16 @@ public class ChatRestController {
 
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final MissionService missionService;
 
     public ChatRestController(
             ChatService chatService,
-            SimpMessagingTemplate messagingTemplate
+            SimpMessagingTemplate messagingTemplate,
+            MissionService missionService
     ) {
         this.chatService = chatService;
         this.messagingTemplate = messagingTemplate;
+        this.missionService = missionService;
     }
 
     @GetMapping("/messages")
@@ -47,6 +51,7 @@ public class ChatRestController {
         ChatMessage message = chatService.saveImage(loginMember, image);
         if (message != null) {
             messagingTemplate.convertAndSend("/topic/public", message);
+            missionService.recordEventProgress(loginMember.getId(), "OPEN_CHAT", null);
         }
         return ApiResponse.success(message);
     }
