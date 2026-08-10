@@ -1,4 +1,4 @@
-package com.zzanmat.tour.common.dto;
+package com.zzanmat.tour.member.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

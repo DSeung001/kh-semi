@@ -2,6 +2,8 @@ package com.zzanmat.tour.member.service;
 
 import com.zzanmat.tour.common.util.FileUploadUtil;
 import com.zzanmat.tour.common.util.SavedFile;
+import com.zzanmat.tour.member.Exception.WithdrawnMemberException;
+import com.zzanmat.tour.member.dto.FollowRelationDto;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.mapper.MemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -45,10 +48,19 @@ public class MemberServiceImpl implements MemberService{
 
     @Override
     public void join(MemberDto memberDto, MultipartFile profileImage) throws IOException {
+        String nickname = memberDto.getNickname() == null ? "" : memberDto.getNickname().trim();
+
         // 아이디 중복검사
         if(isMemberIdCheck(memberDto.getUserId())){
-            throw new IllegalStateException("이미 사용중인 아이디 입니다.");
+            throw new IllegalArgumentException("이미 사용중인 아이디 입니다.");
         }
+        if (nickname.isEmpty()) {
+            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+        }
+        if (isNicknameDuplicate(nickname)) {
+            throw new IllegalArgumentException("이미 사용중인 닉네임입니다.");
+        }
+        memberDto.setNickname(nickname);
 
         validateProfileImage(profileImage);
 
@@ -67,7 +79,17 @@ public class MemberServiceImpl implements MemberService{
 
     @Override
     public boolean isMemberIdCheck(String userId) {
-        return memberMapper.countByMemberId(userId) > 0;
+        return memberMapper.countByUserId(userId) > 0;
+    }
+
+    @Override
+    public boolean isNicknameDuplicate(String nickname) {
+        return memberMapper.countByNickname(nickname) > 0;
+    }
+
+    @Override
+    public boolean isEmailDuplicate(String email) {
+        return memberMapper.countByEmail(email) > 0;
     }
 
     @Override
@@ -76,8 +98,8 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberDto login(String memberId, String memberPwd) throws IllegalStateException{
-        MemberDto member = memberMapper.findByMemberId(memberId);
+    public MemberDto login(String userId, String memberPwd) throws IllegalStateException{
+        MemberDto member = memberMapper.findByUserId(userId);
 
         // member.getMemberPwd(); 암호화된 비밀번호
         // memberPwd 평문의 비밀번호
@@ -86,6 +108,9 @@ public class MemberServiceImpl implements MemberService{
         if(member == null || !passwordEncoder.matches(memberPwd, member.getUserPassword())){
             // 런타임 예외 -> 나중에는 각 예외별 에러코드를 분리해서 관리
             throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }else if (Boolean.TRUE.equals(member.getDeleted())) {
+            // 비밀번호까지 일치한 탈퇴 회원
+            throw new WithdrawnMemberException(member.getId());
         }
 
         return member;
@@ -124,15 +149,13 @@ public class MemberServiceImpl implements MemberService{
         boolean validContentType = "image/jpeg".equals(contentType) || "image/png".equals(contentType);
 
         if (!validExtension || !validContentType) {
-            throw new IllegalArgumentException(
-                    "JPG, JPEG, PNG 파일만 업로드할 수 있습니다."
-            );
+            throw new IllegalArgumentException("JPG, JPEG, PNG 파일만 업로드할 수 있습니다.");
         }
     }
 
     @Override
-    public MemberDto findById(String userId) {
-        return memberMapper.findById(userId);
+    public MemberDto findDetailByUserId(String userId) {
+        return memberMapper.findDetailByUserId(userId);
     }
 
     @Override
@@ -151,55 +174,110 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public void withdraw(String userId) {
-        memberMapper.deleteByMemberId(userId);
+    @Transactional
+    public void withdraw(Long memberId) {
+        int updatedCount = memberMapper.deleteById(memberId);
+
+        if (updatedCount == 0) {
+            throw new IllegalStateException("탈퇴할 회원 정보를 찾을 수 없거나 이미 탈퇴한 회원입니다.");
+        }
     }
 
     @Override
+    @Transactional
     public MemberDto kakaoJoin(String kakaoId, String nickname) {
 
         // 1. 카카오 ID로 기존 회원 조회
-        MemberDto member = memberMapper.findByMemberId(kakaoId);
+        MemberDto member = memberMapper.findByUserId(kakaoId);
 
-        // 2. 이미 가입한 회원이면 그대로 반환
+        // 2. 탈퇴 회원이면 카카오 인증 정보를 기준으로 계정을 복구
         if (member != null) {
+            if (!"KAKAO".equals(member.getLoginType())) {
+                throw new IllegalStateException("카카오 계정 정보가 기존 회원 유형과 일치하지 않습니다.");
+            }
+            if (Boolean.TRUE.equals(member.getDeleted())) {
+                String restoredNickname = createAvailableSocialNickname(nickname, "KAKAO", kakaoId);
+                int updatedCount = memberMapper.updateSocialMemberForRestore(
+                        member.getId(), restoredNickname, null
+                );
+                if (updatedCount == 0) {
+                    throw new IllegalStateException("카카오 계정을 복구하지 못했습니다.");
+                }
+                return memberMapper.findByUserId(kakaoId);
+            }
             return member;
         }
 
         // 3. 처음 카카오 로그인한 회원이면 회원가입
         MemberDto memberDto = new MemberDto();
         memberDto.setUserId(kakaoId);
-        memberDto.setNickname(nickname);
+        memberDto.setNickname(createAvailableSocialNickname(nickname, "KAKAO", kakaoId));
         memberDto.setLoginType("KAKAO");
 
         memberMapper.save(memberDto);
 
         // 4. DB에 저장된 회원 다시 조회
-        return memberMapper.findByMemberId(kakaoId);
+        return memberMapper.findByUserId(kakaoId);
     }
 
     @Override
+    @Transactional
     public MemberDto naverJoin(String naverId, String nickname, String email) {
 
         // 1. 네이버 고유 ID로 기존 회원 조회
-        MemberDto member = memberMapper.findByMemberId(naverId);
+        MemberDto member = memberMapper.findByUserId(naverId);
 
-        // 2. 이미 가입된 네이버 회원이면 그대로 반환
+        // 2. 탈퇴 회원이면 네이버 인증 정보를 기준으로 계정을 복구
         if (member != null) {
+            if (!"NAVER".equals(member.getLoginType())) {
+                throw new IllegalStateException("네이버 계정 정보가 기존 회원 유형과 일치하지 않습니다.");
+            }
+            if (Boolean.TRUE.equals(member.getDeleted())) {
+                String restoredNickname = createAvailableSocialNickname(nickname, "NAVER", naverId);
+                int updatedCount = memberMapper.updateSocialMemberForRestore(
+                        member.getId(), restoredNickname, email
+                );
+                if (updatedCount == 0) {
+                    throw new IllegalStateException("네이버 계정을 복구하지 못했습니다.");
+                }
+                return memberMapper.findByUserId(naverId);
+            }
             return member;
         }
 
         // 3. 최초 로그인이라면 회원 데이터 생성
         MemberDto memberDto = new MemberDto();
         memberDto.setUserId(naverId);
-        memberDto.setNickname(nickname);
+        memberDto.setNickname(createAvailableSocialNickname(nickname, "NAVER", naverId));
         memberDto.setEmail(email);
         memberDto.setLoginType("NAVER");
 
         memberMapper.save(memberDto);
 
         // 4. 저장된 회원을 다시 조회
-        return memberMapper.findByMemberId(naverId);
+        return memberMapper.findByUserId(naverId);
+    }
+
+    private String createAvailableSocialNickname(String nickname, String provider, String socialId) {
+        String defaultNickname = provider.equals("KAKAO") ? "카카오회원" : "네이버회원";
+        String baseNickname = nickname == null || nickname.isBlank()
+                ? defaultNickname
+                : nickname.trim();
+
+        if (!isNicknameDuplicate(baseNickname)) {
+            return baseNickname;
+        }
+
+        String compactSocialId = socialId.length() > 6
+                ? socialId.substring(socialId.length() - 6)
+                : socialId;
+        String suffix = "_" + provider + "_" + compactSocialId;
+        int maxBaseLength = Math.max(1, 50 - suffix.length());
+        String truncatedBase = baseNickname.length() > maxBaseLength
+                ? baseNickname.substring(0, maxBaseLength)
+                : baseNickname;
+
+        return truncatedBase + suffix;
     }
 
     @Override
@@ -232,7 +310,7 @@ public class MemberServiceImpl implements MemberService{
     }
 
     public boolean isFollowing(Long followerId, Long followeringId) {
-        return memberMapper.countByFollowId(followerId, followeringId) > 0;
+        return memberMapper.countByFollowerIdAndFolloweringId(followerId, followeringId) > 0;
     }
 
     @Transactional
@@ -246,7 +324,7 @@ public class MemberServiceImpl implements MemberService{
             return;
         }
 
-        memberMapper.saveFollowe(followerId, followingId);
+        memberMapper.saveFollow(followerId, followingId);
     }
 
     @Transactional
@@ -256,6 +334,61 @@ public class MemberServiceImpl implements MemberService{
             throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
         }
 
-        memberMapper.deleteByFollow(followerId, followingId);
+        memberMapper.deleteByFollowerIdAndFolloweringId(followerId, followingId);
     }
+
+    @Transactional
+    public void restore(Long memberId) {
+        int updatedCount = memberMapper.restore(memberId);
+
+        if (updatedCount == 0) {
+            throw new IllegalStateException("복구할 회원 정보를 찾을 수 없습니다.");
+        }
+    }
+
+    @Override
+    public void registerLoginSession(Long memberId, String loginSessionId) {
+        if (memberMapper.updateLoginSessionId(memberId, loginSessionId) == 0) {
+            throw new IllegalStateException("로그인 세션을 등록하지 못했습니다.");
+        }
+    }
+
+    @Override
+    public void clearLoginSession(Long memberId, String loginSessionId) {
+        memberMapper.clearLoginSessionId(memberId, loginSessionId);
+    }
+
+    @Override
+    public boolean isCurrentLoginSession(Long memberId, String loginSessionId) {
+        return loginSessionId != null && memberMapper.countCurrentLoginSession(memberId, loginSessionId) > 0;
+    }
+
+    @Override
+    public List<FollowRelationDto> getFollowRelations(String keyword, int page, int size) {
+        String trimmedKeyword = keyword == null ? null : keyword.trim();
+        int offset = (page - 1) * size;
+        return memberMapper.findFollowRelations(trimmedKeyword, offset, size);
+    }
+
+    @Override
+    public int countFollowRelations() {
+        return memberMapper.countFollowRelations();
+    }
+
+    @Override
+    public int countFollowRelationsByKeyword(String keyword) {
+        String trimmedKeyword = keyword == null ? null : keyword.trim();
+        return memberMapper.countFollowRelationsByKeyword(trimmedKeyword);
+    }
+
+    @Override
+    public int countDistinctFollowers() {
+        return memberMapper.countDistinctFollowers();
+    }
+
+    @Override
+    public int countDistinctFollowingMembers() {
+        return memberMapper.countDistinctFollowingMembers();
+    }
+
 }

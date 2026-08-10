@@ -47,7 +47,14 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(new AutoLoginInterceptor(memberService))
                 .addPathPatterns("/**") // 웹사이트의 모든 경로에서 자동 로그인 체크를 실행합니다.
-                .excludePathPatterns("/login", "/logout", "/css/**", "/js/**", "/images/**");
+                .excludePathPatterns(
+                        "/member/login",
+                        "/member/logout",
+                        "/assets/**",
+                        "/uploads/**",
+                        "/webjars/**",
+                        "/favicon.ico"
+                );
         // 단, 로그인, 로그아웃 페이지나 정적 파일(css, js, 이미지)은 무한 루프나 불필요한 동작을 막기 위해 제외합니다.
 
         registry.addInterceptor(new LoginInterceptor())
@@ -58,7 +65,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/new-post",
                         "/edit-post",
                         "/delete-post",
-                        "/member/follow/**",
+                        "/api/member/follow/**",
                         "/post-like",
                         "/comment-like",
                         "/comments",

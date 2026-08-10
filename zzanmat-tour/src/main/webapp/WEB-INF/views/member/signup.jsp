@@ -45,6 +45,9 @@
 
         <form id="signupBtn" class="row g-3" method="post" action="${pageContext.request.contextPath}/member/signup" enctype="multipart/form-data" novalidate>
           <div class="col-12">
+            <p class="small text-muted mb-0"><span class="text-danger" aria-hidden="true">*</span> 표시는 필수 입력 항목입니다.</p>
+          </div>
+          <div class="col-12">
             <fieldset class="zt-signup-profile">
               <legend class="form-label mb-3">프로필 설정 <span class="zt-optional">선택</span></legend>
               <div class="zt-signup-profile-content">
@@ -59,7 +62,7 @@
             </fieldset>
           </div>
           <div class="col-12">
-            <label class="form-label" for="signup-id">아이디</label>
+            <label class="form-label" for="signup-id">아이디 <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> 필수</span></label>
             <div class="input-group">
               <input id="signup-id" name="userId" class="form-control" type="text" maxlength="20" required>
               <button id="checkUsernameDuplicateBtn" class="btn btn-outline-secondary" type="button">중복 확인</button>
@@ -67,14 +70,14 @@
             <p id="signupIdMessage" class="signup-message" role="alert"></p>
           </div>
           <div class="col-12">
-            <label class="form-label" for="signup-email">이메일</label>
+            <label class="form-label" for="signup-email">이메일 <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> 필수</span></label>
             <div class="input-group">
               <input id="signup-email" name="email" class="form-control" type="email" maxlength="30" required>
               <button id="sendCodeBtn" class="btn btn-outline-secondary" type="button">인증</button>
             </div>
             <p id="signupEmailMessage" class="signup-message" role="alert"></p>
           </div>
-          <div class="col-12">
+          <div class="col-12 signup-email-auth-row">
             <div class="input-group auth-email auth-email-area">
               <input id="email-auth-section" name="auth-email" class="form-control" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="인증번호 6자리 입력" disabled>
               <span id="emailAuthTimer" class="input-group-text email-auth-timer" aria-live="polite">03:00</span>
@@ -83,17 +86,17 @@
             <p id="emailAuthMessage" class="signup-message" role="alert"></p>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="signup-password">비밀번호</label>
+            <label class="form-label" for="signup-password">비밀번호 <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> 필수</span></label>
             <input id="signup-password" name="userPassword" class="form-control" type="password" maxlength="20" required>
             <p id="passwordValidationMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-md-7">
-            <label class="form-label" for="signup-password2">비밀번호 확인</label>
+            <label class="form-label" for="signup-password2">비밀번호 확인 <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> 필수</span></label>
             <input id="signup-password2" class="form-control" type="password" maxlength="20" required>
             <p id="passwordConfirmMessage" class="form-message" role="alert"></p>
           </div>
           <div class="col-12">
-            <label class="form-label" for="signup-nickname">닉네임</label>
+            <label class="form-label" for="signup-nickname">닉네임 <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> 필수</span></label>
             <input id="signup-nickname" name="nickname" class="form-control" type="text" maxlength="30" required>
             <p id="nicknameValidationMessage" class="form-message" role="alert"></p>
           </div>
@@ -108,6 +111,7 @@
           <div class="col-12 form-check ms-2">
             <input id="terms" class="form-check-input" type="checkbox" required>
             <label for="terms" class="form-check-label small">
+              <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden">필수: </span>
               <a href="${pageContext.request.contextPath}/terms" target="_blank" rel="noopener">이용약관</a>과
               <a href="${pageContext.request.contextPath}/privacy" target="_blank" rel="noopener">개인정보처리방침</a>에 동의합니다.
             </label>

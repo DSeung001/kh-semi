@@ -1,6 +1,7 @@
 package com.zzanmat.tour.admin.controller;
 
 import com.zzanmat.tour.comment.service.CommentService;
+import com.zzanmat.tour.member.dto.FollowRelationDto;
 import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.mission.dto.MissionResponseDto;
 import com.zzanmat.tour.mission.service.MissionService;
@@ -96,5 +97,37 @@ public class AdminController {
             result.put(day, cnt);
         }
         return result;
+    }
+
+    @GetMapping("/following")
+    public String followingList(@RequestParam(required = false) String keyword,
+                                @RequestParam(defaultValue = "1") int page,
+                                Model model) {
+        final int pageSize = 20;
+        final int pageGroupSize = 5;
+
+        page = Math.max(page, 1);
+        int filteredCount = memberService.countFollowRelationsByKeyword(keyword);
+        int totalPages = (int) Math.ceil((double) filteredCount / pageSize);
+
+        if (totalPages > 0 && page > totalPages) {
+            page = totalPages;
+        }
+
+        List<FollowRelationDto> followRelations = memberService.getFollowRelations(keyword, page, pageSize);
+        int startPage = ((page - 1) / pageGroupSize) * pageGroupSize + 1;
+        int endPage = Math.min(startPage + pageGroupSize - 1, totalPages);
+
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("followRelations", followRelations);
+        model.addAttribute("filteredCount", filteredCount);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+        model.addAttribute("totalFollowRelations", memberService.countFollowRelations());
+        model.addAttribute("distinctFollowerCount", memberService.countDistinctFollowers());
+        model.addAttribute("distinctFollowingCount", memberService.countDistinctFollowingMembers());
+        return "admin/following-list";
     }
 }

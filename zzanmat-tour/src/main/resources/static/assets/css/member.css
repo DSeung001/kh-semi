@@ -2,9 +2,18 @@
     margin-bottom: 300px;
 }
 
-.zt-auth-card form > .col-md-6, .col-md-7 {
+.zt-auth-card form > .col-md-6,
+.zt-auth-card form > .col-md-7 {
     flex: 0 0 100%;
     max-width: 100%;
+}
+
+#signupBtn {
+    --bs-gutter-y: 1rem;
+}
+
+#signupBtn .form-label {
+    margin-bottom: 0.5rem;
 }
 
 .zt-signup-card {
@@ -170,13 +179,16 @@
     object-fit: cover;
 }
 
-/* 기본적으로 숨김 처리 */
-.auth-email-area {
+/* 인증 전에는 바깥 행 전체를 숨겨 Bootstrap 행 간격도 차지하지 않도록 처리 */
+.signup-email-auth-row {
     display: none;
 }
 
-/* 보이게 할 때 적용할 클래스 (!important로 우선순위 확보) */
-.auth-email-area.is-visible {
+.signup-email-auth-row.is-visible {
+    display: block;
+}
+
+.auth-email-area {
     display: flex;
 }
 

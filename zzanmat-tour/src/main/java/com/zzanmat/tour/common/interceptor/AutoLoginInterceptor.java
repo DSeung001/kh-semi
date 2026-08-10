@@ -25,7 +25,14 @@ public class AutoLoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
 
-        if (session.getAttribute(SessionConst.LOGIN_MEMBER) != null) {
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember != null) {
+            if (!memberService.isCurrentLoginSession(loginMember.getId(), session.getId())) {
+                session.invalidate();
+                expireAutoLoginCookie(response);
+                response.sendRedirect(request.getContextPath() + "/member/login?duplicateLogin=true");
+                return false;
+            }
             return true;
         }
 
@@ -40,8 +47,10 @@ public class AutoLoginInterceptor implements HandlerInterceptor {
 
                     if (username != null) {
                         // DB에 토큰을 찾을 필요 없이, 아이디로 회원 정보만 조회하여 세션 복구
-                        MemberDto member = memberService.findById(username);
-                        if (member != null) {
+                        MemberDto member = memberService.findDetailByUserId(username);
+                        if (member != null && !Boolean.TRUE.equals(member.getDeleted())) {
+                            memberService.registerLoginSession(member.getId(), session.getId());
+                            member.setLoginSessionId(session.getId());
                             session.setAttribute(SessionConst.LOGIN_MEMBER, member);
                         }
                     }
@@ -50,5 +59,13 @@ public class AutoLoginInterceptor implements HandlerInterceptor {
             }
         }
         return true;
+    }
+
+    private void expireAutoLoginCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("autoLoginToken", "");
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
     }
 }

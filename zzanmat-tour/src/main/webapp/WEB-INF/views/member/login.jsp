@@ -27,9 +27,21 @@
   </script>
 </c:if>
 
+<c:if test="${not empty restoreSuccess}">
+  <script>
+    alert("<c:out value="${restoreSuccess}"/>");
+  </script>
+</c:if>
+
 <c:if test="${param.oauthError eq 'true'}">
   <script>
     alert("소셜 로그인에 실패했습니다. 다시 시도해 주세요.");
+  </script>
+</c:if>
+
+<c:if test="${param.duplicateLogin eq 'true'}">
+  <script>
+    alert("다른 곳에서 같은 아이디로 로그인되어 로그아웃되었습니다.");
   </script>
 </c:if>
 
@@ -56,7 +68,16 @@
 </jsp:include>
 
     <main class="zt-content">
-      
+      <form id="restore-member-form" action="${pageContext.request.contextPath}/member/restore" method="post" hidden></form>
+      <c:if test="${withdrawnMember}">
+        <script>
+          const restoreConfirmed = confirm("탈퇴한 회원입니다. 계정 복구를 신청하시겠습니까?");
+
+          if (restoreConfirmed) {
+            document.querySelector("#restore-member-form").submit();
+          }
+        </script>
+      </c:if>
 <div class="zt-auth-wrap">
   <section class="zt-panel zt-auth-card zt-panel-shadow zt-signup-card">
     <h1 class="zt-auth-title">login</h1>
