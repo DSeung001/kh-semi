@@ -1,5 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -99,17 +101,53 @@
          data-total-pages="${totalPages}">
 
     <c:forEach var="post" items="${posts}">
+        <c:set var="defaultImage" value="zzanmat-default.jpg"/>
+
+        <c:choose>
+            <c:when test="${fn:contains(post.title, '서울')}">
+                <c:set var="defaultImage" value="seoul.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '부산')}">
+                <c:set var="defaultImage" value="busan.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '제주')}">
+                <c:set var="defaultImage" value="jeju.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '경주')}">
+                <c:set var="defaultImage" value="gyeongju.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '강릉')}">
+                <c:set var="defaultImage" value="gangneung.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '전주')}">
+                <c:set var="defaultImage" value="jeonju.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '인천')}">
+                <c:set var="defaultImage" value="incheon.svg"/>
+            </c:when>
+
+            <c:when test="${fn:contains(post.title, '속초')}">
+                <c:set var="defaultImage" value="sokcho.svg"/>
+            </c:when>
+        </c:choose>
         <a class="zt-grid-card"
            href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
 
             <c:choose>
                 <c:when test="${not empty post.thumbnailPath}">
                     <img src="${pageContext.request.contextPath}${post.thumbnailPath}"
-                         alt="${post.title}">
+                         alt="${post.title}"
+                         onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/${defaultImage}';">
                 </c:when>
 
                 <c:otherwise>
-                    <img src="${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg"
+                    <img src="${pageContext.request.contextPath}/assets/images/${defaultImage}"
                          alt="${post.title}">
                 </c:otherwise>
             </c:choose>

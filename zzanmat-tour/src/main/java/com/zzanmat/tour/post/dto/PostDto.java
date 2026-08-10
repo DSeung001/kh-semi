@@ -34,6 +34,7 @@ public class PostDto {
     private Integer likeCount;
     private Integer commentCount;
     private Boolean liked;
+    private Boolean following;
 
     private String authorNickname; // 사용자 닉네임
     private String authorProfile; // 사용자 프로필
