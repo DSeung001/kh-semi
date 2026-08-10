@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -116,13 +117,17 @@
                                     <p class="zt-muted small mb-0">
                                         <c:choose>
                                             <c:when test="${mission.startAt != null && mission.endAt != null}">
-                                                기간: ${mission.startAt} ~ ${mission.endAt}
+                                                <c:set var="startAtText" value="${mission.startAt}"/>
+                                                <c:set var="endAtText" value="${mission.endAt}"/>
+                                                기간: ${fn:replace(startAtText, 'T', ' ')} ~ ${fn:replace(endAtText, 'T', ' ')}
                                             </c:when>
                                             <c:when test="${mission.startAt != null}">
-                                                시작: ${mission.startAt}
+                                                <c:set var="startAtText" value="${mission.startAt}"/>
+                                                시작: ${fn:replace(startAtText, 'T', ' ')}
                                             </c:when>
                                             <c:when test="${mission.endAt != null}">
-                                                종료: ${mission.endAt}
+                                                <c:set var="endAtText" value="${mission.endAt}"/>
+                                                종료: ${fn:replace(endAtText, 'T', ' ')}
                                             </c:when>
                                             <c:otherwise>
                                                 기간 제한 없음
