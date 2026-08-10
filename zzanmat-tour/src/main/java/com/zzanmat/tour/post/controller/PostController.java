@@ -165,12 +165,12 @@ public class PostController {
 
         postService.save(post, imageFiles);
 
+        // 미션 하러가기(missionId)로 와도 조건 맞는 CREATE_POST 미션은 모두 진행
+        missionService.recordEventProgress(loginMember.getId(), "CREATE_POST", post);
+
         if (missionId != null) {
-            missionService.recordPostProgress(loginMember.getId(), missionId, post);
             return "redirect:/mission/active?missionId=" + missionId;
         }
-
-        missionService.recordEventProgress(loginMember.getId(), "CREATE_POST", post);
         return "redirect:/my-travel";
     }
 

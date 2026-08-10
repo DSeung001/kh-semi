@@ -384,8 +384,9 @@ public class MissionServiceImpl implements MissionService {
         Long maxTotalCost = mission.getMaxTotalCost();
         boolean hasCostCondition = maxTotalCost != null && maxTotalCost > 0;
 
+        // 장소/경비 조건이 없으면 게시글 작성만으로 인정 (시드 POST 미션 등)
         if (!hasPlaceCondition && !hasCostCondition) {
-            return false;
+            return true;
         }
 
         if (hasPlaceCondition) {

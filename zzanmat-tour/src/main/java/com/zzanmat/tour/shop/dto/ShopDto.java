@@ -85,4 +85,16 @@ public class ShopDto {
         private int costPoint;
         private int remainPoint;
     }
+
+    @Getter
+    @Setter
+    public static class SaveOrUpdate {
+        private Long itemId;
+        private String name;
+        private String description;
+        private String category;
+        private Integer costPoint;
+        private Integer stock;
+        private Boolean active;
+    }
 }

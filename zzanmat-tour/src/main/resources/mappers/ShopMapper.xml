@@ -18,6 +18,32 @@
          ORDER BY cost_point ASC, item_id ASC
     </select>
 
+    <select id="findAllItems" resultType="com.zzanmat.tour.shop.dto.ShopDto$Item">
+        SELECT item_id
+             , name
+             , description
+             , category
+             , cost_point
+             , stock
+             , is_active AS active
+             , created_at
+          FROM shop_item
+         ORDER BY is_active DESC, cost_point ASC, item_id ASC
+    </select>
+
+    <select id="findItemById" resultType="com.zzanmat.tour.shop.dto.ShopDto$Item">
+        SELECT item_id
+             , name
+             , description
+             , category
+             , cost_point
+             , stock
+             , is_active AS active
+             , created_at
+          FROM shop_item
+         WHERE item_id = #{itemId}
+    </select>
+
     <select id="findByIdForUpdate" resultType="com.zzanmat.tour.shop.dto.ShopDto$Item">
         SELECT item_id
              , name
@@ -31,6 +57,44 @@
          WHERE item_id = #{itemId}
          FOR UPDATE
     </select>
+
+    <insert id="saveItem"
+            parameterType="com.zzanmat.tour.shop.dto.ShopDto$SaveOrUpdate"
+            useGeneratedKeys="true"
+            keyProperty="itemId">
+        INSERT INTO shop_item (
+            name
+            , description
+            , category
+            , cost_point
+            , stock
+            , is_active
+        ) VALUES (
+            #{name}
+            , #{description}
+            , #{category}
+            , #{costPoint}
+            , #{stock}
+            , #{active}
+        )
+    </insert>
+
+    <update id="updateItem" parameterType="com.zzanmat.tour.shop.dto.ShopDto$SaveOrUpdate">
+        UPDATE shop_item
+           SET name = #{name}
+             , description = #{description}
+             , category = #{category}
+             , cost_point = #{costPoint}
+             , stock = #{stock}
+             , is_active = #{active}
+         WHERE item_id = #{itemId}
+    </update>
+
+    <update id="deactivateItem">
+        UPDATE shop_item
+           SET is_active = 0
+         WHERE item_id = #{itemId}
+    </update>
 
     <update id="decreaseStock">
         UPDATE shop_item

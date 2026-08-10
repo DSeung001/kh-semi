@@ -146,7 +146,7 @@ textarea {
   font-weight: 750;
 }
 
-#missionForm {
+#missionForm, #shopForm {
   padding: 25px;
 }
 
@@ -173,7 +173,9 @@ textarea {
 }
 
 .zt-admin-period {
-  white-space: nowrap;
+  max-width: 7.5rem;
+  white-space: normal;
+  line-height: 1.35;
 }
 
 .zt-admin-chart {
