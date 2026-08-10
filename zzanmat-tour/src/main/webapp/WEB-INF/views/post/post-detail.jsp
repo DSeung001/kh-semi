@@ -42,6 +42,14 @@
       <c:param name="redirectURL" value="/post-detail?postId=${post.postId}#comments"/>
     </c:url>
 <article class="zt-panel overflow-hidden">
+
+  <div class="zt-detail-title-area">
+    <span class="zt-detail-category">나만의 여행ZIP</span>
+
+    <h1 class="zt-detail-title">
+      <c:out value="${post.title}"/>
+    </h1>
+  </div>
   <header class="zt-post-header zt-detail-author-header">
 
     <div class="zt-detail-author">
@@ -256,11 +264,28 @@
       </c:when>
 
       <c:otherwise>
-        <a class="zt-icon-btn" href="${pageContext.request.contextPath}/member/login" aria-label="로그인 후 좋아요">
+        <button class="zt-icon-btn"
+                type="button"
+                aria-label="로그인 후 좋아요"
+                data-login-prompt
+                data-login-message="좋아요를 누르려면 로그인이 필요합니다. 로그인하시겠습니까?"
+                data-login-url="${commentLoginUrl}">
+
           <i class="bi bi-heart"></i>
-        </a>
+        </button>
       </c:otherwise>
     </c:choose>
+
+<button class="zt-icon-btn zt-comment-summary-button"
+        type="button"
+        data-comment-toggle
+        aria-expanded="false"
+        aria-controls="comment-list"
+        aria-label="댓글 보기">
+
+  <i class="bi bi-chat"></i>
+</button>
+
 
     <%-- 동작하지 않는 버튼들 주석 처리 --%>
     <%--<button class="zt-icon-btn" type="button">
@@ -285,9 +310,6 @@
   </p>
 
   <div class="zt-post-body">
-   <p class="fw-bold">
-     <c:out value="${post.title}"/>
-   </p>
 
     <p>
       <c:out value="${post.content}"/>
@@ -334,8 +356,13 @@
   </div>
 
   <section id="comments" class="zt-comments-box border-top">
+
     <h2 class="h6 fw-bold">댓글</h2>
-    <div data-comment-list>
+
+    <div id="comment-list"
+         data-comment-list
+         hidden>
+
       <c:choose>
         <c:when test="${empty comments}">
           <p class="zt-muted small mb-0">
@@ -491,9 +518,16 @@
     </c:when>
 
     <c:otherwise>
-      <div class="zt-comment-form">
-        <a href="${commentLoginUrl}">로그인 후 댓글을 작성할 수 있습니다.</a>
-      </div>
+     <div class="zt-comment-form">
+       <button class="zt-comment-login-button"
+               type="button"
+               data-login-prompt
+               data-login-message="댓글을 작성하려면 로그인이 필요합니다. 로그인하시겠습니까?"
+               data-login-url="${commentLoginUrl}">
+
+         로그인 후 댓글을 작성할 수 있습니다.
+       </button>
+     </div>
     </c:otherwise>
   </c:choose>
 </article>
@@ -504,6 +538,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/follow.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-detail.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-detail-carousel.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>

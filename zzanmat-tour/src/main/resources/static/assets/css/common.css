@@ -298,6 +298,29 @@ textarea {
   padding: 12px 15px 8px;
 }
 
+.zt-post-actions .zt-icon-btn {
+  transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+}
+
+.zt-post-actions .zt-icon-btn:active {
+  transform: scale(0.88);
+}
+
+.zt-comment-summary-button.is-active {
+  color: #0095f6;
+}
+
+.zt-post-actions .zt-icon-btn i {
+  display: block;
+  line-height: 1;
+}
+
+.zt-comment-summary-button i {
+  transform: translateY(-1px);
+}
+
 .zt-icon-btn {
   display: inline-grid;
   place-items: center;
@@ -778,8 +801,30 @@ textarea {
 
 
 .zt-comments-box {
-  min-height: 480px;
   padding: 18px;
+}
+
+.zt-comment-summary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.zt-post-actions > form {
+  display: inline-flex !important;
+  align-items: center;
+  margin: 0;
+}
+
+.zt-post-actions > form .zt-icon-btn {
+  width: 24px;
+  height: 24px;
+}
+
+.zt-comment-summary-button.is-active {
+  color: #111111;
 }
 
 .zt-comment-row {
@@ -1086,7 +1131,6 @@ textarea {
 
   .zt-mission-card .btn { grid-column: 1 / -1; }
 
-  .zt-comments-box { min-height: 320px; }
 }
 
   .zt-post-image-uploader {
@@ -1439,4 +1483,123 @@ textarea {
 
 .zt-main-like-form .bi-heart-fill {
   color: #ff5a1f !important;
+}
+
+/* 게시글 상세 상단 제목 영역*/
+.zt-detail-title-area {
+  padding: 20px 15px 8px;
+  background-color: #fff;
+}
+
+.zt-detail-category {
+  display: block;
+  margin-bottom: 8px;
+  color: #ff5a1f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.zt-detail-title {
+  margin: 0;
+  color: #111;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.zt-detail-author-header {
+  padding: 10px 15px 14px;
+  border-top: 1px solid #eeeeee;
+}
+
+.zt-comment-login-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #555;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.zt-comment-login-button:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+.zt-main-post-title-area {
+  padding: 20px 15px 10px;
+  background-color: #fff;
+}
+
+.zt-main-post-category {
+  display: block;
+  margin-bottom: 8px;
+  color: #ff5a1f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.zt-main-post-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.zt-main-post-title a {
+  color: #111;
+  text-decoration: none;
+}
+
+.zt-main-post-title a:hover {
+  text-decoration: underline;
+}
+
+/* 메인페이지 작성자 정보 영역 */
+.zt-main-author-header {
+  padding: 12px 15px 18px;
+}
+
+.zt-main-author-header .zt-detail-author {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+}
+
+.zt-main-author-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 3px;
+}
+
+.zt-main-author-sub span {
+  display: inline-block;
+  color: #777;
+  font-size: 11px;
+}
+
+.zt-main-author-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zt-follow-button {
+  color: #ff5a1f !important;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.zt-follow-button:hover,
+.zt-follow-button:focus {
+  color: #e6490f !important;
+}
+
+.zt-follow-button.is-following {
+  color: var(--zt-muted) !important;
 }

@@ -15,160 +15,231 @@
 <body>
 <div class="zt-app">
 
-<header class="zt-mobile-header">
-    <a class="zt-brand" href="${pageContext.request.contextPath}/home">
-        <span>짠맛투어</span>
-    </a>
-    <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i
-            class="bi bi-box-arrow-in-right"></i></a>
-</header>
-<nav class="zt-mobile-nav" aria-label="모바일 메뉴">
-    <a href="${pageContext.request.contextPath}/home" class="active" aria-label="home"><i class="bi bi-house"></i></a>
-    <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
-    <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i
-            class="bi bi-plus-square"></i></a>
-    <a href="${pageContext.request.contextPath}/chat" class="" aria-label="chat"><i class="bi bi-chat-dots"></i></a>
-    <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i
-            class="bi bi-person-circle"></i></a>
-</nav>
-
-<div class="zt-layout">
-
-
-<jsp:include page="/WEB-INF/views/components/sidebar.jsp">
-    <jsp:param name="activePage" value="home"/>
-</jsp:include>
-
-<main class="zt-content">
-<c:if test="${not empty message}">
-    <script>
-        alert("${message}");
-    </script>
-</c:if>
-<form class="input-group zt-search" role="search" data-demo-form data-message="검색 기능은 서버 연결 후 구현됩니다.">
-    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-    <input class="form-control bg-white" type="search" placeholder="여행지, 사용자, 해시태그 검색">
-    <button class="btn btn-outline-secondary" type="submit">검색</button>
-</form>
-
-<c:forEach items="${latestPosts}" var="post">
-
-    <article class="zt-panel zt-post">
-
-    <header class="zt-post-header">
-    <div class="zt-user-meta">
-    <strong>
-    <c:out value="${post.title}"/>
-    </strong>
-
-    <span>
-    조회수 <c:out value="${post.viewCount}"/>
-    </span>
-    </div>
+    <header class="zt-mobile-header">
+        <a class="zt-brand" href="${pageContext.request.contextPath}/home">
+            <span>짠맛투어</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i
+                class="bi bi-box-arrow-in-right"></i></a>
     </header>
+    <nav class="zt-mobile-nav" aria-label="모바일 메뉴">
+        <a href="${pageContext.request.contextPath}/home" class="active" aria-label="home"><i
+                class="bi bi-house"></i></a>
+        <a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i
+                class="bi bi-grid-3x3-gap"></i></a>
+        <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i
+                class="bi bi-plus-square"></i></a>
+        <a href="${pageContext.request.contextPath}/chat" class="" aria-label="chat"><i class="bi bi-chat-dots"></i></a>
+        <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i
+                class="bi bi-person-circle"></i></a>
+    </nav>
 
-    <a href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
+    <div class="zt-layout">
 
-    <c:choose>
 
-        <c:when test="${not empty post.thumbnailPath}">
-            <img class="zt-post-image"
-                 src="${pageContext.request.contextPath}${post.thumbnailPath}"
-                 alt="게시글 대표 이미지">
-        </c:when>
+        <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
+            <jsp:param name="activePage" value="home"/>
+        </jsp:include>
 
-        <c:otherwise>
-            <img class="zt-post-image"
-                 src="${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg"
-                 alt="기본 여행 이미지">
-        </c:otherwise>
+        <main class="zt-content">
+            <c:if test="${not empty message}">
+                <script>
+                    alert("${message}");
+                </script>
+            </c:if>
+            <form class="input-group zt-search"
+                  action="${pageContext.request.contextPath}/my-travel"
+                  method="get"
+                  role="seach">
 
-    </c:choose>
+    <span class="input-group-text bg-white">
+        <i class="bi bi-search"></i>
+    </span>
 
-    </a>
+                <input class="form-control bg-white"
+                       type="search"
+                       name="keyword"
+                       placeholder="게시글 제목·내용 검색"
+                       required>
 
-    <div class="zt-post-actions">
+                <button class="btn btn-outline-secondary"
+                        type="submit">
+                    검색
+                </button>
+            </form>
 
-    <form class="zt-main-like-form zt-main-stat"
-    action="${pageContext.request.contextPath}/post-like"
-    method="post">
+            <c:forEach items="${latestPosts}" var="post">
 
-    <input type="hidden"
-           name="postId"
-           value="${post.postId}">
+                <article class="zt-panel zt-post">
 
-    <button type="submit"
-            class="zt-icon-btn"
-            aria-label="좋아요">
+                    <div class="zt-main-post-title-area">
+  <span class="zt-main-post-category">
+    나만의 여행ZIP
+  </span>
 
-    <c:choose>
-        <c:when test="${post.liked}">
-            <i class="bi bi-heart-fill text-danger"
-               data-like-icon></i>
-        </c:when>
+                        <h2 class="zt-main-post-title">
+                            <a href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
+                                <c:out value="${post.title}"/>
+                            </a>
+                        </h2>
+                    </div>
 
-        <c:otherwise>
-            <i class="bi bi-heart"
-               data-like-icon></i>
-        </c:otherwise>
-    </c:choose>
+                    <header class="zt-post-header zt-main-author-header">
+                        <div class="zt-detail-author">
 
-    </button>
+                            <c:choose>
+                                <c:when test="${not empty post.authorProfile}">
+                                    <img class="zt-avatar"
+                                         src="${pageContext.request.contextPath}${post.authorProfile}"
+                                         alt="작성자 프로필">
+                                </c:when>
 
-    <span data-like-count>
+                                <c:otherwise>
+                                    <img class="zt-avatar"
+                                         src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg"
+                                         alt="기본 프로필">
+                                </c:otherwise>
+                            </c:choose>
+
+                            <div class="zt-user-meta">
+
+                                <div class="zt-main-author-main">
+                                    <strong>
+                                        <c:out value="${post.authorNickname}"
+                                               default="알 수 없는 사용자"/>
+                                    </strong>
+
+                                        <%-- 로그인 상태이며 자신의 게시글이 아닌 경우 --%>
+                                    <c:if test="${not empty sessionScope.loginMember
+                                              and sessionScope.loginMember.id ne post.userId}">
+
+                                        <button type="button"
+                                                class="zt-follow-button btn btn-link btn-sm p-0 text-decoration-none ${post.following ? 'is-following' : ''}"
+                                                data-follow-button
+                                                data-logged-in="true"
+                                                data-context-path="${pageContext.request.contextPath}"
+                                                data-following-id="${post.userId}"
+                                                data-following="${post.following}">
+
+                                            <c:choose>
+                                                <c:when test="${post.following}">
+                                                    팔로잉
+                                                </c:when>
+
+                                                <c:otherwise>
+                                                    팔로우
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </button>
+                                    </c:if>
+
+                                        <%-- 비로그인 상태인 경우 --%>
+                                    <c:if test="${empty sessionScope.loginMember}">
+                                        <button type="button"
+                                                class="zt-follow-button btn btn-link btn-sm p-0 text-decoration-none"
+                                                data-follow-button
+                                                data-logged-in="false"
+                                                data-context-path="${pageContext.request.contextPath}"
+                                                data-following-id="${post.userId}"
+                                                data-following="false">
+                                            팔로우
+                                        </button>
+                                    </c:if>
+                                </div>
+
+                                <div class="zt-main-author-sub">
+        <span>
+          <c:out value="${post.formattedCreateAt}"/>
+        </span>
+
+                                    <span>
+          조회수
+          <c:out value="${post.viewCount}" default="0"/>
+        </span>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <a href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
+
+                        <c:choose>
+
+                            <c:when test="${not empty post.thumbnailPath}">
+                                <img class="zt-post-image"
+                                     src="${pageContext.request.contextPath}${post.thumbnailPath}"
+                                     alt="게시글 대표 이미지">
+                            </c:when>
+
+                            <c:otherwise>
+                                <img class="zt-post-image"
+                                     src="${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg"
+                                     alt="기본 여행 이미지">
+                            </c:otherwise>
+
+                        </c:choose>
+
+                    </a>
+
+                    <div class="zt-post-actions">
+
+                        <form class="zt-main-like-form zt-main-stat"
+                              action="${pageContext.request.contextPath}/post-like"
+                              method="post">
+
+                            <input type="hidden"
+                                   name="postId"
+                                   value="${post.postId}">
+
+                            <button type="submit"
+                                    class="zt-icon-btn"
+                                    aria-label="좋아요">
+
+                                <c:choose>
+                                    <c:when test="${post.liked}">
+                                        <i class="bi bi-heart-fill text-danger"
+                                           data-like-icon></i>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        <i class="bi bi-heart"
+                                           data-like-icon></i>
+                                    </c:otherwise>
+                                </c:choose>
+
+                            </button>
+
+                            <span data-like-count>
         <c:out value="${post.likeCount}"/>
     </span>
 
-    </form>
+                        </form>
 
-    <a class="zt-icon-btn zt-main-stat"
-        href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}#comments"
-        aria-label="댓글">
+                        <a class="zt-icon-btn zt-main-stat"
+                           href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}#comments"
+                           aria-label="댓글">
 
-    <i class="bi bi-chat"></i>
+                            <i class="bi bi-chat"></i>
 
-    <span>
+                            <span>
         <c:out value="${post.commentCount}"/>
     </span>
-    </a>
+                        </a>
+                        
+                    </div>
+                </article>
 
-    <button class="zt-icon-btn"
-            type="button"
-            aria-label="공유">
-        <i class="bi bi-send"></i>
-    </button>
+            </c:forEach>
 
-    <button class="zt-icon-btn zt-save-btn"
-            type="button"
-            aria-label="저장">
-        <i class="bi bi-bookmark"></i>
-    </button>
+
+        </main>
     </div>
+</div>
 
-    <div class="zt-post-body">
-     <p>
-        <strong>
-            <c:out value="${post.title}"/>
-        </strong>
-     </p>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/follow.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
 
-     <p class="zt-muted">
-        조회수 <c:out value="${post.viewCount}"/>
-        </p>
-    </div>
-
-    </article>
-
-</c:forEach>
-
-
-    </main>
-    </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
-    <script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
-
-    </body>
-    </html>
+</body>
+</html>

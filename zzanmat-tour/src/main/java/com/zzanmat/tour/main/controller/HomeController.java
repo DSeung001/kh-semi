@@ -2,6 +2,7 @@ package com.zzanmat.tour.main.controller;
 
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
+import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.service.PostService;
 import org.springframework.stereotype.Controller;
@@ -15,9 +16,14 @@ import java.util.List;
 public class HomeController {
 
     private final PostService postService;
+    private final MemberService memberService;
 
-    public HomeController(PostService postService) {
+    public HomeController(
+            PostService postService,
+            MemberService memberService
+    ) {
         this.postService = postService;
+        this.memberService = memberService;
     }
 
     @GetMapping({"/", "/home"})
@@ -43,6 +49,15 @@ public class HomeController {
             );
 
             post.setLiked(liked);
+
+            boolean following = loginMember != null
+                    && !loginMember.getId().equals(post.getUserId())
+                    && memberService.isFollowing(
+                            loginMember.getId(),
+                            post.getUserId()
+            );
+
+            post.setFollowing(following);
         }
 
         model.addAttribute("latestPosts", latestPosts);

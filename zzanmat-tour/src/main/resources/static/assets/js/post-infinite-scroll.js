@@ -12,6 +12,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const keyword = grid.dataset.keyword;
     const totalPages = Number(grid.dataset.totalPages);
 
+    function  getDefaultImage(title) {
+        const postTitle = title ?? "";
+
+        if (postTitle.includes("서울")) {
+            return "seoul.svg";
+        }
+
+        if (postTitle.includes("부산")) {
+            return "busan.svg";
+        }
+
+        if (postTitle.includes("제주")) {
+            return "jeju.svg";
+        }
+
+        if (postTitle.includes("경주")) {
+            return "gyeongju.svg";
+        }
+
+        if (postTitle.includes("강릉")) {
+            return "gangneung.svg";
+        }
+
+        if (postTitle.includes("전주")) {
+            return "jeonju.svg";
+        }
+
+        if (postTitle.includes("인천")) {
+            return "incheon.svg";
+        }
+
+        if (postTitle.includes("속초")) {
+            return "sokcho.svg";
+        }
+
+        return "zzanmat-default.jpg"
+    }
+
+
     let nextPage = 2;
     let isLoading = false;
 
@@ -31,12 +70,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const image = document.createElement("img");
 
+        const defaultImagePath =
+            contextPath +
+            "/assets/images/" +
+            getDefaultImage(post.title);
+
+        image.addEventListener(
+            "error",
+            () => {
+                image.src = defaultImagePath;
+            },
+            {
+                once: true
+            }
+        );
+
         if (post.thumbnailPath) {
             image.src = contextPath + post.thumbnailPath;
         } else {
-            image.src = contextPath + "/assets/images/zzanmat-default.jpg";
+            image.src = defaultImagePath;
         }
-        
+
         image.alt = post.title ?? "";
 
         const overlay = document.createElement("span");

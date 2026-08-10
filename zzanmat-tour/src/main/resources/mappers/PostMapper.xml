@@ -162,8 +162,16 @@
             SELECT COUNT(*)
             FROM `COMMENT` C
             WHERE C.POST_ID = P.POST_ID
-        ) AS COMMENT_COUNT
+        ) AS COMMENT_COUNT,
+        U.NICKNAME AS AUTHOR_NICKNAME,
+        U.PROFILE AS AUTHOR_PROFILE,
+        DATE_FORMAT(
+            P.CREATE_AT,
+            '%Y.%m.%d %H:%i'
+        ) AS FORMATTED_CREATE_AT
         FROM POST P
+        LEFT JOIN `USER` U
+            ON U.ID = P.USER_ID
         WHERE P.IS_BLOCK = FALSE
 
         <if test="keyword != null and keyword != ''">
@@ -179,7 +187,7 @@
             </when>
 
             <when test="sort == 'popular'">
-                ORDER BY P.VIEW_COUNT DESC, P.POST_ID DESC
+                ORDER BY LIKE_COUNT DESC, P.POST_ID DESC
             </when>
 
             <otherwise>
