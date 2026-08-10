@@ -149,6 +149,7 @@
           <p class="mb-0">전체 유저 활동 요약</p>
         </div>
         <div class="d-flex gap-2">
+          <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/following">회원 관리</a>
           <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/missions">미션 관리</a>
           <a class="btn btn-warning fw-bold" href="${pageContext.request.contextPath}/admin/missions/new">미션 등록</a>
         </div>

@@ -105,7 +105,7 @@ if(checkIdReult) {
 
         try {
             // encodeURIComponent감싸주는 이유: 아이디에 &, =와같은 요청 url에 영향을 주는 것들을 제거해주는 용도
-            const response = await fetch(`/member/checkId?userId=${encodeURIComponent(userId)}`, {
+            const response = await fetch(`/api/member/check-id?userId=${encodeURIComponent(userId)}`, {
                 method: "GET",
                 headers: {"X-Request-With": "XMLHtttpRequest"}
             });
@@ -141,7 +141,8 @@ if(userIdInput) {
 /* 회원가입 폼 제출 */
 const signupBtn = document.querySelector("#signupBtn");
 if(signupBtn) {
-    signupBtn.addEventListener("submit", function (ev) {
+    signupBtn.addEventListener("submit", async function (ev) {
+        ev.preventDefault();
         const userId = userIdInput.value.trim();
         const password = pwInput.value;
         const passwordConfirm = pwConfirmInput.value;
@@ -210,6 +211,24 @@ if(signupBtn) {
             stopValidation(nicknameValidationResult, "닉네임을 입력해주세요.", nicknameInput);
             return;
         }
+        try {
+            const response = await fetch(`/api/member/check-nickname?nickname=${encodeURIComponent(nickname)}`, {
+                method: "GET",
+                headers: {"X-Requested-With": "XMLHttpRequest"}
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "닉네임 중복확인에 실패했습니다.");
+            }
+            if (result.data) {
+                stopValidation(nicknameValidationResult, "이미 존재하는 닉네임입니다.", nicknameInput);
+                return;
+            }
+        } catch (error) {
+            stopValidation(nicknameValidationResult, "닉네임 중복확인 중 오류가 발생했습니다.", nicknameInput);
+            return;
+        }
         setResult(nicknameValidationResult, "사용 가능한 닉네임입니다.", true);
 
         const isTermsValid = termsInput.checked;
@@ -221,6 +240,7 @@ if(signupBtn) {
         // js에서의 검증은 UX관점일 뿐.
         // 우회가 얼마든지 가능하기 때문에 서버에서 재 검증이 필요하다.
         // (아이디 중복o, 비밀번호확인x)
+        signupBtn.submit();
     })
 }
 
@@ -232,6 +252,19 @@ if(profileForm){
                 ev.preventDefault();
             }
         }
+    });
+}
+
+const confirmWithdrawBtn = document.querySelector("#confirmWithdrawBtn");
+const withdrawForm = document.querySelector("#withdrawForm");
+
+if (confirmWithdrawBtn && withdrawForm) {
+    confirmWithdrawBtn.addEventListener("click", function () {
+        if (!confirm("회원탈퇴하시겠습니까?")) {
+            return;
+        }
+
+        withdrawForm.submit();
     });
 }
 
@@ -377,7 +410,7 @@ const sendCodeBtn = document.querySelector("#sendCodeBtn");
 if(sendCodeBtn){
     sendCodeBtn.addEventListener("click", function(){
         const email = emailInput.value.trim();
-        const authDiv = document.querySelector(".input-group.auth-email");
+        const authRow = document.querySelector(".signup-email-auth-row");
         if(!emailRegex.test(email)) {
             emailResult.textContent = "올바른 이메일 형식을 입력해주세요.";
             emailResult.className = "signup-message is-visible is-error";
@@ -404,7 +437,7 @@ if(sendCodeBtn){
                     emailResult.className = "signup-message is-visible";
                     return;
                 }
-                authDiv.classList.add("is-visible");
+                authRow.classList.add("is-visible");
                 isEmailVerified = false;
                 emailResult.textContent = "";
                 emailResult.className = "signup-message";
@@ -413,7 +446,8 @@ if(sendCodeBtn){
             })
             .catch(error => {
                 console.error('Error:', error);
-                setEmailAuthMessage(error.message || "인증번호 발송 중 오류가 발생했습니다.", true);
+                emailResult.textContent = error.message || "인증번호 발송 중 오류가 발생했습니다.";
+                emailResult.className = "signup-message is-visible is-error";
             })
             .finally(() => {
                 sendCodeBtn.disabled = false;
@@ -546,6 +580,7 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
     const accountMessageElement = container.querySelector("[data-auth-message]");
     const accountForm = container.closest("form");
     const accountSendUrl = container.dataset.sendUrl || "/email/send";
+    const accountPurpose = container.dataset.accountPurpose;
 
     let accountTimerId = null;
     let accountRemainingSeconds = 0;
@@ -600,6 +635,56 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
                 setAccountMessage("인증 시간이 만료되었습니다. 다시 인증해주세요.", true);
             }
         }, 1000);
+    };
+
+    const requestAccountApi = async (url, payload) => {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "계정 정보를 처리하지 못했습니다.");
+        }
+        return result;
+    };
+
+    const proceedAfterVerification = async (email) => {
+        const payload = {
+            email,
+            userId: accountUserIdInput ? accountUserIdInput.value.trim() : null
+        };
+        const statusResult = await requestAccountApi("/email/account-status", payload);
+
+        if (statusResult.data === true) {
+            const restoreConfirmed = confirm(
+                "탈퇴한 계정입니다.\n\n" +
+                "계정을 복구하면 다시 이용할 수 있지만, 탈퇴 시 삭제된 프로필 이미지, 이름, 닉네임 및 소개 정보는 복구되지 않습니다.\n\n" +
+                "계정을 복구하시겠습니까?"
+            );
+            if (!restoreConfirmed) {
+                setAccountMessage("계정 복구가 취소되었습니다.", true);
+                return false;
+            }
+
+            const restoreResult = await requestAccountApi("/email/restore-account", payload);
+            setAccountMessage(`${restoreResult.message} 계속해서 계정 찾기를 진행합니다.`);
+        }
+
+        if (accountPurpose === "id") {
+            const findIdResult = await requestAccountApi("/email/find-id", { email });
+            setAccountMessage(findIdResult.message);
+            return true;
+        }
+
+        accountForm.querySelectorAll("[data-password-field]").forEach((field) => {
+            field.disabled = false;
+        });
+        setAccountMessage(statusResult.data === true
+            ? "계정이 복구되었습니다. 새로운 비밀번호를 입력해주세요."
+            : "이메일 인증이 완료되었습니다. 새로운 비밀번호를 입력해주세요.");
+        return true;
     };
 
     accountEmailInput.addEventListener("input", () => {
@@ -688,57 +773,19 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
             accountTimerElement.textContent = "완료";
             accountAuthCodeInput.disabled = true;
             accountEmailInput.disabled = true;
+            if (accountUserIdInput) {
+                accountUserIdInput.disabled = true;
+            }
             accountSendButton.disabled = true;
-            setAccountMessage("이메일 인증이 완료되었습니다.");
-            accountForm.querySelectorAll("[data-password-field]").forEach((field) => {
-                field.disabled = false;
-            });
+            await proceedAfterVerification(email);
         } catch (error) {
-            accountVerifyButton.disabled = false;
+            if (!accountIsVerified) {
+                accountVerifyButton.disabled = false;
+            }
             setAccountMessage(error.message || "인증번호 확인 중 오류가 발생했습니다.", true);
         }
     });
 });
-
-/* 아이디 찾기: 가입 이메일을 조회한 뒤, 아이디를 해당 이메일로 발송합니다. */
-const findIdForm = document.querySelector("#forgot-id");
-const findIdEmailInput = document.querySelector("#find-id-email");
-const findIdMessage = document.querySelector("#findIdMessage");
-
-if (findIdForm && findIdEmailInput && findIdMessage) {
-    findIdForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const email = findIdEmailInput.value.trim();
-        if (!accountEmailRegex.test(email)) {
-            findIdMessage.textContent = "올바른 이메일 형식을 입력해주세요.";
-            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-error";
-            return;
-        }
-
-        const submitButton = findIdForm.querySelector("button[type='submit']");
-        submitButton.disabled = true;
-
-        try {
-            const response = await fetch("/email/find-id", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email })
-            });
-            const result = await response.json();
-
-            findIdMessage.textContent = result.message;
-            findIdMessage.className = result.success
-                ? "form-message mt-2 mb-0 is-visible is-success"
-                : "form-message mt-2 mb-0 is-visible is-error";
-        } catch (error) {
-            findIdMessage.textContent = "아이디 찾기 요청 중 오류가 발생했습니다.";
-            findIdMessage.className = "form-message mt-2 mb-0 is-visible is-error";
-        } finally {
-            submitButton.disabled = false;
-        }
-    });
-}
 
 /* 비밀번호 찾기: 인증번호 확인에 성공한 이메일만 같은 세션에서 비밀번호를 변경할 수 있습니다. */
 const resetPasswordBtn = document.querySelector("#resetPasswordBtn");
@@ -763,7 +810,7 @@ if (resetPasswordBtn && resetPasswordMessage && resetPasswordEmailInput && pwInp
 
         resetPasswordBtn.disabled = true;
         try {
-            const response = await fetch("/member/reset-password", {
+            const response = await fetch("/api/member/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

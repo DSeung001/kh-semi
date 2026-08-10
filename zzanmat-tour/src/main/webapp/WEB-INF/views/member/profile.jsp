@@ -50,6 +50,12 @@
           alert("<c:out value="${error}"/>");
         </script>
       </c:if>
+
+      <c:if test="${not empty withdrawError}">
+        <script>
+          alert("<c:out value="${withdrawError}"/>");
+        </script>
+      </c:if>
 <header class="zt-page-header">
   <h1>내 정보</h1>
   <p>프로필과 계정 정보를 확인하고 수정합니다.</p>
@@ -120,36 +126,47 @@
       <label for="bio" class="form-label">소개</label>
       <textarea id="bio" name="bio" class="form-control" rows="4" maxlength="150"><c:out value="${userInfo.bio}"/></textarea>
     </div>
+    <c:choose>
+      <c:when test="${userInfo.loginType == 'KAKAO'}">
+        <c:set var="withdrawAction" value="${pageContext.request.contextPath}/member/withdraw/kakao"/>
+      </c:when>
+      <c:when test="${userInfo.loginType == 'NAVER'}">
+        <c:set var="withdrawAction" value="${pageContext.request.contextPath}/member/withdraw/naver"/>
+      </c:when>
+      <c:otherwise>
+        <c:set var="withdrawAction" value="${pageContext.request.contextPath}/member/withdraw/general"/>
+      </c:otherwise>
+    </c:choose>
     <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-      <c:choose>
-        <c:when test="${userInfo.loginType == 'KAKAO'}">
-          <button type="submit"
-                  formaction="${pageContext.request.contextPath}/member/withdraw/kakao"
-                  class="btn btn-outline-danger px-4"
-                  onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
-          </button>
-        </c:when>
-
-        <c:when test="${userInfo.loginType == 'NAVER'}">
-          <button type="submit"
-                  formaction="${pageContext.request.contextPath}/member/withdraw/naver"
-                  class="btn btn-outline-danger px-4"
-                  onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
-          </button>
-        </c:when>
-
-        <c:otherwise>
-          <button type="submit"
-                  formaction="${pageContext.request.contextPath}/member/withdraw/general"
-                  class="btn btn-outline-danger px-4"
-                  onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴하기
-          </button>
-        </c:otherwise>
-      </c:choose>
+      <button type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#withdrawConfirmModal"
+              class="btn btn-outline-danger px-4">탈퇴하기
+      </button>
       <button id="saveBtn" class="btn btn-primary zt-primary-btn px-4" type="submit">수정 완료</button>
     </div>
   </form>
 </section>
+
+<form id="withdrawForm" action="${withdrawAction}" method="post"></form>
+<div class="modal fade" id="withdrawConfirmModal" tabindex="-1" aria-labelledby="withdrawConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="withdrawConfirmModalLabel">회원 탈퇴 전 확인해주세요.</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body">
+        탈퇴하면 프로필 이미지, 이름, 닉네임, 소개 정보가 삭제 또는 익명화됩니다.
+        이후 계정을 복구하더라도 기존 프로필 정보는 복구되지 않습니다.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" id="confirmWithdrawBtn" class="btn btn-danger">탈퇴 진행</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     </main>
     

@@ -31,7 +31,7 @@ if (followButton) {
 
         try {
             const response = await fetch(
-                `${contextPath}/member/follow/${followingId}`,
+                `${contextPath}/api/member/follow/${followingId}`,
                 {method: isFollowing
                         ? "DELETE"
                         : "POST",

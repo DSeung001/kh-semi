@@ -1,37 +1,67 @@
 package com.zzanmat.tour.member.mapper;
 
+import com.zzanmat.tour.member.dto.FollowRelationDto;
 import com.zzanmat.tour.member.dto.MemberDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
 
 @Mapper
 public interface MemberMapper {
 
     int save(MemberDto memberDto);
 
-    int countByMemberId(@Param("userId") String userId);
+    int countByUserId(@Param("userId") String userId);
+
+    int countByNickname(@Param("nickname") String nickname);
+
+    int countByEmail(@Param("email") String email);
 
     int countAllMembers();
 
-    MemberDto findByMemberId(@Param("userId") String userId);
+    MemberDto findByUserId(@Param("userId") String userId);
 
     int update(MemberDto memberDto);
 
-    MemberDto findById(String userId);
+    MemberDto findDetailByUserId(@Param("userId") String userId);
 
     MemberDto findByEmail(@Param("email") String email);
 
-    MemberDto findByUserIdAndEmail(@Param("userId") String userId,
-                                   @Param("email") String email);
+    MemberDto findByUserIdAndEmail(@Param("userId") String userId, @Param("email") String email);
 
-    int updatePasswordByEmail(@Param("email") String email,
-                              @Param("userPassword") String userPassword);
+    int updatePasswordByEmail(@Param("email") String email, @Param("userPassword") String userPassword);
 
-    int deleteByMemberId(@Param("userId") String userId);
+    int deleteById(@Param("memberId") Long memberId);
 
-    int countByFollowId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
+    int countByFollowerIdAndFolloweringId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
 
-    int saveFollowe(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
+    int saveFollow(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
 
-    int deleteByFollow(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
+    int deleteByFollowerIdAndFolloweringId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
+
+    int restore(@Param("memberId") Long memberId);
+
+    int updateSocialMemberForRestore(@Param("memberId") Long memberId,
+                                     @Param("nickname") String nickname,
+                                     @Param("email") String email);
+
+    int updateLoginSessionId(@Param("memberId") Long memberId, @Param("loginSessionId") String loginSessionId);
+
+    int clearLoginSessionId(@Param("memberId") Long memberId, @Param("loginSessionId") String loginSessionId);
+
+    int countCurrentLoginSession(@Param("memberId") Long memberId, @Param("loginSessionId") String loginSessionId);
+
+    List<FollowRelationDto> findFollowRelations(@Param("keyword") String keyword,
+                                                @Param("offset") int offset,
+                                                @Param("size") int size);
+
+    int countFollowRelations();
+
+    int countFollowRelationsByKeyword(@Param("keyword") String keyword);
+
+    int countDistinctFollowers();
+
+    int countDistinctFollowingMembers();
 }

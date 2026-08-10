@@ -1,9 +1,8 @@
 package com.zzanmat.tour.member.controller;
 
-import com.zzanmat.tour.common.dto.ApiResponse;
-import com.zzanmat.tour.common.dto.PasswordChangeRequest;
 import com.zzanmat.tour.common.util.CookieTokenUtils;
 import com.zzanmat.tour.common.util.SessionConst;
+import com.zzanmat.tour.member.Exception.WithdrawnMemberException;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
 import com.zzanmat.tour.mission.service.MissionService;
@@ -12,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -26,10 +26,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("/member")
+@Slf4j
 public class MemberController {
 
     @Autowired
@@ -49,8 +49,6 @@ public class MemberController {
         try {
             memberService.join(memberDto, profileImage);
         } catch (IOException | IllegalArgumentException e) {
-//             RedirectAttributes.addFlashAttribute
-            // 리다이렉트 후 딱 한번 다음 요청에서만 살아있는 데이터
 
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/member/signup";
@@ -58,14 +56,6 @@ public class MemberController {
 
         redirectAttributes.addFlashAttribute("joinSuccess", true);
         return "redirect:/member/login";
-    }
-
-    @GetMapping("/checkId")
-    @ResponseBody
-    public ApiResponse<Boolean> checkId(@RequestParam String userId) {
-        boolean duplicate = memberService.isMemberIdCheck(userId);
-        String message = duplicate ? "이미 사용중인 아이디 입니다." : "사용 가능한 아이디 입니다.";
-        return ApiResponse.success(message, duplicate);
     }
 
     @PostMapping("/login")
@@ -81,6 +71,8 @@ public class MemberController {
 
             //로그인 성공 -> 세션에 로그인 정보 저장
             if (member != null) {
+                memberService.registerLoginSession(member.getId(), session.getId());
+                member.setLoginSessionId(session.getId());
                 session.setAttribute(SessionConst.LOGIN_MEMBER, member);
 
                 // 2. 자동 로그인 체크 시
@@ -100,6 +92,11 @@ public class MemberController {
         } catch(IllegalStateException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/member/login";
+        } catch (WithdrawnMemberException e) {
+            session.setAttribute("RESTORE_MEMBER_ID", e.getMemberId());
+            session.setAttribute("RESTORE_EXPIRES_AT",System.currentTimeMillis() + 5 * 60 * 1000);
+            redirectAttributes.addFlashAttribute("withdrawnMember",true);
+            return "redirect:/member/login";
         }
 
         if(redirectURL != null && !redirectURL.isBlank()){
@@ -113,6 +110,10 @@ public class MemberController {
     public String logout(HttpServletRequest request, HttpServletResponse response){
         HttpSession session = request.getSession(false);
         if(session != null){
+            MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember != null) {
+                memberService.clearLoginSession(loginMember.getId(), session.getId());
+            }
             session.invalidate(); //세션자체를 만료
 
             Cookie[] cookies = request.getCookies();
@@ -165,26 +166,31 @@ public class MemberController {
             return "redirect:/member/login";
         }
 
-        // 일반 회원이 카카오 탈퇴 API를 직접 호출하는 것 방지
-        if (!isKakaoMember(loginMember)) {
+        MemberDto memberInfo = memberService.findDetailByUserId(loginMember.getUserId());
+
+        if (memberInfo == null || !"KAKAO".equals(memberInfo.getLoginType())) {
             redirectAttributes.addFlashAttribute("withdrawError","잘못된 회원 탈퇴 요청입니다.");
             return "redirect:/member/profile";
         }
 
         try {
+            if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
+                throw new IllegalStateException("카카오 인증 정보가 없습니다.");
+            }
             String accessToken = authorizedClient.getAccessToken().getTokenValue();
 
             // 카카오 연결 해제
             memberService.unlinkKakao(accessToken);
 
             // 카카오 연결 해제 성공 후 DB 회원 삭제
-            memberService.withdraw(loginMember.getUserId());
+            memberService.withdraw(loginMember.getId());
             session.invalidate();
             redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
 
             return "redirect:/";
 
         } catch (Exception e) {
+            log.error("카카오 회원 탈퇴 처리 실패: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("withdrawError","카카오 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
             return "redirect:/member/profile";
         }
@@ -203,7 +209,7 @@ public class MemberController {
         }
 
         // 세션 DTO에는 loginType이 없을 수 있으므로 DB에서 다시 조회
-        MemberDto memberInfo = memberService.findById(loginMember.getUserId());
+        MemberDto memberInfo = memberService.findDetailByUserId(loginMember.getUserId());
 
         if (memberInfo == null || !"NAVER".equals(memberInfo.getLoginType())) {
             redirectAttributes.addFlashAttribute("withdrawError","잘못된 네이버 회원 탈퇴 요청입니다.");
@@ -220,13 +226,14 @@ public class MemberController {
             memberService.unlinkNaver(accessToken);
 
             // DB 회원 삭제
-            memberService.withdraw(loginMember.getUserId());
+            memberService.withdraw(loginMember.getId());
             session.invalidate();
             redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
 
             return "redirect:/";
 
         } catch (Exception e) {
+            log.error("네이버 회원 탈퇴 처리 실패: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("withdrawError","네이버 연결 해제 중 오류가 발생해 탈퇴를 완료하지 못했습니다.");
 
             return "redirect:/member/profile";
@@ -235,7 +242,9 @@ public class MemberController {
 
     // 일반 회원 탈퇴
     @PostMapping("/withdraw/general")
-    public String withdrawGeneral(HttpSession session, RedirectAttributes redirectAttributes) {
+    public String withdrawGeneral(HttpSession session,
+                                  HttpServletResponse response,
+                                  RedirectAttributes redirectAttributes) {
 
         MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
 
@@ -243,17 +252,18 @@ public class MemberController {
             return "redirect:/member/login";
         }
 
-        // 카카오 회원이 일반 회원 탈퇴 API를 직접 호출하는 것 방지
-        if (isKakaoMember(loginMember)) {
-            redirectAttributes.addFlashAttribute("withdrawError","잘못된 회원 탈퇴 요청입니다.");
+        // 세션 정보가 오래되었을 수 있으므로 DB에서 최신 로그인 유형을 확인한다.
+        MemberDto memberInfo = memberService.findDetailByUserId(loginMember.getUserId());
 
+        if (memberInfo == null || !"LOCAL".equals(memberInfo.getLoginType())) {
+            redirectAttributes.addFlashAttribute("withdrawError","잘못된 회원 탈퇴 요청입니다.");
             return "redirect:/member/profile";
         }
 
         try {
-            memberService.withdraw(loginMember.getUserId());
+            memberService.withdraw(loginMember.getId());
+            expireAutoLoginCookie(response);
             session.invalidate();
-
             redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
 
             return "redirect:/";
@@ -263,37 +273,18 @@ public class MemberController {
         }
     }
 
-    private boolean isKakaoMember(MemberDto member) {
-        String userId = member.getUserId();
-        return userId != null && userId.matches("^[0-9]+$");
+    private void expireAutoLoginCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("autoLoginToken", "");
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
     }
 
     // 페이지 이동
     @GetMapping("/forgot-password")
     public String forgotPassword(){
         return "member/forgot-password";
-    }
-
-    @PostMapping("/reset-password")
-    @ResponseBody
-    public ApiResponse<Void> resetPassword(@RequestBody PasswordChangeRequest request,
-                                           HttpSession session) {
-        String verifiedEmail = (String) session.getAttribute("verifiedEmailForPasswordReset");
-        Long expiresAt = (Long) session.getAttribute("verifiedEmailForPasswordResetExpiresAt");
-        String email = request.getEmail() == null ? "" : request.getEmail().trim();
-        String newPassword = request.getNewPassword();
-
-        if (verifiedEmail == null || expiresAt == null || System.currentTimeMillis() > expiresAt
-                || !verifiedEmail.equals(email)) {
-            return ApiResponse.fail("이메일 인증이 만료되었습니다. 다시 인증해주세요.");
-        }
-        if (!memberService.resetPasswordByEmail(email, newPassword)) {
-            return ApiResponse.fail("가입 정보를 찾을 수 없습니다.");
-        }
-
-        session.removeAttribute("verifiedEmailForPasswordReset");
-        session.removeAttribute("verifiedEmailForPasswordResetExpiresAt");
-        return ApiResponse.success("비밀번호가 변경되었습니다. 로그인해주세요.", null);
     }
 
     @GetMapping("/login")
@@ -308,7 +299,7 @@ public class MemberController {
     public String profile(HttpServletRequest request, Model model){
         HttpSession session = request.getSession(false);
         MemberDto memberDto = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        MemberDto memberInfo = memberService.findById(memberDto.getUserId());
+        MemberDto memberInfo = memberService.findDetailByUserId(memberDto.getUserId());
         int userPostCnt = postService.countByUserPost(memberDto.getId());
         int pointBalance = missionService.getUserPointBalance(memberDto.getId());
 
@@ -358,9 +349,12 @@ public class MemberController {
                 return "redirect:/member/login";
             }
 
+            memberService.registerLoginSession(member.getId(), session.getId());
+            member.setLoginSessionId(session.getId());
             session.setAttribute(SessionConst.LOGIN_MEMBER, member);
             return "redirect:/";
         } catch (Exception e) {
+            log.error("소셜 로그인 처리 실패 - registrationId: {}, message: {}", registrationId, e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error","소셜 로그인 처리 중 오류가 발생했습니다.");
             return "redirect:/member/login";
         }
@@ -370,9 +364,7 @@ public class MemberController {
     private MemberDto processKakaoLogin(OAuth2User oAuth2User) {
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
-
         Object idValue = attributes.get("id");
-
         Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
 
         if (idValue == null || properties == null) {
@@ -389,7 +381,6 @@ public class MemberController {
     private MemberDto processNaverLogin(OAuth2User oAuth2User) {
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
-
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
         if (response == null || response.get("id") == null) {
@@ -403,35 +394,28 @@ public class MemberController {
         return memberService.naverJoin(naverId, nickname, email);
     }
 
-    // 팔로우
-    @PostMapping("/follow/{followingId}")
-    @ResponseBody
-    public ApiResponse<Boolean> follow(@PathVariable Long followingId, HttpSession session) {
+    @PostMapping("/restore")
+    public String restore(HttpSession session, RedirectAttributes redirectAttributes) {
+        Long memberId = (Long) session.getAttribute("RESTORE_MEMBER_ID");
+        Long expiresAt = (Long) session.getAttribute("RESTORE_EXPIRES_AT");
 
-        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-
-        if (loginMember == null) {
-            return ApiResponse.fail("로그인이 필요합니다.");
+        if (memberId == null || expiresAt == null || System.currentTimeMillis() > expiresAt) {
+            session.removeAttribute("RESTORE_MEMBER_ID");
+            session.removeAttribute("RESTORE_EXPIRES_AT");
+            redirectAttributes.addFlashAttribute("error","복구 인증이 만료되었습니다. 다시 로그인해주세요.");
+            return "redirect:/member/login";
         }
 
-        memberService.follow(loginMember.getId(), followingId);
-
-        return ApiResponse.success("팔로우했습니다.", true);
-    }
-
-    // 팔로우 취소
-    @DeleteMapping("/follow/{followingId}")
-    @ResponseBody
-    public ApiResponse<Boolean> unfollow(@PathVariable Long followingId,  HttpSession session) {
-
-        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
-
-        if (loginMember == null) {
-            return ApiResponse.fail("로그인이 필요합니다.");
+        try {
+            memberService.restore(memberId);
+            redirectAttributes.addFlashAttribute("restoreSuccess", "계정이 복구되었습니다. 다시 로그인해주세요.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } finally {
+            session.removeAttribute("RESTORE_MEMBER_ID");
+            session.removeAttribute("RESTORE_EXPIRES_AT");
         }
 
-        memberService.unfollow(loginMember.getId(), followingId);
-
-        return ApiResponse.success("팔로우를 취소했습니다.",false);
+        return "redirect:/member/login";
     }
 }

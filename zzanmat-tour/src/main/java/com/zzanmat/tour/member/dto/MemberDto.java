@@ -2,6 +2,8 @@ package com.zzanmat.tour.member.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,9 +19,12 @@ public class MemberDto {
     private String userName;
     private String profile;
     private String loginType;
+    private Boolean deleted;
+    private LocalDateTime deletedAt;
+    private String loginSessionId;
+    private String role;
 
     // 내 정보 페이지 팔로잉, 팔로워 개수 갖고올 떄 사용
     private int followerCount;
     private int followingCount;
-    private String role;
 }

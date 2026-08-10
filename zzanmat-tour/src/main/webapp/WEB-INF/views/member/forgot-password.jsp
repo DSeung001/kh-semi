@@ -53,7 +53,7 @@
         <div class="tab-content">
           <div id="find-password" class="tab-pane fade ${param.tab eq 'password' ? 'show active' : ''}">
             <form id="forgot-password" class="row g-3" novalidate>
-              <div class="col-12" data-email-verification data-send-url="/email/password-send">
+              <div class="col-12" data-email-verification data-send-url="/email/password-send" data-account-purpose="password">
                 <label for="find-password-id" class="form-label">아이디</label>
                 <input id="find-password-id" class="form-control mb-3" type="text" placeholder="가입한 아이디를 입력하세요" data-user-id required>
                 <label for="find-password-email" class="form-label">가입 이메일</label>
@@ -68,12 +68,12 @@
                 </div>
                 <p class="form-message mt-2 mb-0" data-auth-message role="alert"></p>
               </div>
-              <div class="col-md-7">
+              <div class="col-12">
                 <label class="form-label" for="signup-password">새 비밀번호</label>
                 <input id="signup-password" name="userPassword" class="form-control" type="password" required disabled data-password-field>
                 <p id="passwordValidationMessage" class="form-message" role="alert"></p>
               </div>
-              <div class="col-md-7">
+              <div class="col-12">
                 <label class="form-label" for="signup-password2">새 비밀번호 확인</label>
                 <input id="signup-password2" class="form-control" type="password" required disabled data-password-field>
                 <p id="passwordConfirmMessage" class="form-message" role="alert"></p>
@@ -86,13 +86,18 @@
           </div>
           <div id="find-id" class="tab-pane fade ${param.tab eq 'password' ? '' : 'show active'}">
             <form id="forgot-id" class="row g-3" novalidate>
-              <div class="col-12">
+              <div class="col-12" data-email-verification data-send-url="/email/find-id-send" data-account-purpose="id">
                 <label for="find-id-email" class="form-label">가입 이메일</label>
                 <div class="input-group">
-                  <input id="find-id-email" class="form-control" type="email" placeholder="user01@example.com" required>
-                  <button class="btn btn-outline-secondary" type="submit">아이디 찾기</button>
+                  <input id="find-id-email" class="form-control" type="email" placeholder="user01@example.com" data-email-input required>
+                  <button class="btn btn-outline-secondary" type="button" data-send-code>인증</button>
                 </div>
-                <p class="form-message mt-2 mb-0" id="findIdMessage" role="alert"></p>
+                <div class="input-group account-auth-area mt-2" data-auth-area>
+                  <input class="form-control" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="인증번호 6자리 입력" data-auth-code disabled>
+                  <span class="input-group-text email-auth-timer" data-auth-timer aria-live="polite">03:00</span>
+                  <button class="btn btn-outline-secondary" type="button" data-verify-code disabled>인증 확인</button>
+                </div>
+                <p class="form-message mt-2 mb-0" data-auth-message role="alert"></p>
               </div>
             </form>
           </div>
