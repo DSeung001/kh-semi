@@ -126,6 +126,8 @@
                type="number"
                min="0"
                value="0"
+               onfocus="if (this.value === '0') { this.value = ''; }"
+               onblur="if (this.value === '') { this.value = '0'; }"
                required>
       </div>
 
@@ -137,6 +139,8 @@
                type="number"
                min="0"
                value="0"
+               onfocus="if (this.value === '0') { this.value = ''; }"
+               onblur="if (this.value === '') { this.value = '0'; }"
                required>
       </div>
 
@@ -150,6 +154,8 @@
                type="number"
                min="0"
                value="0"
+               onfocus="if (this.value === '0') { this.value = ''; }"
+               onblur="if (this.value === '') { this.value = '0'; }"
                required>
       </div>
 

@@ -16,7 +16,7 @@
     <a class="zt-nav-link ${param.activePage eq 'my-travel' ? 'active' : ''}"
        href="${pageContext.request.contextPath}/my-travel"
        aria-current="${param.activePage eq 'my-travel' ? 'page' : 'false'}">
-      <i class="bi bi-grid-3x3-gap"></i><span>나만의 여행실</span>
+      <i class="bi bi-grid-3x3-gap"></i><span>나만의 여행ZIP</span>
     </a>
     <a class="zt-nav-link ${param.activePage eq 'chat' ? 'active' : ''}"
        href="${pageContext.request.contextPath}/chat"
