@@ -49,6 +49,10 @@
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="mission" items="${missions}">
+                            <%-- missionId에 콜론(:) 등이 포함된 경우 앞부분의 순수 숫자 ID만 안전하게 추출 --%>
+                            <c:set var="rawId" value="${mission.missionId}" />
+                            <c:set var="safeMissionId" value="${fn:contains(rawId, ':') ? fn:substringBefore(rawId, ':') : rawId}" />
+
                             <c:set var="isDone" value="${mission.userStatus == 'DONE'}"/>
                             <c:set var="cardClass" value="zt-mission-card"/>
                             <c:choose>
@@ -138,13 +142,13 @@
                                 <c:choose>
                                     <c:when test="${isDone}">
                                         <a class="btn btn-success fw-bold"
-                                           href="${pageContext.request.contextPath}/mission/active?missionId=${mission.missionId}">
+                                           href="${pageContext.request.contextPath}/mission/active?missionId=${safeMissionId}">
                                             완료
                                         </a>
                                     </c:when>
                                     <c:when test="${mission.available}">
                                         <a class="btn btn-warning fw-bold"
-                                           href="${pageContext.request.contextPath}/mission/active?missionId=${mission.missionId}">
+                                           href="${pageContext.request.contextPath}/mission/active?missionId=${safeMissionId}">
                                             도전하기
                                         </a>
                                     </c:when>

@@ -10,6 +10,7 @@ import com.zzanmat.tour.post.dto.PostDto;
 import com.zzanmat.tour.post.dto.PostUpdateRequest;
 import com.zzanmat.tour.post.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -272,4 +273,45 @@ public class PostController {
 
         return ApiResponse.success(result);
     }
-}
+
+        // 우회 차단을 위한 서버용 텍스트 정화 메서드
+        private String sanitizeText(String text) {
+            if (text == null) return "";
+            return text.toLowerCase()
+                    .replaceAll("[\\s\\p{Punct}]", "") // 공백 및 특수문자 제거
+                    .replace("@", "a")
+                    .replace("1", "i")
+                    .replace("3", "e")
+                    .replace("4", "a")
+                    .replace("0", "o");
+        }
+
+        @PostMapping("/write")
+        public String writePost(@ModelAttribute PostDto postDto, Model model) {
+
+            // 1. 기본 글자수 검증
+            if (postDto.getContent() == null || postDto.getContent().trim().length() < 10) {
+                model.addAttribute("errorMessage", "미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+                return "post/new-post";
+            }
+
+            // 2. 서버 단 정화 및 비속어 2차 필터링
+            String cleanContent = sanitizeText(postDto.getContent());
+            String cleanTitle = sanitizeText(postDto.getTitle());
+
+            String[] badWords = {"시발", "fuck", "shit", "병신", "개새끼", "motherfucker", "scum", "asshole", "ㅅㅂ", "ㅂㅅ"};
+
+            for (String word : badWords) {
+                String cleanWord = sanitizeText(word);
+                if (cleanContent.contains(cleanWord) || cleanTitle.contains(cleanWord)) {
+                    model.addAttribute("errorMessage", "욕설이나 비속어는 올릴 수 없습니다.");
+                    return "post/new-post"; // 차단 후 작성 페이지로 복귀
+                }
+            }
+
+            // 3. 모든 검증 통과 시 정상 저장 로직 수행
+            // postService.save(postDto);
+
+            return "redirect:/mission/active";
+        }
+    }

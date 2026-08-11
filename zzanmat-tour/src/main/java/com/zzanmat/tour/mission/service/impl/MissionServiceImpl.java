@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -172,31 +173,6 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     @Transactional
-    public void recordPostProgress(Long userId, Long missionId, PostDto post) {
-        if (userId == null || missionId == null || post == null) {
-            return;
-        }
-
-        MissionResponseDto.Info mission = missionMapper.findById(missionId);
-        if (mission == null) {
-            return;
-        }
-        applyPeriodStatus(mission);
-        if (!mission.isAvailable()) {
-            return;
-        }
-        if (!TRIGGER_CREATE_POST.equals(mission.getTriggerEvent())) {
-            return;
-        }
-        if (!matchesMissionConditions(mission, post)) {
-            return;
-        }
-
-        applyProgressOnce(userId, mission);
-    }
-
-    @Override
-    @Transactional
     public void recordEventProgress(Long userId, String triggerEvent, PostDto post) {
         if (userId == null || !StringUtils.hasText(triggerEvent)) {
             return;
@@ -220,6 +196,32 @@ public class MissionServiceImpl implements MissionService {
             }
             applyProgressOnce(userId, mission);
         }
+    }
+
+    @Override
+    @Transactional
+    public void recordPostProgress(Long userId, Long missionId, PostDto post) {
+        if (userId == null || missionId == null || post == null) {
+            return;
+        }
+
+        MissionResponseDto.Info mission = missionMapper.findById(missionId);
+        if (mission == null) {
+            return;
+        }
+        applyPeriodStatus(mission);
+        if (!mission.isAvailable()) {
+            return;
+        }
+        if (!TRIGGER_CREATE_POST.equals(mission.getTriggerEvent())) {
+            return;
+        }
+
+        if (!matchesMissionConditions(mission, post)) {
+            throw new IllegalArgumentException("잘못된 형식입니다. 의미 있는 내용을 입력해주세요.");
+        }
+
+        applyProgressOnce(userId, mission);
     }
 
     private void applyProgressOnce(Long userId, MissionResponseDto.Info mission) {
@@ -343,29 +345,17 @@ public class MissionServiceImpl implements MissionService {
     }
 
     private void validateMissionConditions(MissionRequestDto.SaveOrUpdate requestDto) {
-        String missionType = requestDto.getMissionType();
-
-        if (!TYPE_POST.equals(missionType)) {
-            requestDto.setPlaceKeyword("");
-            requestDto.setMaxTotalCost(0L);
-            return;
+        if (requestDto == null) {
+            throw new IllegalArgumentException("미션 정보가 존재하지 않습니다.");
         }
-
-        String placeKeyword = StringUtils.hasText(requestDto.getPlaceKeyword())
-                ? requestDto.getPlaceKeyword().trim()
-                : "";
-        requestDto.setPlaceKeyword(placeKeyword);
-
-        Long maxTotalCost = requestDto.getMaxTotalCost();
-        if (maxTotalCost == null || maxTotalCost < 0) {
-            maxTotalCost = 0L;
+        if (!StringUtils.hasText(requestDto.getTitle())) {
+            throw new IllegalArgumentException("미션 제목을 입력해주세요.");
         }
-        requestDto.setMaxTotalCost(maxTotalCost);
-
-        boolean hasPlace = StringUtils.hasText(placeKeyword);
-        boolean hasCost = maxTotalCost > 0;
-        if (!hasPlace && !hasCost) {
-            throw new IllegalArgumentException("포스트 미션은 장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.");
+        if (requestDto.getTargetCount() <= 0) {
+            throw new IllegalArgumentException("목표 횟수는 1 이상이어야 합니다.");
+        }
+        if (requestDto.getRewardPoint() < 0) {
+            throw new IllegalArgumentException("보상 포인트는 0 이상이어야 합니다.");
         }
     }
 
@@ -379,31 +369,9 @@ public class MissionServiceImpl implements MissionService {
             return false;
         }
 
-        String keyword = mission.getPlaceKeyword();
-        boolean hasPlaceCondition = StringUtils.hasText(keyword);
-        Long maxTotalCost = mission.getMaxTotalCost();
-        boolean hasCostCondition = maxTotalCost != null && maxTotalCost > 0;
-
-        // 장소/경비 조건이 없으면 게시글 작성만으로 인정 (시드 POST 미션 등)
-        if (!hasPlaceCondition && !hasCostCondition) {
-            return true;
-        }
-
-        if (hasPlaceCondition) {
-            String place = post.getPlace();
-            if (!StringUtils.hasText(place) || !place.contains(keyword.trim())) {
-                return false;
-            }
-        }
-
-        if (hasCostCondition) {
-            long transport = post.getTransportCost() == null ? 0L : post.getTransportCost();
-            long food = post.getFoodCost() == null ? 0L : post.getFoodCost();
-            long other = post.getOtherCost() == null ? 0L : post.getOtherCost();
-            long total = transport + food + other;
-            if (total > maxTotalCost) {
-                return false;
-            }
+        // 텍스트 유효성 및 무의미한 내용 필터링 검증
+        if (!isMeaningfulContent(post.getTitle(), post.getContent())) {
+            return false;
         }
 
         return true;
@@ -454,6 +422,40 @@ public class MissionServiceImpl implements MissionService {
             return 1;
         }
         return 2;
+    }
+
+    // 텍스트 정규화 및 의미 없는 내용/반복 스팸 필터링 메서드
+    private boolean isMeaningfulContent(String title, String content) {
+        String combined = (StringUtils.hasText(title) ? title : "") + " " + (StringUtils.hasText(content) ? content : "");
+
+        if (!StringUtils.hasText(combined)) {
+            return false;
+        }
+
+        // 특수문자, 공백 제거
+        String normalized = combined.replaceAll("[^가-힣a-zA-Z0-9]", "");
+
+        // 5글자 미만 차단
+        if (normalized.length() < 5) {
+            return false;
+        }
+
+        // 자음/모음 도배 차단
+        if (combined.replaceAll("\\s+", "").matches("^[ㄱ-ㅎㅏ-ㅣ]+$")) {
+            return false;
+        }
+
+        // 과도한 문자 반복 차단
+        if (hasExcessiveRepetition(normalized)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean hasExcessiveRepetition(String text) {
+        Pattern pattern = Pattern.compile("(.)\\1{3,}");
+        return pattern.matcher(text).find();
     }
 
     private void applyPeriodStatus(MissionResponseDto.Info mission) {

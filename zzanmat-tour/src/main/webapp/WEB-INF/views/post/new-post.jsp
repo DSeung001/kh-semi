@@ -179,7 +179,157 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js"></script>
 
+
+<script>
+  const contextPath = "${pageContext.request.contextPath}";
+
+    document.addEventListener("DOMContentLoaded", function () {
+    // 1. 등록 버튼 또는 폼을 모두 감지
+    const submitBtn = document.querySelector("#submitBtn") || document.querySelector("button[type='submit']") || document.querySelector(".zt-submit-btn");
+    const postForm = document.querySelector("#postSubmitForm") || document.querySelector("form");
+
+    function validateAndBlock(e) {
+    const titleInput = document.querySelector("#postTitle") || document.querySelector("input[name='title']");
+    const contentInput = document.querySelector("#postContent") || document.querySelector("textarea[name='content']");
+
+    const title = titleInput ? titleInput.value.trim() : "";
+    const content = contentInput ? contentInput.value.trim() : "";
+
+    // 2. 내용 공백 및 글자수 체크
+    if (content === "" || content.length < 10) {
+    alert("미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+
+    // 3. 자음/모음 도배 체크 (ㅋㅋㅋ, ㅠㅠㅠ 등)
+    const koreanJamoOnly = /^[ㄱ-ㅎㅏ-ㅣ\s]+$/;
+    if (koreanJamoOnly.test(content)) {
+    alert("자음이나 모음만으로는 미션을 인증할 수 없습니다. 의미 있는 내용을 입력해주세요.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+
+    // 4. 동일한 문자 과도한 반복 체크
+    const excessiveRepetition = /(.)\1{5,}/;
+    if (excessiveRepetition.test(content)) {
+    alert("동일한 문자나 알파벳의 지나친 반복은 등록할 수 없습니다.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+
+    // 5. 욕설 및 비속어 필터링
+    const badWords = [ "fuck", "shit", "시발", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ"];
+    for (let word of badWords) {
+    if (content.toLowerCase().includes(word.toLowerCase()) ||
+    title.toLowerCase().includes(word.toLowerCase())) {
+    alert("욕설이나 비속어는 올릴 수 없습니다.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+  }
+    return true; // 검증 통과
+  }
+
+    // 폼 제출(submit) 이벤트 차단
+    if (postForm) {
+    postForm.addEventListener("submit", function (e) {
+    if (!validateAndBlock(e)) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+  }, true);
+  }
+
+    // 버튼 클릭(click) 이벤트 강제 차단 (AJAX 방식 대응)
+    if (submitBtn) {
+    submitBtn.addEventListener("click", function (e) {
+    if (!validateAndBlock(e)) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+  }
+  }, true);
+  }
+  });
+
+    // 특수문자, 띄어쓰기, 리트스피크(Leetspeak) 변형을 원천 무력화하는 정규화 함수
+    function getSanitizedText(str) {
+    if (!str) return "";
+    return str.toLowerCase()
+    .replace(/[\s\p{P}\p{S}]/gu, "") // 공백, 구두점, 특수문자 전면 제거
+    .replace(/@/g, "a")              // 문자 변형(Leetspeak) 치환 예시
+    .replace(/1/g, "i")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/0/g, "o");
+  }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const postForm = document.querySelector("#postSubmitForm") || document.querySelector("form");
+
+    if (postForm) {
+    postForm.submitEventAttached = true;
+    postForm.addEventListener("submit", function (e) {
+    const titleInput = document.querySelector("#postTitle") || document.querySelector("input[name='title']");
+    const contentInput = document.querySelector("#postContent") || document.querySelector("textarea[name='content']");
+
+    const title = titleInput ? titleInput.value.trim() : "";
+    const content = contentInput ? contentInput.value.trim() : "";
+
+    // 1. 공백 및 최소 글자수 검증
+    if (content === "" || content.length < 10) {
+    alert("미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return false;
+  }
+
+    // 2. 자음/모음 도배 검증 (ㅋㅋㅋ, ㅠㅠㅠ)
+    if (/^[ㄱ-ㅎㅏ-ㅣ\s]+$/.test(content)) {
+    alert("자음이나 모음만으로는 미션을 인증할 수 없습니다.");
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return false;
+  }
+
+    // 3. 정화된 텍스트로 우회 욕설 필터링 검사
+    const cleanContent = getSanitizedText(content);
+    const cleanTitle = getSanitizedText(title);
+
+    // 핵심 비속어 및 금지어 풀 (필요에 따라 확장)
+    const badWords = ["시발", "fuck", "shit", "병신"," motherfucker", "scum", "개새끼", "ㅅㅂ", "ㅂㅅ"];
+
+    for (let word of badWords) {
+    const cleanWord = getSanitizedText(word);
+    if (cleanContent.includes(cleanWord) || cleanTitle.includes(cleanWord)) {
+    alert("욕설이나 비속어는 올릴 수 없습니다.");
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return false;
+  }
+  }
+  }, true);
+  }
+  });
+
+</script>
 </body>
 </html>

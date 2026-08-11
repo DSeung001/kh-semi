@@ -94,7 +94,7 @@
             <div class="col-md-6">
               <label class="form-label" for="maxTotalCost">총 경비 상한 (원, 선택)</label>
               <input type="number" class="form-control" id="maxTotalCost" name="maxTotalCost"
-                     placeholder="예: 30000" min="0">
+                     placeholder="예: 50000" min="0">
               <div class="form-text">비우면 경비 제한 없음. 입력 시 교통비+식비+기타 합계가 상한 이하일 때만 인정됩니다.</div>
             </div>
             <div class="col-12">
