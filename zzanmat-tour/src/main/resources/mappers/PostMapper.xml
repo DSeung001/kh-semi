@@ -23,6 +23,7 @@
         <result property="commentCount" column="COMMENT_COUNT"/>
         <result property="authorNickname" column="AUTHOR_NICKNAME"/>
         <result property="authorProfile" column="AUTHOR_PROFILE"/>
+        <result property="authorDeleted" column="AUTHOR_DELETED"/>
     </resultMap>
 
     <select id="findAll" resultMap="postResultMap">
@@ -72,7 +73,8 @@
                P.FOOD_COST,
                P.OTHER_COST,
                U.NICKNAME AS AUTHOR_NICKNAME,
-               U.PROFILE AS AUTHOR_PROFILE
+               U.PROFILE AS AUTHOR_PROFILE,
+               U.IS_DELETED AS AUTHOR_DELETED
           FROM POST P
           LEFT JOIN `USER` U
             ON U.ID = P.USER_ID
@@ -165,6 +167,7 @@
         ) AS COMMENT_COUNT,
         U.NICKNAME AS AUTHOR_NICKNAME,
         U.PROFILE AS AUTHOR_PROFILE,
+        U.IS_DELETED AS AUTHOR_DELETED,
         DATE_FORMAT(
             P.CREATE_AT,
             '%Y.%m.%d %H:%i'

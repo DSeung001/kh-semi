@@ -165,6 +165,13 @@
            AND FOLLOWERING_ID = #{followeringId}
     </select>
 
+    <select id="countActiveById" resultType="int">
+        SELECT COUNT(*)
+          FROM `USER`
+         WHERE ID = #{memberId}
+           AND IS_DELETED = FALSE
+    </select>
+
     <!-- 팔로우 추가 -->
     <insert id="saveFollow">
         INSERT INTO FOLLOWE (
