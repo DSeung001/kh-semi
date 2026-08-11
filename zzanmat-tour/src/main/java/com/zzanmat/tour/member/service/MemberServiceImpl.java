@@ -320,6 +320,10 @@ public class MemberServiceImpl implements MemberService{
             throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
         }
 
+        if (memberMapper.countActiveById(followingId) == 0) {
+            throw new IllegalArgumentException("탈퇴한 회원은 팔로우할 수 없습니다.");
+        }
+
         if (isFollowing(followerId, followingId)) {
             return;
         }
