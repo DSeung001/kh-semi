@@ -45,7 +45,7 @@ followButtons.forEach((followButton) => {
         try {
             const response = await fetch(
                 contextPath
-                + "/member/follow/"
+                + "/api/member/follow/"
                 + followingId,
                 {
                     method: isFollowing

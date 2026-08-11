@@ -55,11 +55,17 @@
     <div class="zt-detail-author">
       <c:choose>
         <c:when test="${not empty post.authorProfile}">
-          <img class="zt-avatar" src="${pageContext.request.contextPath}${post.authorProfile}" alt="작성자 프로필">
+          <img class="zt-avatar"
+               src="${pageContext.request.contextPath}${post.authorProfile}"
+               alt="작성자 프로필"
+               onerror="this.onerror=null;
+                        this.src='${pageContext.request.contextPath}/assets/images/profile-ethna.svg';">
         </c:when>
 
         <c:otherwise>
-          <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="기본 프로필">
+          <img class="zt-avatar"
+               src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg"
+               alt="기본 프로필">
         </c:otherwise>
       </c:choose>
 
@@ -207,7 +213,9 @@
             <img class="zt-detail-image zt-detail-slide ${status.first ? 'is-active' : ''}"
                  src="${pageContext.request.contextPath}${image.uploadPath}"
                  alt="${image.originName}"
-                 data-slide-index="${status.index}">
+                 data-slide-index="${status.index}"
+                 onerror="this.onerror=null;
+                          this.src='${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg';">
           </c:forEach>
         </div>
 
