@@ -74,7 +74,7 @@
 
                     <div class="zt-main-post-title-area">
   <span class="zt-main-post-category">
-    나만의 여행ZIP
+    여행 이야기
   </span>
 
                         <h2 class="zt-main-post-title">
