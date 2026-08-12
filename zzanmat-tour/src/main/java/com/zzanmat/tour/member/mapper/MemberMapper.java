@@ -37,6 +37,8 @@ public interface MemberMapper {
 
     int countByFollowerIdAndFolloweringId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
 
+    int countActiveById(@Param("memberId") Long memberId);
+
     int saveFollow(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
 
     int deleteByFollowerIdAndFolloweringId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);

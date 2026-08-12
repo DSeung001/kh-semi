@@ -77,7 +77,7 @@
             <c:out value="${post.authorNickname}" default="알 수 없는 사용자"/>
           </strong>
 
-          <c:if test="${not empty sessionScope.loginMember and not isOwnPost}">
+          <c:if test="${not post.authorDeleted and not empty sessionScope.loginMember and not isOwnPost}">
             <button type="button" class="zt-follow-button ${isFollowing ? 'is-following' : ''}"
                     data-follow-button
                     data-logged-in="true"
@@ -92,7 +92,7 @@
             </button>
           </c:if>
 
-          <c:if test="${empty sessionScope.loginMember}">
+          <c:if test="${not post.authorDeleted and empty sessionScope.loginMember}">
             <button type="button"
                     class="zt-follow-button"
                     data-follow-button

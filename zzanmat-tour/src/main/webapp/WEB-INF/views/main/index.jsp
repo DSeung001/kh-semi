@@ -110,7 +110,8 @@
                                     </strong>
 
                                         <%-- 로그인 상태이며 자신의 게시글이 아닌 경우 --%>
-                                    <c:if test="${not empty sessionScope.loginMember
+                                    <c:if test="${not post.authorDeleted
+                                              and not empty sessionScope.loginMember
                                               and sessionScope.loginMember.id ne post.userId}">
 
                                         <button type="button"
@@ -134,7 +135,7 @@
                                     </c:if>
 
                                         <%-- 비로그인 상태인 경우 --%>
-                                    <c:if test="${empty sessionScope.loginMember}">
+                                    <c:if test="${not post.authorDeleted and empty sessionScope.loginMember}">
                                         <button type="button"
                                                 class="zt-follow-button btn btn-link btn-sm p-0 text-decoration-none"
                                                 data-follow-button

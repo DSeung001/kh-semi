@@ -38,4 +38,5 @@ public class PostDto {
 
     private String authorNickname; // 사용자 닉네임
     private String authorProfile; // 사용자 프로필
+    private Boolean authorDeleted; // 작성자 탈퇴 여부
 }
