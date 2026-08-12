@@ -35,7 +35,11 @@
             C.IS_DELETED,
             C.CREATE_AT,
             C.UPDATE_AT,
-            U.NICKNAME,
+            CASE WHEN U.IS_DELETED = TRUE
+                      OR LEFT(U.NICKNAME, 7) = '탈퇴한 회원_'
+                 THEN '탈퇴한 회원'
+                 ELSE U.NICKNAME
+             END AS NICKNAME,
             (
                 SELECT COUNT(*)
                 FROM COMMENT_LIKE CL

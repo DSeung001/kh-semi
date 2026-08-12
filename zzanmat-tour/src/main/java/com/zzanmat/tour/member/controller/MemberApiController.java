@@ -17,10 +17,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
+import java.util.regex.Pattern;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
 public class MemberApiController {
+
+    private static final String PASSWORD_RESET_VERIFIED_MEMBER_ID = "passwordResetVerifiedMemberId";
+    private static final String PASSWORD_RESET_VERIFIED_EXPIRES_AT = "passwordResetVerifiedExpiresAt";
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
+            "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$"
+    );
 
     private final MemberService memberService;
 
@@ -46,22 +54,32 @@ public class MemberApiController {
     @PostMapping("/reset-password")
     public ApiResponse<Void> resetPassword(@RequestBody PasswordChangeRequest request,
                                            HttpSession session) {
-        String verifiedEmail = (String) session.getAttribute("verifiedEmailForPasswordReset");
-        Long expiresAt = (Long) session.getAttribute("verifiedEmailForPasswordResetExpiresAt");
-        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+        Long memberId = (Long) session.getAttribute(PASSWORD_RESET_VERIFIED_MEMBER_ID);
+        Long expiresAt = (Long) session.getAttribute(PASSWORD_RESET_VERIFIED_EXPIRES_AT);
         String newPassword = request.getNewPassword();
 
-        if (verifiedEmail == null || expiresAt == null || System.currentTimeMillis() > expiresAt
-                || !verifiedEmail.equals(email)) {
+        // 화면에서 전달되는 아이디·이메일은 조작할 수 있으므로 인증된 서버 세션의 회원 PK만 신뢰한다.
+        if (memberId == null || expiresAt == null || System.currentTimeMillis() > expiresAt) {
+            clearPasswordResetSession(session);
             throw new IllegalArgumentException("이메일 인증이 만료되었습니다. 다시 인증해주세요.");
         }
-        if (!memberService.resetPasswordByEmail(email, newPassword)) {
+        if (newPassword == null || !PASSWORD_PATTERN.matcher(newPassword).matches()) {
+            throw new IllegalArgumentException("비밀번호는 영문, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.");
+        }
+        if (!memberService.resetPasswordByMemberId(memberId, newPassword)) {
             throw new IllegalArgumentException("가입 정보를 찾을 수 없습니다.");
         }
 
+        // 성공한 재설정 권한은 재사용할 수 없도록 즉시 제거한다.
+        clearPasswordResetSession(session);
+        return ApiResponse.success("비밀번호가 변경되었습니다. 로그인해주세요.", null);
+    }
+
+    private void clearPasswordResetSession(HttpSession session) {
+        session.removeAttribute(PASSWORD_RESET_VERIFIED_MEMBER_ID);
+        session.removeAttribute(PASSWORD_RESET_VERIFIED_EXPIRES_AT);
         session.removeAttribute("verifiedEmailForPasswordReset");
         session.removeAttribute("verifiedEmailForPasswordResetExpiresAt");
-        return ApiResponse.success("비밀번호가 변경되었습니다. 로그인해주세요.", null);
     }
 
     @PostMapping("/follow/{followingId}")

@@ -42,6 +42,13 @@
          WHERE NICKNAME = #{nickname}
     </select>
 
+    <select id="countByNicknameExcludingId" resultType="int">
+        SELECT COUNT(*)
+          FROM `USER`
+         WHERE NICKNAME = #{nickname}
+           AND ID != #{memberId}
+    </select>
+
     <select id="countByEmail" resultType="int">
         SELECT COUNT(*)
           FROM `USER`
@@ -87,7 +94,8 @@
                 profile = #{profile},
             </if>
         </set>
-         WHERE USER_ID = #{userId}
+         WHERE ID = #{id}
+           AND IS_DELETED = FALSE
     </update>
 
     <select id="findDetailByUserId" parameterType="String" resultType="MemberDto">
@@ -138,10 +146,12 @@
            AND login_type = 'LOCAL'
     </select>
 
-    <update id="updatePasswordByEmail">
+    <update id="updatePasswordByMemberId">
         UPDATE `USER`
            SET user_password = #{userPassword}
-         WHERE email = #{email}
+         WHERE ID = #{memberId}
+           AND LOGIN_TYPE = 'LOCAL'
+           AND IS_DELETED = FALSE
     </update>
 
     <update id="deleteById">
@@ -149,7 +159,7 @@
            SET IS_DELETED = TRUE,
                DELETED_AT = NOW(),
                USER_NAME    = NULL,
-               NICKNAME     = CONCAT('탈퇴한 회원_', ID),
+               NICKNAME     = #{anonymousNickname},
                BIO          = NULL,
                PROFILE      = NULL,
                LOGIN_SESSION_ID = NULL
@@ -237,9 +247,17 @@
 
     <select id="findFollowRelations" resultType="FollowRelationDto">
         SELECT FOLLOWER_MEMBER.USER_ID AS FOLLOWER_USER_ID
-              ,FOLLOWER_MEMBER.NICKNAME AS FOLLOWER_NICKNAME
+              ,CASE WHEN FOLLOWER_MEMBER.IS_DELETED = TRUE
+                          OR LEFT(FOLLOWER_MEMBER.NICKNAME, 7) = '탈퇴한 회원_'
+                    THEN '탈퇴한 회원'
+                    ELSE FOLLOWER_MEMBER.NICKNAME
+                END AS FOLLOWER_NICKNAME
               ,FOLLOWED_MEMBER.USER_ID AS FOLLOWING_USER_ID
-              ,FOLLOWED_MEMBER.NICKNAME AS FOLLOWING_NICKNAME
+              ,CASE WHEN FOLLOWED_MEMBER.IS_DELETED = TRUE
+                          OR LEFT(FOLLOWED_MEMBER.NICKNAME, 7) = '탈퇴한 회원_'
+                    THEN '탈퇴한 회원'
+                    ELSE FOLLOWED_MEMBER.NICKNAME
+                END AS FOLLOWING_NICKNAME
           FROM FOLLOWE F
           JOIN `USER` FOLLOWER_MEMBER ON FOLLOWER_MEMBER.ID = F.FOLLOWER_ID
           JOIN `USER` FOLLOWED_MEMBER ON FOLLOWED_MEMBER.ID = F.FOLLOWERING_ID

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class MemberServiceImpl implements MemberService{
@@ -118,6 +119,24 @@ public class MemberServiceImpl implements MemberService{
 
     @Override
     public boolean update(MemberDto memberDto, MultipartFile newprofileImage, String originProfileName) throws IOException {
+        if (memberDto.getId() == null) {
+            throw new IllegalArgumentException("수정할 회원 정보가 없습니다.");
+        }
+
+        String nickname = memberDto.getNickname() == null ? "" : memberDto.getNickname().trim();
+        if (nickname.isEmpty()) {
+            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+        }
+        if (nickname.length() > 30) {
+            throw new IllegalArgumentException("닉네임은 30자 이하로 입력해주세요.");
+        }
+        if (nickname.equals("탈퇴한 회원") || nickname.startsWith("탈퇴한 회원_")) {
+            throw new IllegalArgumentException("사용할 수 없는 닉네임입니다.");
+        }
+        if (memberMapper.countByNicknameExcludingId(nickname, memberDto.getId()) > 0) {
+            throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+        }
+        memberDto.setNickname(nickname);
 
         //사용자가 새로운 프로필을 등록한다면 기존에 등록되어 있던 프로필 삭제 후
         //새로운 프로필 이미지 등록
@@ -169,18 +188,33 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public boolean resetPasswordByEmail(String email, String newPassword) {
-        return memberMapper.updatePasswordByEmail(email, passwordEncoder.encode(newPassword)) > 0;
+    public boolean resetPasswordByMemberId(Long memberId, String newPassword) {
+        return memberMapper.updatePasswordByMemberId(memberId, passwordEncoder.encode(newPassword)) > 0;
     }
 
     @Override
     @Transactional
     public void withdraw(Long memberId) {
-        int updatedCount = memberMapper.deleteById(memberId);
+        String anonymousNickname = createAnonymousNickname();
+        int updatedCount = memberMapper.deleteById(memberId, anonymousNickname);
 
         if (updatedCount == 0) {
             throw new IllegalStateException("탈퇴할 회원 정보를 찾을 수 없거나 이미 탈퇴한 회원입니다.");
         }
+    }
+
+    private String createAnonymousNickname() {
+        String anonymousNickname;
+        do {
+            // 회원 PK 대신 무작위 값을 사용해 탈퇴 회원의 식별 정보와 가입 순서를 노출하지 않는다.
+            String randomValue = UUID.randomUUID().toString()
+                    .replace("-", "")
+                    .substring(0, 8)
+                    .toUpperCase(Locale.ROOT);
+            anonymousNickname = "탈퇴한 회원_" + randomValue;
+        } while (memberMapper.countByNickname(anonymousNickname) > 0);
+
+        return anonymousNickname;
     }
 
     @Override

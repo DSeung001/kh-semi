@@ -39,7 +39,12 @@
         SELECT
             c.CHAT_ID as chatId
           , c.ID as userId
-          , u.NICKNAME as sender
+          , CASE
+                WHEN u.IS_DELETED = TRUE
+                     OR LEFT(u.NICKNAME, 7) = '탈퇴한 회원_'
+                THEN '탈퇴한 회원'
+                ELSE u.NICKNAME
+            END as sender
           , c.CONTENT as content
           , (
                 SELECT iu.UPLOAD_PATH

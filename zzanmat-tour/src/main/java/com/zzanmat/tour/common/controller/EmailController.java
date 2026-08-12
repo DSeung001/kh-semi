@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmailController {
 
     private static final long AUTH_CODE_VALIDITY_MILLIS = 3 * 60 * 1000L;
+    private static final String PASSWORD_RESET_PENDING_MEMBER_ID = "passwordResetPendingMemberId";
+    private static final String PASSWORD_RESET_PENDING_EMAIL = "passwordResetPendingEmail";
+    private static final String PASSWORD_RESET_VERIFIED_MEMBER_ID = "passwordResetVerifiedMemberId";
+    private static final String PASSWORD_RESET_VERIFIED_EXPIRES_AT = "passwordResetVerifiedExpiresAt";
 
     private final EmailService emailService;
 
@@ -47,11 +51,12 @@ public class EmailController {
             return ApiResponse.fail("아이디와 이메일을 모두 입력해주세요.");
         }
 
-        if (memberService.findByUserIdAndEmail(userId.trim(), email.trim()) == null) {
+        MemberDto member = memberService.findByUserIdAndEmail(userId.trim(), email.trim());
+        if (member == null) {
             return ApiResponse.fail("입력한 아이디와 이메일이 일치하는 회원이 없습니다.");
         }
 
-        return sendVerificationCode(email.trim(), session);
+        return sendVerificationCode(email.trim(), member.getId(), session);
     }
 
     @PostMapping("/email/find-id-send")
@@ -70,11 +75,22 @@ public class EmailController {
     }
 
     private ApiResponse<Void> sendVerificationCode(String email, HttpSession session) {
+        return sendVerificationCode(email, null, session);
+    }
+
+    private ApiResponse<Void> sendVerificationCode(String email, Long passwordResetMemberId,
+                                                    HttpSession session) {
         try {
             String authCode = emailService.sendVerificationEmail(email);
             session.setAttribute("authCode_" + email, authCode);
-            session.setAttribute("authCodeExpiresAt_" + email,
-                    System.currentTimeMillis() + AUTH_CODE_VALIDITY_MILLIS);
+            session.setAttribute("authCodeExpiresAt_" + email,System.currentTimeMillis() + AUTH_CODE_VALIDITY_MILLIS);
+
+            clearPasswordResetVerification(session);
+            if (passwordResetMemberId != null) {
+                // 비밀번호 재설정 대상은 브라우저 입력값이 아니라 서버가 조회한 회원 PK로 고정한다.
+                session.setAttribute(PASSWORD_RESET_PENDING_MEMBER_ID, passwordResetMemberId);
+                session.setAttribute(PASSWORD_RESET_PENDING_EMAIL, email);
+            }
 
             return ApiResponse.success("인증번호가 성공적으로 전송되었습니다.", null);
         } catch (Exception e) {
@@ -104,6 +120,17 @@ public class EmailController {
             session.setAttribute("verifiedEmailForPasswordReset", email);
             session.setAttribute("verifiedEmailForPasswordResetExpiresAt",
                     System.currentTimeMillis() + AUTH_CODE_VALIDITY_MILLIS);
+
+            Long pendingMemberId = (Long) session.getAttribute(PASSWORD_RESET_PENDING_MEMBER_ID);
+            String pendingEmail = (String) session.getAttribute(PASSWORD_RESET_PENDING_EMAIL);
+            if (pendingMemberId != null && email.equals(pendingEmail)) {
+                // 인증에 성공한 경우에만 회원 PK에 일회성 비밀번호 변경 권한을 부여한다.
+                session.setAttribute(PASSWORD_RESET_VERIFIED_MEMBER_ID, pendingMemberId);
+                session.setAttribute(PASSWORD_RESET_VERIFIED_EXPIRES_AT,
+                        System.currentTimeMillis() + AUTH_CODE_VALIDITY_MILLIS);
+                session.removeAttribute(PASSWORD_RESET_PENDING_MEMBER_ID);
+                session.removeAttribute(PASSWORD_RESET_PENDING_EMAIL);
+            }
             return ApiResponse.success("success", true);
         }
         return ApiResponse.fail("인증번호가 일치하지 않거나 만료되었습니다.");
@@ -191,6 +218,13 @@ public class EmailController {
     private void clearVerifiedEmail(HttpSession session) {
         session.removeAttribute("verifiedEmailForPasswordReset");
         session.removeAttribute("verifiedEmailForPasswordResetExpiresAt");
+    }
+
+    private void clearPasswordResetVerification(HttpSession session) {
+        session.removeAttribute(PASSWORD_RESET_PENDING_MEMBER_ID);
+        session.removeAttribute(PASSWORD_RESET_PENDING_EMAIL);
+        session.removeAttribute(PASSWORD_RESET_VERIFIED_MEMBER_ID);
+        session.removeAttribute(PASSWORD_RESET_VERIFIED_EXPIRES_AT);
     }
 
 }
