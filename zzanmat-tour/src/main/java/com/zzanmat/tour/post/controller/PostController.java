@@ -150,22 +150,51 @@ public class PostController {
         return "post/my-travel";
     }
 
+    // 우회 차단을 위한 서버용 텍스트 정화 메서드
+    private String sanitizeText(String text) {
+        if (text == null) return "";
+        return text.toLowerCase()
+                .replaceAll("[\\s\\p{Punct}]", "") // 공백 및 특수문자 제거
+                .replace("@", "a")
+                .replace("1", "i")
+                .replace("3", "e")
+                .replace("4", "a")
+                .replace("0", "o");
+    }
+
     @PostMapping("/new-post")
     public String createPost(
-            PostDto post,
-            @RequestParam(
-                    name = "imageFiles",
-                    required = false
-            ) List<MultipartFile> imageFiles,
+            @ModelAttribute PostDto post,
+            @RequestParam(name = "imageFiles", required = false) List<MultipartFile> imageFiles,
             @RequestParam(required = false) Long missionId,
-            @SessionAttribute(SessionConst.LOGIN_MEMBER)
-            MemberDto loginMember
+            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember,
+            Model model
     ) throws IOException {
+
+        // 1. 글자수 검증
+        if (post.getContent() == null || post.getContent().trim().length() < 10) {
+            model.addAttribute("errorMessage", "미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+            model.addAttribute("missionId", missionId);
+            return "post/new-post"; // 검증 실패 시 폼으로 복귀
+        }
+
+        // 2. 비속어 및 도배 문자 필터링
+        String cleanContent = sanitizeText(post.getContent());
+        String cleanTitle = sanitizeText(post.getTitle());
+        String[] badWords = {"시발", "fuck", "shit", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ"}; // 필요한 비속어 목록
+
+        for (String word : badWords) {
+            String cleanWord = sanitizeText(word);
+            if (cleanContent.contains(cleanWord) || cleanTitle.contains(cleanWord)) {
+                model.addAttribute("errorMessage", "욕설이나 비속어, 도배 문자는 올릴 수 없습니다.");
+                model.addAttribute("missionId", missionId);
+                return "post/new-post"; // 차단 후 폼으로 복귀
+            }
+        }
+
+        // 정상 저장 및 미션 처리...
         post.setUserId(loginMember.getId());
-
         postService.save(post, imageFiles);
-
-        // 미션 하러가기(missionId)로 와도 조건 맞는 CREATE_POST 미션은 모두 진행
         missionService.recordEventProgress(loginMember.getId(), "CREATE_POST", post);
 
         if (missionId != null) {
@@ -173,6 +202,8 @@ public class PostController {
         }
         return "redirect:/my-travel";
     }
+
+
 
     @GetMapping("/edit-post")
     public String editPost(
@@ -228,7 +259,7 @@ public class PostController {
 
     @PostMapping("/delete-post")
     public String deletePost(@RequestParam Long postId,
-                            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember) {
+                             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember) {
         PostDto post = postService.findById(postId);
 
         if (!post.getUserId().equals(loginMember.getId())) {

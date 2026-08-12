@@ -180,6 +180,122 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js"></script>
+<script>
+  // 서버에서 비속어/도배/글자수 제한으로 인해 errorMessage를 전달받은 경우 즉시 팝업 경고창 출력
+  <c:if test="${not empty errorMessage}">
+  alert("${errorMessage}");
+  </c:if>
+
+  // 특수문자, 띄어쓰기, 리트스피크(Leetspeak) 변형을 원천 무력화하는 정규화 함수
+  function getSanitizedText(str) {
+    if (!str) return "";
+    return str.toLowerCase()
+            .replace(/[\s\p{P}\p{S}]/gu, "") // 공백, 구두점, 특수문자 전면 제거
+            .replace(/@/g, "a")
+            .replace(/1/g, "i")
+            .replace(/3/g, "e")
+            .replace(/4/g, "a")
+            .replace(/0/g, "o")
+            .replace(/5/g, "s")
+            .replace(/7/g, "t");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const submitBtn = document.querySelector("#submitBtn") || document.querySelector("button[type='submit']") || document.querySelector(".zt-submit-btn");
+    const postForm = document.querySelector("#postSubmitForm") || document.querySelector("form");
+
+    function validateAndBlock(e) {
+      const titleInput = document.querySelector("#postTitle") || document.querySelector("input[name='title']");
+      const contentInput = document.querySelector("#postContent") || document.querySelector("textarea[name='content']");
+
+      const title = titleInput ? titleInput.value.trim() : "";
+      const content = contentInput ? contentInput.value.trim() : "";
+
+      // 1. 내용 공백 및 글자수 체크 (10자 미만)
+      if (content === "" || content.length < 10) {
+        alert("미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+        if (e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+        return false;
+      }
+
+      // 2. 한국어 자음/모음 도배 체크 (ㅋㅋㅋ, ㅠㅠㅠ 등)
+      const koreanJamoOnly = /^[ㄱ-ㅎㅏ-ㅣ\s]+$/;
+      if (koreanJamoOnly.test(content)) {
+        alert("자음이나 모음만으로는 미션을 인증할 수 없습니다. 의미 있는 내용을 입력해주세요.");
+        if (e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+        return false;
+      }
+
+      // 3. 동일한 문자/알파벳 과도한 반복 체크 (예: aaaaaa, ㅠㅠㅠㅠㅠㅠ 등 6회 이상)
+      const excessiveRepetition = /(.)\1{5,}/;
+      if (excessiveRepetition.test(content)) {
+        alert("동일한 문자나 알파벳의 지나친 반복은 등록할 수 없습니다.");
+        if (e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+        return false;
+      }
+
+      // 4. 정화된 텍스트(Leetspeak 및 특수문자 제거 적용)를 통한 한·영 비속어 및 금지어 필터링
+      const cleanContent = getSanitizedText(content);
+      const cleanTitle = getSanitizedText(title);
+
+      // 한국어 및 영어 주요 비속어, 슬랭, 패드립 리스트
+      const badWords = [
+        // 한국어
+        "시발", "욕설", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ", "지랄", "미친", "새끼", "꺼져", "호구",
+        // 영어 비속어 및 슬랭 (English Profanity & Slang)
+        "fuck", "shit", "bitch", "asshole", "motherfucker", "bastard", "crap",
+        "dick", "pussy", "cunt", "slut", "whore", "fag", "nigger", "stfu", "gtfo"
+      ];
+
+      for (let word of badWords) {
+        const cleanWord = getSanitizedText(word);
+        if (cleanContent.includes(cleanWord) || cleanTitle.includes(cleanWord)) {
+          alert("욕설, 비속어 또는 부적절한 영어 표현은 올릴 수 없습니다.");
+          if (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (e.stopPropagation) e.stopPropagation();
+          }
+          return false;
+        }
+      }
+
+      return true; // 모든 검증 통과
+    }
+
+    // 폼 제출(submit) 이벤트 차단 바인딩
+    if (postForm) {
+      postForm.addEventListener("submit", function (e) {
+        if (!validateAndBlock(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    }
+
+    // 버튼 클릭(click) 이벤트 강제 차단 바인딩 (AJAX 및 일반 제출 양쪽 대응)
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function (e) {
+        if (!validateAndBlock(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          e.stopPropagation();
+        }
+      }, true);
+    }
+  });
+</script>
+
+
 
 </body>
 </html>

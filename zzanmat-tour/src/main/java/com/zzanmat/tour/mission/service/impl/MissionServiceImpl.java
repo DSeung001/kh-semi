@@ -379,22 +379,16 @@ public class MissionServiceImpl implements MissionService {
             return false;
         }
 
-        String keyword = mission.getPlaceKeyword();
-        boolean hasPlaceCondition = StringUtils.hasText(keyword);
+        // [변경 포인트] 특정 키워드(서울, 부산 등) 제한 검사를 제거하고,
+        // 사용자가 게시글에 장소(place)를 비어있지 않게 입력하기만 했다면 국내 어디든 자동 통과시킵니다.
+        String place = post.getPlace();
+        if (!StringUtils.hasText(place)) {
+            return false; // 장소가 입력되지 않은 경우 미션 불인정
+        }
+
+        // 경비 상한선 조건 검증 (설정된 상한선이 있을 경우에만 체크)
         Long maxTotalCost = mission.getMaxTotalCost();
         boolean hasCostCondition = maxTotalCost != null && maxTotalCost > 0;
-
-        // 장소/경비 조건이 없으면 게시글 작성만으로 인정 (시드 POST 미션 등)
-        if (!hasPlaceCondition && !hasCostCondition) {
-            return true;
-        }
-
-        if (hasPlaceCondition) {
-            String place = post.getPlace();
-            if (!StringUtils.hasText(place) || !place.contains(keyword.trim())) {
-                return false;
-            }
-        }
 
         if (hasCostCondition) {
             long transport = post.getTransportCost() == null ? 0L : post.getTransportCost();
