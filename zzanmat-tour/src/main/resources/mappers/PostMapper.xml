@@ -72,7 +72,11 @@
                P.TRANSPORT_COST,
                P.FOOD_COST,
                P.OTHER_COST,
-               U.NICKNAME AS AUTHOR_NICKNAME,
+               CASE WHEN U.IS_DELETED = TRUE
+                          OR LEFT(U.NICKNAME, 7) = '탈퇴한 회원_'
+                    THEN '탈퇴한 회원'
+                    ELSE U.NICKNAME
+                END AS AUTHOR_NICKNAME,
                U.PROFILE AS AUTHOR_PROFILE,
                U.IS_DELETED AS AUTHOR_DELETED
           FROM POST P
@@ -165,7 +169,11 @@
             FROM `COMMENT` C
             WHERE C.POST_ID = P.POST_ID
         ) AS COMMENT_COUNT,
-        U.NICKNAME AS AUTHOR_NICKNAME,
+        CASE WHEN U.IS_DELETED = TRUE
+                  OR LEFT(U.NICKNAME, 7) = '탈퇴한 회원_'
+             THEN '탈퇴한 회원'
+             ELSE U.NICKNAME
+         END AS AUTHOR_NICKNAME,
         U.PROFILE AS AUTHOR_PROFILE,
         U.IS_DELETED AS AUTHOR_DELETED,
         DATE_FORMAT(

@@ -19,8 +19,6 @@ const nicknameInput = document.querySelector("#signup-nickname");
 const nicknameValidationResult = document.querySelector("#nicknameValidationMessage");
 const termsInput = document.querySelector("#terms");
 const termsValidationResult = document.querySelector("#termsValidationMessage");
-/*const withdrawBtn = document.querySelector("#withdrawBtn"); //*/
-
 /* 유효성 검사 */
 const idRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/; // 아이디
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/; // 비밀번호: 영문, 숫자, 특수문자 포함 8자 이상
@@ -107,7 +105,7 @@ if(checkIdReult) {
             // encodeURIComponent감싸주는 이유: 아이디에 &, =와같은 요청 url에 영향을 주는 것들을 제거해주는 용도
             const response = await fetch(`/api/member/check-id?userId=${encodeURIComponent(userId)}`, {
                 method: "GET",
-                headers: {"X-Request-With": "XMLHtttpRequest"}
+                headers: {"X-Requested-With": "XMLHttpRequest"}
             });
 
             // response.json() : json응답을 자바스크립트 객체로 변경
@@ -255,12 +253,16 @@ if(profileForm){
     });
 }
 
-const confirmWithdrawBtn = document.querySelector("#confirmWithdrawBtn");
+const withdrawBtn = document.querySelector("#withdrawBtn");
 const withdrawForm = document.querySelector("#withdrawForm");
 
-if (confirmWithdrawBtn && withdrawForm) {
-    confirmWithdrawBtn.addEventListener("click", function () {
-        if (!confirm("회원탈퇴하시겠습니까?")) {
+if (withdrawBtn && withdrawForm) {
+    withdrawBtn.addEventListener("click", function () {
+        const withdrawConfirmed = confirm(
+            "회원 탈퇴 시 프로필 정보가 삭제 또는 익명화되며 복구되지 않습니다.\n\n정말 회원 탈퇴하시겠습니까?"
+        );
+
+        if (!withdrawConfirmed) {
             return;
         }
 
@@ -640,7 +642,10 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
     const requestAccountApi = async (url, payload) => {
         const response = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
             body: JSON.stringify(payload)
         });
         const result = await response.json();
@@ -723,7 +728,10 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
         try {
             const response = await fetch(accountSendUrl, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
                 body: JSON.stringify({
                     email,
                     userId: accountUserIdInput ? accountUserIdInput.value.trim() : null
@@ -760,7 +768,10 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
         try {
             const response = await fetch("/email/verify", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
                 body: JSON.stringify({ email, authCode })
             });
             const result = await response.json();
@@ -790,9 +801,8 @@ document.querySelectorAll("[data-email-verification]").forEach((container) => {
 /* 비밀번호 찾기: 인증번호 확인에 성공한 이메일만 같은 세션에서 비밀번호를 변경할 수 있습니다. */
 const resetPasswordBtn = document.querySelector("#resetPasswordBtn");
 const resetPasswordMessage = document.querySelector("#resetPasswordMessage");
-const resetPasswordEmailInput = document.querySelector("#find-password-email");
 
-if (resetPasswordBtn && resetPasswordMessage && resetPasswordEmailInput && pwInput && pwConfirmInput) {
+if (resetPasswordBtn && resetPasswordMessage && pwInput && pwConfirmInput) {
     resetPasswordBtn.addEventListener("click", async () => {
         const newPassword = pwInput.value;
         const confirmPassword = pwConfirmInput.value;
@@ -812,27 +822,26 @@ if (resetPasswordBtn && resetPasswordMessage && resetPasswordEmailInput && pwInp
         try {
             const response = await fetch("/api/member/reset-password", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
                 body: JSON.stringify({
-                    email: resetPasswordEmailInput.value.trim(),
                     newPassword
                 })
             });
             const result = await response.json();
-            resetPasswordMessage.textContent = result.message;
-            resetPasswordMessage.className = result.success
-                ? "form-message mt-2 mb-0 is-visible is-success"
-                : "form-message mt-2 mb-0 is-visible is-error";
-
-            if (result.success) {
-                window.setTimeout(() => {
-                    window.location.href = "/member/login";
-                }, 1500);
-            } else {
-                resetPasswordBtn.disabled = false;
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "비밀번호를 변경하지 못했습니다.");
             }
+
+            resetPasswordMessage.textContent = result.message;
+            resetPasswordMessage.className = "form-message mt-2 mb-0 is-visible is-success";
+            window.setTimeout(() => {
+                window.location.href = "/member/login";
+            }, 1500);
         } catch (error) {
-            resetPasswordMessage.textContent = "비밀번호 변경 중 오류가 발생했습니다.";
+            resetPasswordMessage.textContent = error.message || "비밀번호 변경 중 오류가 발생했습니다.";
             resetPasswordMessage.className = "form-message mt-2 mb-0 is-visible is-error";
             resetPasswordBtn.disabled = false;
         }

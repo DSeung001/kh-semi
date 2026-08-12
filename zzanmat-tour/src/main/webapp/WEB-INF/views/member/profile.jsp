@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!doctype html>
 <html lang="ko">
@@ -104,16 +105,25 @@
   <form action="/member/update" method="post" id="profileForm" class="row g-3" enctype="multipart/form-data">
     <div class="col-12">
       <label for="profile-image_update" class="form-label">수정할 프로필 이미지</label>
-      <input type="hidden" name="originProfileName" value="<c:out value="${userInfo.profile}"/>">
       <input id="profile-image-inputUpdate" name="profileImage" class="form-control" type="file" accept="image/jpeg,image/png">
     </div>
     <div class="col-md-6">
       <label for="nickname" class="form-label">닉네임</label>
-      <input id="nickname" name="nickname" class="form-control" maxlength="30" type="text" value="<c:out value="${userInfo.nickname}"/>">
+      <c:choose>
+        <c:when test="${fn:startsWith(userInfo.nickname, '탈퇴한 회원_')}">
+          <%-- 복구 회원에게 DB의 내부 익명 식별값은 노출하지 않고 새 닉네임 입력을 유도한다. --%>
+          <input id="nickname" name="nickname" class="form-control" maxlength="30" type="text"
+                 value="" placeholder="탈퇴한 회원" required>
+          <p class="form-text mb-0">탈퇴 시 닉네임이 익명화되었습니다. 사용할 닉네임을 새로 입력해주세요.</p>
+        </c:when>
+        <c:otherwise>
+          <input id="nickname" name="nickname" class="form-control" maxlength="30" type="text"
+                 value="<c:out value="${userInfo.nickname}"/>" required>
+        </c:otherwise>
+      </c:choose>
     </div>
     <div class="col-md-6">
       <label for="name" class="form-label">이름</label>
-      <input type="hidden" name="userId" value="<c:out value="${userInfo.userId}"/>">
       <input id="name" name="userName" class="form-control" type="text" maxlength="10" value="<c:out value="${userInfo.userName}"/>">
     </div>
     <div class="col-12">
@@ -138,9 +148,7 @@
       </c:otherwise>
     </c:choose>
     <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-      <button type="button"
-              data-bs-toggle="modal"
-              data-bs-target="#withdrawConfirmModal"
+      <button id="withdrawBtn" type="button"
               class="btn btn-outline-danger px-4">탈퇴하기
       </button>
       <button id="saveBtn" class="btn btn-primary zt-primary-btn px-4" type="submit">수정 완료</button>
@@ -149,24 +157,6 @@
 </section>
 
 <form id="withdrawForm" action="${withdrawAction}" method="post"></form>
-<div class="modal fade" id="withdrawConfirmModal" tabindex="-1" aria-labelledby="withdrawConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title fs-5" id="withdrawConfirmModalLabel">회원 탈퇴 전 확인해주세요.</h2>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-      </div>
-      <div class="modal-body">
-        탈퇴하면 프로필 이미지, 이름, 닉네임, 소개 정보가 삭제 또는 익명화됩니다.
-        이후 계정을 복구하더라도 기존 프로필 정보는 복구되지 않습니다.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-        <button type="button" id="confirmWithdrawBtn" class="btn btn-danger">탈퇴 진행</button>
-      </div>
-    </div>
-  </div>
-</div>
 
     </main>
     

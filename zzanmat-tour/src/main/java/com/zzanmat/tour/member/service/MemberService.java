@@ -29,7 +29,7 @@ public interface MemberService {
 
     MemberDto findByUserIdAndEmail(String userId, String email);
 
-    boolean resetPasswordByEmail(String email, String newPassword);
+    boolean resetPasswordByMemberId(Long memberId, String newPassword);
 
     void withdraw(Long memberId);
 

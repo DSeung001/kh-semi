@@ -136,11 +136,24 @@ public class MemberController {
     @PostMapping("/update")
     public String update(MemberDto memberDto
                         ,@RequestParam(required = false) MultipartFile profileImage
-                        ,String originProfileName
-                        ,Model model
+                        ,HttpSession session
                         ,RedirectAttributes redirectAttributes){
+        MemberDto loginMember = (MemberDto) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
         try {
-            memberService.update(memberDto, profileImage, originProfileName);
+            MemberDto currentMember = memberService.findDetailByUserId(loginMember.getUserId());
+            if (currentMember == null || Boolean.TRUE.equals(currentMember.getDeleted())) {
+                throw new IllegalArgumentException("수정할 회원 정보를 찾을 수 없습니다.");
+            }
+
+            // 수정 대상과 기존 파일 경로는 조작 가능한 요청값이 아닌 서버 세션·DB 정보로 고정한다.
+            memberDto.setId(currentMember.getId());
+            memberDto.setUserId(currentMember.getUserId());
+            memberDto.setEmail(null);
+            memberService.update(memberDto, profileImage, currentMember.getProfile());
 
             // 리다이렉트 시점에 일회성으로 메시지 전달
             redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 수정되었습니다.");
@@ -261,8 +274,8 @@ public class MemberController {
         }
 
         try {
-            memberService.withdraw(loginMember.getId());
-            expireAutoLoginCookie(response);
+            memberService.withdraw(loginMember.getId()); // 유저 정보 업데이트 처리
+            expireAutoLoginCookie(response); // 자동 로그인 쿠키 명칭만 남기는 것
             session.invalidate();
             redirectAttributes.addFlashAttribute("message","회원 탈퇴가 완료되었습니다. 그동안 짠맛투어를 이용해 주셔서 감사합니다.");
 

@@ -17,6 +17,9 @@ public interface MemberMapper {
 
     int countByNickname(@Param("nickname") String nickname);
 
+    int countByNicknameExcludingId(@Param("nickname") String nickname,
+                                   @Param("memberId") Long memberId);
+
     int countByEmail(@Param("email") String email);
 
     int countAllMembers();
@@ -31,9 +34,11 @@ public interface MemberMapper {
 
     MemberDto findByUserIdAndEmail(@Param("userId") String userId, @Param("email") String email);
 
-    int updatePasswordByEmail(@Param("email") String email, @Param("userPassword") String userPassword);
+    int updatePasswordByMemberId(@Param("memberId") Long memberId,
+                                 @Param("userPassword") String userPassword);
 
-    int deleteById(@Param("memberId") Long memberId);
+    int deleteById(@Param("memberId") Long memberId,
+                   @Param("anonymousNickname") String anonymousNickname);
 
     int countByFollowerIdAndFolloweringId(@Param("followerId") Long followerId, @Param("followeringId") Long followeringId);
 
