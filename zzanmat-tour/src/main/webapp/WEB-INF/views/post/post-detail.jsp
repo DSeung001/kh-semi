@@ -380,7 +380,10 @@
 
         <c:otherwise>
           <c:forEach var="comment" items="${comments}">
-            <div class="zt-comment-row ${not empty comment.parentCommentId ? 'is-reply' : ''}">
+            <div class="zt-comment-row ${not empty comment.parentCommentId ? 'is-reply' : ''}"
+                 data-comment-row
+                 data-comment-id="${comment.commentId}"
+                 data-parent-comment-id="${comment.parentCommentId}">
               <img class="zt-avatar zt-avatar-sm" src="${pageContext.request.contextPath}/assets/images/profile-sora.svg" alt="댓글 작성자 프로필">
 
               <div class="flex-grow-1">
@@ -434,8 +437,7 @@
                     <button class="zt-comment-action-button" type="button" data-comment-edit-button data-comment-id="${comment.commentId}">수정</button>
 
                     <form action="${pageContext.request.contextPath}/comments/delete"
-                          method="post"
-                          onsubmit="return confirm('댓글을 삭제하시겠습니까?');">
+                          method="post">
 
                       <input type="hidden"
                              name="commentId"
@@ -484,7 +486,11 @@
             action="${pageContext.request.contextPath}/comments"
             method="post"
             data-create-action="${pageContext.request.contextPath}/comments"
-            data-update-action="${pageContext.request.contextPath}/comments/update">
+            data-update-action="${pageContext.request.contextPath}/comments/update"
+            data-delete-action="${pageContext.request.contextPath}/comments/delete"
+            data-like-action="${pageContext.request.contextPath}/comment-like"
+            data-login-url="${pageContext.request.contextPath}/member/login"
+            data-profile-image="${pageContext.request.contextPath}/assets/images/profile-sora.svg">
 
         <input type="hidden"
                name="postId"

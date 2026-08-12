@@ -23,7 +23,8 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    public String createComment(
+    @ResponseBody
+    public ApiResponse<CommentDto> createComment(
             CommentCreateRequest request,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
@@ -36,15 +37,23 @@ public class CommentController {
         comment.setContent(request.getContent());
 
         commentService.save(comment);
-        missionService.recordEventProgress(loginMember.getId(), "CREATE_COMMENT", null);
 
-        return "redirect:/post-detail?postId="
-                + request.getPostId()
-                + "#comments";
+        comment.setNickname(loginMember.getNickname());
+        comment.setLikeCount(0);
+        comment.setLiked(false);
+
+        missionService.recordEventProgress(
+                loginMember.getId(),
+                "CREATE_COMMENT",
+                null)
+        ;
+
+        return ApiResponse.success(comment);
     }
     
     @PostMapping("/comments/update")
-    public String updateComment(
+    @ResponseBody
+    public ApiResponse<CommentDto> updateComment(
             CommentUpdateRequest request,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
@@ -52,18 +61,18 @@ public class CommentController {
         CommentDto comment = new CommentDto();
 
         comment.setCommentId(request.getCommentId());
+        comment.setPostId(request.getPostId());
         comment.setUserId(loginMember.getId());
         comment.setContent(request.getContent());
 
         commentService.update(comment);
 
-        return "redirect:/post-detail?postId="
-                + request.getPostId()
-                + "#comments";
+        return ApiResponse.success(comment);
     }
 
     @PostMapping("/comments/delete")
-    public String deleteComment(
+    @ResponseBody
+    public ApiResponse<Long> deleteComment(
             CommentDeleteRequest request,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
             MemberDto loginMember
@@ -73,9 +82,7 @@ public class CommentController {
                 loginMember.getId()
         );
 
-        return "redirect:/post-detail?postId="
-                + request.getPostId()
-                + "#comments";
+        return ApiResponse.success(request.getCommentId());
     }
 
     @PostMapping("/comment-like")
