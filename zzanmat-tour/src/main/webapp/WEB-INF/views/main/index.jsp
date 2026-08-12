@@ -74,7 +74,7 @@
 
                     <div class="zt-main-post-title-area">
   <span class="zt-main-post-category">
-    나만의 여행ZIP
+    여행 이야기
   </span>
 
                         <h2 class="zt-main-post-title">
@@ -169,7 +169,9 @@
                             <c:when test="${not empty post.thumbnailPath}">
                                 <img class="zt-post-image"
                                      src="${pageContext.request.contextPath}${post.thumbnailPath}"
-                                     alt="게시글 대표 이미지">
+                                     alt="게시글 대표 이미지"
+                                     onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg';">
+
                             </c:when>
 
                             <c:otherwise>

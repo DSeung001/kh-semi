@@ -16,7 +16,7 @@
     <a class="zt-nav-link ${param.activePage eq 'my-travel' ? 'active' : ''}"
        href="${pageContext.request.contextPath}/my-travel"
        aria-current="${param.activePage eq 'my-travel' ? 'page' : 'false'}">
-      <i class="bi bi-grid-3x3-gap"></i><span>나만의 여행ZIP</span>
+      <i class="bi bi-grid-3x3-gap"></i><span>여행 이야기</span>
     </a>
     <a class="zt-nav-link ${param.activePage eq 'chat' ? 'active' : ''}"
        href="${pageContext.request.contextPath}/chat"
@@ -27,7 +27,7 @@
       <a class="zt-nav-link ${param.activePage eq 'mission' ? 'active' : ''}"
          href="${pageContext.request.contextPath}/mission"
          aria-current="${param.activePage eq 'mission' ? 'page' : 'false'}">
-        <i class="bi bi-flag"></i><span>Mission</span>
+        <i class="bi bi-flag"></i><span>미션</span>
       </a>
       <a class="zt-nav-link ${param.activePage eq 'shop' ? 'active' : ''}"
          href="${pageContext.request.contextPath}/shop"

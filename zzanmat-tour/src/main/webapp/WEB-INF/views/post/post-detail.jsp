@@ -24,8 +24,8 @@
   <a href="${pageContext.request.contextPath}/login" class="fs-5" aria-label="로그인"><i class="bi bi-box-arrow-in-right"></i></a>
 </header>
 <nav class="zt-mobile-nav" aria-label="모바일 메뉴">
-  <a href="${pageContext.request.contextPath}/home" class="active" aria-label="home"><i class="bi bi-house"></i></a>
-<a href="${pageContext.request.contextPath}/my-travel" class="" aria-label="짠맛투어"><i class="bi bi-grid-3x3-gap"></i></a>
+  <a href="${pageContext.request.contextPath}/home" class="" aria-label="home"><i class="bi bi-house"></i></a>
+<a href="${pageContext.request.contextPath}/my-travel" class="active" aria-label="여행 이야기"><i class="bi bi-grid-3x3-gap"></i></a>
 <a href="${pageContext.request.contextPath}/new-post" class="" aria-label="new"><i class="bi bi-plus-square"></i></a>
 <a href="${pageContext.request.contextPath}/chat" class="" aria-label="chat"><i class="bi bi-chat-dots"></i></a>
 <a href="${pageContext.request.contextPath}/profile" class="" aria-label="profile"><i class="bi bi-person-circle"></i></a>
@@ -34,7 +34,7 @@
   <div class="zt-layout">
 
 <jsp:include page="/WEB-INF/views/components/sidebar.jsp">
-  <jsp:param name="activePage" value="home" />
+  <jsp:param name="activePage" value="my-travel" />
 </jsp:include>
 
     <main class="zt-content">
@@ -44,7 +44,7 @@
 <article class="zt-panel overflow-hidden">
 
   <div class="zt-detail-title-area">
-    <span class="zt-detail-category">나만의 여행ZIP</span>
+    <span class="zt-detail-category">여행 이야기</span>
 
     <h1 class="zt-detail-title">
       <c:out value="${post.title}"/>
@@ -55,11 +55,17 @@
     <div class="zt-detail-author">
       <c:choose>
         <c:when test="${not empty post.authorProfile}">
-          <img class="zt-avatar" src="${pageContext.request.contextPath}${post.authorProfile}" alt="작성자 프로필">
+          <img class="zt-avatar"
+               src="${pageContext.request.contextPath}${post.authorProfile}"
+               alt="작성자 프로필"
+               onerror="this.onerror=null;
+                        this.src='${pageContext.request.contextPath}/assets/images/profile-ethna.svg';">
         </c:when>
 
         <c:otherwise>
-          <img class="zt-avatar" src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg" alt="기본 프로필">
+          <img class="zt-avatar"
+               src="${pageContext.request.contextPath}/assets/images/profile-ethan.svg"
+               alt="기본 프로필">
         </c:otherwise>
       </c:choose>
 
@@ -207,7 +213,9 @@
             <img class="zt-detail-image zt-detail-slide ${status.first ? 'is-active' : ''}"
                  src="${pageContext.request.contextPath}${image.uploadPath}"
                  alt="${image.originName}"
-                 data-slide-index="${status.index}">
+                 data-slide-index="${status.index}"
+                 onerror="this.onerror=null;
+                          this.src='${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg';">
           </c:forEach>
         </div>
 
