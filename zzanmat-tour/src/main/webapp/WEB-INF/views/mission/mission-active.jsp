@@ -162,28 +162,104 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
-
 <script>
-  const contextPath = "${pageContext.request.contextPath}";
+const contextPath = "${pageContext.request.contextPath}";
 
-  const urlParams = new URLSearchParams(window.location.search);
-  let rawMissionId = urlParams.get('missionId');
-  let missionId = '';
+// URL 및 서버에서 missionId 안전하게 가져오기
+const urlParams = new URLSearchParams(window.location.search);
+let rawMissionId = urlParams.get('missionId');
+let missionId = '';
 
-  if (rawMissionId) {
-    missionId = rawMissionId.toString().replace(/[^0-9]/g, '');
-  }
-  if (!missionId) {
-    missionId = "${mission != null ? mission.missionId : ''}";
-  }
+if (rawMissionId) {
+missionId = rawMissionId.toString().replace(/[^0-9]/g, '');
+}
+if (!missionId) {
+missionId = "${mission != null ? mission.missionId : ''}";
+}
 
-  const missionType = "${mission != null ? mission.missionType : 'POST'}";
+const missionType = "${mission != null ? mission.missionType : 'POST'}";
+
+// 상태 레이블 변환 함수
+function statusLabel(status, periodStatus) {
+if (periodStatus === 'EXPIRED') return '기간 종료';
+if (periodStatus === 'UPCOMING') return '예정';
+if (status === 'DONE') return '완료';
+if (status === 'IN_PROGRESS') return '진행 중';
+if (status === 'READY') return '대기';
+if (!status) return '미시작';
+return status;
+}
+
+// 미션 진행률 새로고침 함수 (안전장치 추가)
+function refreshMissionProgress() {
+if (!missionId) {
+console.warn("missionId가 존재하지 않습니다.");
+const summary = document.getElementById("progress-summary");
+if (summary) summary.innerText = "미션 정보가 확인되지 않습니다.";
+return;
+}
+
+fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
+.then(res => {
+if (!res.ok) throw new Error('Network response was not ok');
+return res.json();
+})
+.then(response => {
+if (!response) return;
+
+// 응답 데이터 구조가 달라도 안전하게 바인딩되도록 처리
+const data = response.data || response;
+const currentCount = data.currentCount || 0;
+const targetCount = data.targetCount || 0;
+const percent = data.percent || (targetCount > 0 ? (currentCount / targetCount) * 100 : 0);
+
+const textDisplay = document.getElementById("progress-text-display");
+if (textDisplay) textDisplay.innerText = currentCount + " / " + targetCount;
+
+const bar = document.getElementById("progress-bar-element");
+if (bar) {
+bar.style.width = percent + "%";
+bar.setAttribute("aria-valuenow", percent);
+}
+
+const statusEl = document.getElementById("missionStatus");
+if (statusEl) statusEl.innerText = "상태: " + statusLabel(data.status, data.periodStatus);
+
+const summary = document.getElementById("progress-summary");
+if (summary) {
+if (data.loggedIn === false) {
+summary.innerText = "로그인하면 미션을 진행할 수 있어요.";
+} else if (data.periodStatus === 'EXPIRED') {
+summary.innerText = "이 미션은 수행 기간이 끝났어요.";
+} else if (data.periodStatus === 'UPCOMING') {
+summary.innerText = "아직 시작 전인 미션이에요.";
+} else if (data.status === 'DONE') {
+summary.innerText = data.rewardReceived ? "미션 완료! 포인트가 지급됐어요." : "미션 완료!";
+} else {
+summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행 중이에요.";
+}
+}
+
+const actionBtn = document.getElementById("missionActionBtn");
+if (actionBtn) {
+const canAct = (data.loggedIn !== false) && (data.available !== false) && (data.status !== 'DONE');
+actionBtn.style.display = canAct ? "block" : "none";
+}
+})
+.catch(err => {
+console.error("진행 상황 동기화 실패:", err);
+const summary = document.getElementById("progress-summary");
+if (summary) summary.innerText = "미션 정보를 불러오지 못했습니다.";
+});
+}
 
   document.addEventListener("DOMContentLoaded", function () {
+    // 1. 미션 진행률 초기 로드
     if (missionId) {
       refreshMissionProgress();
     } else {
-      document.getElementById("progress-summary").innerText = "조회할 미션 정보가 없습니다. 미션 목록에서 미션을 선택해주세요.";
+      const summary = document.getElementById("progress-summary");
+      if (summary) summary.innerText = "조회할 미션 정보가 없습니다.";
       const actionBtn = document.getElementById("missionActionBtn");
       if (actionBtn) actionBtn.style.display = "none";
     }
@@ -207,73 +283,87 @@
         window.location.href = contextPath + '/new-post?missionId=' + missionId;
       });
     }
+
+    // 2. 게시글 작성 폼 검증 (무의미한 난타/테러 및 비속어 차단)
+    const submitBtn = document.querySelector("#submitBtn") || document.querySelector("button[type='submit']") || document.querySelector(".zt-submit-btn");
+    const postForm = document.querySelector("#postSubmitForm") || document.querySelector("form");
+    function validateAndBlock(e) {
+      const titleInput = document.querySelector("#postTitle") || document.querySelector("input[name='title']");
+      const contentInput = document.querySelector("#postContent") || document.querySelector("textarea[name='content']");
+
+      const title = titleInput ? titleInput.value.trim() : "";
+      const content = contentInput ? contentInput.value.trim() : "";
+
+      if (content === "" || content.length < 10) {
+        alert("미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+        if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+        return false;
+      }
+
+      if (/^[ㄱ-ㅎㅏ-ㅣ\s]+$/.test(content)) {
+        alert("자음이나 모음만으로는 미션을 인증할 수 없습니다.");
+        if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+        return false;
+      }
+
+      // [수정된 강화된 도배/난타 차단 로직]
+      const onlyAlphaAndSpecial = content.replace(/[\s\p{P}\p{S}]/gu, "");
+      const isRandomEnglishMash = /^[a-zA-Z]{10,}$/.test(onlyAlphaAndSpecial);
+
+      // 완성된 한글(가-힣)이 최소 5글자 이상 포함되어 있는지 엄격하게 검사
+      const koreanSyllables = content.match(/[가-힣]/g);
+      const validKoreanCount = koreanSyllables ? koreanSyllables.length : 0;
+
+      if (isRandomEnglishMash || validKoreanCount < 5) {
+        alert("도배성 글은 작성 및 인증이 안됩니다. 내용을 상세히 작성해주세요.");
+        if (e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (e.stopPropagation) e.stopPropagation();
+        }
+        return false;
+      }
+
+      const cleanContent = getSanitizedText(content);
+      const cleanTitle = getSanitizedText(title);
+      const badWords = [
+        "시발", "씨발", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ", "지랄", "미친", "꺼져",
+        "fuck", "shit", "motherfucker", "scum", "bitch", "asshole", "bastard"
+      ];
+      for (let word of badWords) {
+        const cleanWord = getSanitizedText(word);
+        if (cleanContent.includes(cleanWord) || cleanTitle.includes(cleanWord)) {
+          alert("욕설이나 비속어는 올릴 수 없습니다.");
+          if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    if (postForm) {
+      postForm.addEventListener("submit", function (e) {
+        if (!validateAndBlock(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function (e) {
+        if (!validateAndBlock(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    }
   });
 
   window.addEventListener("pageshow", function () {
     if (missionId) refreshMissionProgress();
   });
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && missionId) {
-      refreshMissionProgress();
-    }
-  });
-
-  function statusLabel(status, periodStatus) {
-    if (periodStatus === 'EXPIRED') return '기간 종료';
-    if (periodStatus === 'UPCOMING') return '예정';
-    if (status === 'DONE') return '완료';
-    if (status === 'IN_PROGRESS') return '진행 중';
-    if (status === 'READY') return '대기';
-    if (!status) return '미시작';
-    return status;
-  }
-
-  function refreshMissionProgress() {
-    if (!missionId) return;
-
-    fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
-            .then(res => res.json())
-            .then(response => {
-              if (!response || !response.success || !response.data) return;
-
-              const data = response.data;
-              const currentCount = data.currentCount || 0;
-              const targetCount = data.targetCount || 0;
-              const percent = data.percent || 0;
-
-              document.getElementById("progress-text-display").innerText = currentCount + " / " + targetCount;
-
-              const bar = document.getElementById("progress-bar-element");
-              bar.style.width = percent + "%";
-              bar.setAttribute("aria-valuenow", percent);
-
-              document.getElementById("missionStatus").innerText = "상태: " + statusLabel(data.status, data.periodStatus);
-
-              const summary = document.getElementById("progress-summary");
-              if (!data.loggedIn) {
-                summary.innerText = "로그인하면 미션을 진행할 수 있어요.";
-              } else if (data.periodStatus === 'EXPIRED') {
-                summary.innerText = "이 미션은 수행 기간이 끝났어요.";
-              } else if (data.periodStatus === 'UPCOMING') {
-                summary.innerText = "아직 시작 전인 미션이에요.";
-              } else if (data.status === 'DONE') {
-                summary.innerText = data.rewardReceived
-                        ? "미션 완료! 포인트가 지급됐어요."
-                        : "미션 완료!";
-              } else {
-                summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행 중이에요.";
-              }
-
-              const canAct = data.loggedIn && data.available && data.status !== 'DONE';
-              const actionBtn = document.getElementById("missionActionBtn");
-              if (actionBtn) {
-                actionBtn.style.display = canAct ? "block" : "none";
-              }
-            })
-            .catch(err => {
-              console.error("진행 상황 동기화 실패:", err);
-            });
-  }
 </script>
 </body>
 </html>
