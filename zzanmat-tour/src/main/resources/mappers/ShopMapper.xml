@@ -13,7 +13,7 @@
              , stock
              , is_active AS active
              , created_at
-          FROM shop_item
+          FROM `SHOP_ITEM`
          WHERE is_active = 1
          ORDER BY cost_point ASC, item_id ASC
     </select>
@@ -27,7 +27,7 @@
              , stock
              , is_active AS active
              , created_at
-          FROM shop_item
+          FROM `SHOP_ITEM`
          ORDER BY is_active DESC, cost_point ASC, item_id ASC
     </select>
 
@@ -40,7 +40,7 @@
              , stock
              , is_active AS active
              , created_at
-          FROM shop_item
+          FROM `SHOP_ITEM`
          WHERE item_id = #{itemId}
     </select>
 
@@ -53,7 +53,7 @@
              , stock
              , is_active AS active
              , created_at
-          FROM shop_item
+          FROM `SHOP_ITEM`
          WHERE item_id = #{itemId}
          FOR UPDATE
     </select>
@@ -62,7 +62,7 @@
             parameterType="com.zzanmat.tour.shop.dto.ShopDto$SaveOrUpdate"
             useGeneratedKeys="true"
             keyProperty="itemId">
-        INSERT INTO shop_item (
+        INSERT INTO `SHOP_ITEM` (
             name
             , description
             , category
@@ -80,7 +80,7 @@
     </insert>
 
     <update id="updateItem" parameterType="com.zzanmat.tour.shop.dto.ShopDto$SaveOrUpdate">
-        UPDATE shop_item
+        UPDATE `SHOP_ITEM`
            SET name = #{name}
              , description = #{description}
              , category = #{category}
@@ -91,13 +91,13 @@
     </update>
 
     <update id="deactivateItem">
-        UPDATE shop_item
+        UPDATE `SHOP_ITEM`
            SET is_active = 0
          WHERE item_id = #{itemId}
     </update>
 
     <update id="decreaseStock">
-        UPDATE shop_item
+        UPDATE `SHOP_ITEM`
            SET stock = stock - 1
          WHERE item_id = #{itemId}
            AND stock IS NOT NULL
@@ -108,7 +108,7 @@
             parameterType="com.zzanmat.tour.shop.dto.ShopDto$Coupon"
             useGeneratedKeys="true"
             keyProperty="couponId">
-        INSERT INTO user_coupon (
+        INSERT INTO `USER_COUPON` (
             user_id
             , item_id
             , coupon_code
@@ -132,14 +132,14 @@
              , c.cost_point
              , c.status
              , c.purchased_at
-          FROM user_coupon c
-          JOIN shop_item i ON i.item_id = c.item_id
+          FROM `USER_COUPON` c
+          JOIN `SHOP_ITEM` i ON i.item_id = c.item_id
          WHERE c.user_id = #{userId}
          ORDER BY c.purchased_at DESC, c.coupon_id DESC
     </select>
 
     <insert id="savePurchasePointHistory">
-        INSERT INTO point_history (
+        INSERT INTO `POINT_HISTORY` (
             user_id
             , mission_id
             , point

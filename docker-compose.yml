@@ -7,7 +7,7 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: zad
+      MYSQL_DATABASE: ZAD
       MYSQL_USER: zzanmat
       MYSQL_PASSWORD: zzanmat
     volumes:
