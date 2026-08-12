@@ -180,6 +180,313 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js"></script>
 
+<script>
+  const contextPath = "${pageContext.request.contextPath}";
+
+  // URL 및 서버에서 missionId 안전하게 가져오기
+  const urlParams = new URLSearchParams(window.location.search);
+  let rawMissionId = urlParams.get('missionId');
+  let missionId = '';
+
+  if (rawMissionId) {
+    missionId = rawMissionId.toString().replace(/[^0-9]/g, '');
+  }
+  if (!missionId) {
+    missionId = "${mission != null ? mission.missionId : ''}";
+  }
+
+  const missionType = "${mission != null ? mission.missionType : 'POST'}";
+
+  // 페이지 로드 시 미션 진행률 동기화 및 폼 검증 실행
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("현재 감지된 missionId:", missionId); // F12 콘솔에서 확인용
+
+    if (missionId) {
+      refreshMissionProgress();
+    } else {
+      const summary = document.getElementById("progress-summary");
+      if (summary) summary.innerText = "조회할 미션 정보가 없습니다. 미션 목록에서 미션을 선택해주세요.";
+      const actionBtn = document.getElementById("missionActionBtn");
+      if (actionBtn) actionBtn.style.display = "none";
+    }
+
+    const actionBtn = document.getElementById("missionActionBtn");
+    if (actionBtn) {
+      actionBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (missionType === 'CHAT') {
+          window.location.href = contextPath + '/chat';
+          return;
+        }
+        if (missionType === 'COMMENT' || missionType === 'LIKE') {
+          window.location.href = contextPath + '/my-travel';
+          return;
+        }
+        if (!missionId) {
+          alert("미션 정보가 올바르지 않습니다.");
+          return;
+        }
+        window.location.href = contextPath + '/new-post?missionId=' + missionId;
+      });
+    }
+
+    // --- 게시글 작성 폼 비속어 및 도배 방지 검증 로직 ---
+    const submitBtn = document.querySelector("#submitBtn") || document.querySelector("button[type='submit']") || document.querySelector(".zt-submit-btn");
+    const postForm = document.querySelector("#postSubmitForm") || document.querySelector("form");
+
+    function validateAndBlock(e) {
+      const titleInput = document.querySelector("#postTitle") || document.querySelector("input[name='title']");
+      const contentInput = document.querySelector("#postContent") || document.querySelector("textarea[name='content']");
+
+      const title = titleInput ? titleInput.value.trim() : "";
+      const content = contentInput ? contentInput.value.trim() : "";
+
+      if (content === "" || content.length < 10) {
+        alert("미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+        if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+        return false;
+      }
+
+      const koreanJamoOnly = /^[ㄱ-ㅎㅏ-ㅣ\s]+$/;
+      if (koreanJamoOnly.test(content)) {
+        alert("자음이나 모음만으로는 미션을 인증할 수 없습니다. 의미 있는 내용을 입력해주세요.");
+        if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+        return false;
+      }
+
+      const excessiveRepetition = /(.)\1{5,}/;
+      if (excessiveRepetition.test(content)) {
+        alert("동일한 문자나 알파벳의 지나친 반복은 등록할 수 없습니다.");
+        if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+        return false;
+      }
+
+      const cleanContent = getSanitizedText(content);
+      const cleanTitle = getSanitizedText(title);
+      const badWords = [
+        "시발", "씨발", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ", "지랄", "미친", "꺼져",
+        "fuck", "shit", "motherfucker", "scum", "bitch", "asshole", "bastard"
+      ];
+
+      for (let word of badWords) {
+        const cleanWord = getSanitizedText(word);
+        if (cleanContent.includes(cleanWord) || cleanTitle.includes(cleanWord)) {
+          alert("욕설이나 비속어는 올릴 수 없습니다.");
+          if (e) { e.preventDefault(); e.stopImmediatePropagation(); if (e.stopPropagation) e.stopPropagation(); }
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (postForm) {
+      postForm.addEventListener("submit", function (e) {
+        if (!validateAndBlock(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function (e) {
+        if (!validateAndBlock(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (e.stopPropagation) e.stopPropagation();
+        }
+      }, true);
+    }
+  });
+
+  window.addEventListener("pageshow", function () {
+    if (missionId) refreshMissionProgress();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && missionId) {
+      refreshMissionProgress();
+    }
+  });
+
+  function statusLabel(status, periodStatus) {
+    if (periodStatus === 'EXPIRED') return '기간 종료';
+    if (periodStatus === 'UPCOMING') return '예정';
+    if (status === 'DONE') return '완료';
+    if (status === 'IN_PROGRESS') return '진행 중';
+    if (status === 'READY') return '대기';
+    if (!status) return '미시작';
+    return status;
+  }
+  function refreshMissionProgress() {
+    if (!missionId) {
+      console.warn("missionId가 존재하지 않습니다.");
+      return;
+    }
+
+    console.log("진행률 조회 요청 URL:", contextPath + '/api/mission/progress?missionId=' + missionId);
+
+    fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
+            .then(res => {
+              if (!res.ok) {
+                throw new Error("서버 응답 코드가 비정상적입니다: " + res.status);
+              }
+              return res.json();
+            })
+            .then(response => {
+              console.log("서버 응답 데이터:", response);
+
+              if (!response || !response.success || !response.data) {
+                console.warn("데이터 형식이 올바르지 않습니다.");
+                return;
+              }
+
+              const data = response.data;
+              const currentCount = data.currentCount || 0;
+              const targetCount = data.targetCount || 0;
+              const percent = data.percent || 0;
+
+              const textDisplay = document.getElementById("progress-text-display");
+              if (textDisplay) textDisplay.innerText = currentCount + " / " + targetCount;
+
+              const bar = document.getElementById("progress-bar-element");
+              if (bar) {
+                bar.style.width = percent + "%";
+                bar.setAttribute("aria-valuenow", percent);
+              }
+
+              const statusEl = document.getElementById("missionStatus");
+              if (statusEl) statusEl.innerText = "상태: " + statusLabel(data.status, data.periodStatus);
+
+              const summary = document.getElementById("progress-summary");
+              if (summary) {
+                if (!data.loggedIn) {
+                  summary.innerText = "로그인하면 미션을 진행할 수 있어요.";
+                } else if (data.periodStatus === 'EXPIRED') {
+                  summary.innerText = "이 미션은 수행 기간이 끝났어요.";
+                } else if (data.periodStatus === 'UPCOMING') {
+                  summary.innerText = "아직 시작 전인 미션이에요.";
+                } else if (data.status === 'DONE') {
+                  summary.innerText = data.rewardReceived ? "미션 완료! 포인트가 지급됐어요." : "미션 완료!";
+                } else {
+                  summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행 중이에요.";
+                }
+              }
+
+              const canAct = data.loggedIn && data.available && data.status !== 'DONE';
+              const actionBtn = document.getElementById("missionActionBtn");
+              if (actionBtn) {
+                actionBtn.style.display = canAct ? "block" : "none";
+              }
+            })
+            .catch(err => {
+              console.error("진행 상황 동기화 중 에러 발생:", err);
+            });
+  }
+    // 1. 우회 문자, 특수문자, 리트스피크(Leetspeak) 정화 함수
+    function getSanitizedText(str) {
+    if (!str) return "";
+    return str.toLowerCase()
+    .replace(/[\s\p{P}\p{S}]/gu, "")
+    .replace(/@/g, "a")
+    .replace(/1/g, "i")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/0/g, "o")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t");
+  }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const postForm = document.querySelector("form");
+    const submitBtn = document.querySelector("button[type='submit']") || document.querySelector(".zt-primary-btn");
+
+    function validateAndBlock(e) {
+    const titleInput = document.querySelector("#post-title") || document.querySelector("input[name='title']");
+    const contentInput = document.querySelector("#post-content") || document.querySelector("textarea[name='content']");
+
+    const title = titleInput ? titleInput.value.trim() : "";
+    const content = contentInput ? contentInput.value.trim() : "";
+
+    // ① 글자수 10자 미만 차단
+    if (content === "" || content.length < 10) {
+    alert("미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+
+    // ② 자음/모음 도배 체크 (ㅋㅋㅋ, ㅠㅠㅠ 등)
+    if (/^[ㄱ-ㅎㅏ-ㅣ\s]+$/.test(content)) {
+    alert("자음이나 모음만으로는 미션을 인증할 수 없습니다. 의미 있는 내용을 입력해주세요.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+
+    // ③ 동일 문자 지나친 반복 체크 (6회 이상)
+    if (/(.)\1{5,}/.test(content)) {
+    alert("동일한 문자나 알파벳의 지나친 반복은 등록할 수 없습니다.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+    return false;
+  }
+
+    // ④ 한·영 비속어 및 우회 욕설 필터링 (정화된 텍스트 검사)
+    const cleanContent = getSanitizedText(content);
+    const cleanTitle = getSanitizedText(title);
+
+    const badWords = [
+    "시발", "씨발", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ", "지랄", "미친", "꺼져", "호구",
+    "fuck", "shit", "motherfucker", "scum", "bitch", "asshole", "bastard", "crap", "stfu"
+    ];
+
+    for (let word of badWords) {
+    const cleanWord = getSanitizedText(word);
+    if (cleanContent.includes(cleanWord) || cleanTitle.includes(cleanWord)) {
+    alert("욕설, 비속어 또는 부적절한 도배 문자는 올릴 수 없습니다.");
+    if (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+    return false;
+  }
+  }
+
+    return true; // 모든 검증 통과 시 정상 등록 진행
+  }
+
+    // 폼 전송(submit) 이벤트 가로채기
+    if (postForm) {
+    postForm.addEventListener("submit", function (e) {
+    if (!validateAndBlock(e)) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+  }, true);
+  }
+
+    // 버튼 클릭(click) 이벤트 가로채기 (이중 방어)
+    if (submitBtn) {
+    submitBtn.addEventListener("click", function (e) {
+    if (!validateAndBlock(e)) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  }, true);
+  }
+  });
+</script>
 </body>
 </html>
