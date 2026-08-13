@@ -2,6 +2,7 @@ package com.zzanmat.tour.post.controller;
 
 import com.zzanmat.tour.comment.service.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
+import com.zzanmat.tour.common.util.PostContentFilter;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
@@ -92,20 +93,6 @@ public class PostController {
         return "post/post-detail";
     }
 
-    // 우회 차단을 위한 서버용 텍스트 정화 메서드
-    private String sanitizeText(String text) {
-        if (text == null) return "";
-        return text.toLowerCase()
-                .replaceAll("[\\s\\p{Punct}]", "") // 공백 및 특수문자 제거
-                .replace("@", "a")
-                .replace("1", "i")
-                .replace("3", "e")
-                .replace("4", "a")
-                .replace("0", "o")
-                .replace("5", "s")
-                .replace("7", "t");
-    }
-
     @PostMapping("/post-like")
     @ResponseBody
     public ApiResponse<Map<String, Object>> toggleLike(
@@ -164,7 +151,6 @@ public class PostController {
         return "post/my-travel";
     }
 
-
     @PostMapping("/new-post")
     public String createPost(
             PostDto post,
@@ -177,55 +163,19 @@ public class PostController {
             MemberDto loginMember,
             Model model
     ) throws IOException {
+        String rejectReason = PostContentFilter.rejectReason(
+                post.getTitle(),
+                post.getContent(),
+                missionId != null
+        );
 
-        String title = post.getTitle() != null ? post.getTitle() : "";
-        String content = post.getContent() != null ? post.getContent() : "";
-
-        // 1. 글자수 검증 (10자 미만 차단)
-        if (content.trim().length() < 10) {
-            model.addAttribute("errorMessage", "미션 인증을 위해 내용을 10자 이상 작성해주세요.");
+        if (rejectReason != null) {
+            model.addAttribute("errorMessage", rejectReason);
             model.addAttribute("missionId", missionId);
+            model.addAttribute("post", post);
             return "post/new-post";
         }
 
-        // 2. 자음/모음만 도배된 경우 차단 (예: ㅋㅋㅋ, ㅠㅠㅠ)
-        if (content.matches("^[ㄱ-ㅎㅏ-ㅣ\\s]+$")) {
-            model.addAttribute("errorMessage", "자음이나 모음만으로는 작성할 수 없습니다.");
-            model.addAttribute("missionId", missionId);
-            return "post/new-post";
-        }
-
-        // 3. 무작위 키보드 난타/테러 문자열 차단 (한글이나 숫자가 전혀 없고, 알파벳과 특수문자만 무분별하게 10자 이상 연속된 경우)
-        // 예: djfdg;jffhjhe;fhwf 처럼 의미 없는 난타 테러 방지
-        String strippedContent = content.replaceAll("[\\s\\p{Punct}]", ""); // 공백 및 특수문자 제거
-        boolean hasKoreanOrNumber = strippedContent.matches(".*[ㄱ-힣0-9].*");
-        boolean isOnlyRandomAlpha = strippedContent.matches("^[a-zA-Z]{10,}$");
-
-        if (!hasKoreanOrNumber && isOnlyRandomAlpha) {
-            model.addAttribute("errorMessage", "의미 없는 무작위 문자열이나 테러성 글은 등록할 수 없습니다.");
-            model.addAttribute("missionId", missionId);
-            return "post/new-post";
-        }
-
-        // 4. 한·영 비속어 및 우회 욕설 필터링
-        String cleanContent = sanitizeText(content);
-        String cleanTitle = sanitizeText(title);
-
-        String[] badWords = {
-                "시발", "씨발", "병신", "개새끼", "ㅅㅂ", "ㅂㅅ", "지랄", "미친", "새끼", "꺼져",
-                "fuck", "shit", "bitch", "asshole", "motherfucker", "bastard", "crap", "stfu"
-        };
-
-        for (String word : badWords) {
-            String cleanWord = sanitizeText(word);
-            if (cleanContent.contains(cleanWord) || cleanTitle.contains(cleanWord)) {
-                model.addAttribute("errorMessage", "욕설, 비속어 또는 부적절한 내용은 올릴 수 없습니다.");
-                model.addAttribute("missionId", missionId);
-                return "post/new-post";
-            }
-        }
-
-        // 5. 정상 저장 처리
         post.setUserId(loginMember.getId());
         postService.save(post, imageFiles);
 
