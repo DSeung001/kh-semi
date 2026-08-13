@@ -38,7 +38,7 @@
 
       <header class="zt-page-header">
         <h1>새 게시물 만들기 / Create New Post</h1>
-        <p>사진, 여행 동선, 경비와 태그를 입력합니다. / Enter photos, travel route, expenses, and tags.</p>
+        <p>사진, 여행 동선, 경비와 태그를 입력합니다.</p>
       </header>
 
       <section class="zt-panel zt-profile-card">
@@ -64,8 +64,8 @@
                 <div id="post-image-empty"
                      class="zt-post-image-empty">
                   <i class="bi bi-images display-5"></i>
-                  <strong>사진을 선택하세요 / Select Photos</strong>
-                  <small>JPG, PNG 파일을 최대 5장까지 선택할 수 있습니다. / Up to 5 JPG/PNG files.</small>
+                  <strong>사진을 선택하세요 </strong>
+                  <small>JPG, PNG 파일을 최대 5장까지 선택할 수 있습니다. </small>
                 </div>
 
                 <img id="post-main-preview"
@@ -95,7 +95,7 @@
               </div>
 
               <p class="zt-post-image-count">
-                선택한 사진 / Selected Photos:
+                선택한 사진 :
                 <strong id="post-image-count">0</strong>
                 / 5
               </p>
@@ -105,25 +105,25 @@
 
           <div class="col-lg-6">
             <div class="mb-3">
-              <label class="form-label" for="post-title">제목 / Title</label>
-              <input id="post-title" name="title" class="form-control" type="text" maxlength="60" placeholder="여행 제목을 입력하세요 / Enter travel title" value="<c:out value='${post.title}'/>" required>
+              <label class="form-label" for="post-title">제목 </label>
+              <input id="post-title" name="title" class="form-control" type="text" maxlength="60" placeholder="여행 제목을 입력하세요 " value="<c:out value='${post.title}'/>" required>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="post-place">여행 장소 / Location</label>
-              <input id="post-place" name="place" class="form-control" type="text" placeholder="예: 서울 망원동 / e.g., Mangwon-dong, Seoul" value="<c:out value='${post.place}'/>" required>
+              <label class="form-label" for="post-place">여행 장소 </label>
+              <input id="post-place" name="place" class="form-control" type="text" placeholder="예: 서울 망원동 " value="<c:out value='${post.place}'/>" required>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="post-content">내용 / Content</label>
+              <label class="form-label" for="post-content">내용 </label>
               <textarea id="post-content"
                         name="content"
                         class="form-control"
                         rows="8"
-                        placeholder="여행 내용을 적어 주세요. (최소 10자 이상) / Please write at least 10 characters."
+                        placeholder="여행 내용을 적어 주세요. (최소 10자 이상) "
                         required><c:out value="${post.content}"/></textarea>
             </div>
 
             <div class="mb-3">
-              <label class="form-label" for="transport-cost">교통비 / Transport Cost</label>
+              <label class="form-label" for="transport-cost">교통비 </label>
               <input id="transport-cost"
                      name="transportCost"
                      class="form-control"
@@ -136,7 +136,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label" for="food-cost">식비 / Food Cost</label>
+              <label class="form-label" for="food-cost">식비 </label>
               <input id="food-cost"
                      name="foodCost"
                      class="form-control"
@@ -150,7 +150,7 @@
 
             <div class="mb-3">
               <label class="form-label" for="other-cost">
-                입장료 및 기타 비용 / Other Expenses
+                입장료 및 기타 비용
               </label>
               <input id="other-cost"
                      name="otherCost"
@@ -164,14 +164,14 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label" for="post-tags">태그 / Tags</label>
-              <input id="post-tags" class="form-control" type="text" placeholder="#서울여행 #가성비여행 / #Travel #Budget">
+              <label class="form-label" for="post-tags">태그 </label>
+              <input id="post-tags" class="form-control" type="text" placeholder="#서울여행 #가성비여행 ">
             </div>
             <div class="form-check form-switch mb-4">
               <input id="share-route" class="form-check-input" type="checkbox" checked>
-              <label class="form-check-label" for="share-route">여행 동선 공개 / Share Travel Route</label>
+              <label class="form-check-label" for="share-route">여행 동선 공개 </label>
             </div>
-            <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">작성 완료 / Complete</button>
+            <button class="btn btn-primary zt-primary-btn w-100 py-2" type="submit">작성 완료 </button>
           </div>
         </form>
       </section>
@@ -186,7 +186,6 @@
 <script src="${pageContext.request.contextPath}/assets/js/post-image-preview.js"></script>
 
 <script>
-  const isKoreanLang = navigator.language.startsWith('ko');
   const isMissionPost = Boolean(document.querySelector("input[name='missionId']"));
 
   function getSanitizedText(str) {
@@ -209,22 +208,21 @@
     const title = titleInput ? titleInput.value.trim() : "";
     const content = contentInput ? contentInput.value.trim() : "";
 
+    // 1. 내용 길이 검증 (10자 이상)
     if (content === "" || content.length < 10) {
-      alert(isKoreanLang
-              ? (isMissionPost ? "미션 인증을 위해 내용을 10자 이상 작성해주세요." : "내용을 10자 이상 작성해주세요.")
-              : "Please write at least 10 characters.");
+      alert(isMissionPost ? "미션 인증을 위해 내용을 10자 이상 작성해주세요." : "내용을 10자 이상 작성해주세요.");
       if (e) e.preventDefault();
       return false;
     }
 
+    // 2. 자음/모음만 작성했는지 검증
     if (/^[ㄱ-ㅎㅏ-ㅣ\s]+$/.test(content)) {
-      alert(isKoreanLang
-              ? "자음이나 모음만으로는 작성할 수 없습니다."
-              : "You cannot post with consonants or vowels only.");
+      alert("자음이나 모음만으로는 작성할 수 없습니다.");
       if (e) e.preventDefault();
       return false;
     }
 
+    // 3. 비속어/욕설 필터링
     const cleanContent = getSanitizedText(content);
     const cleanTitle = getSanitizedText(title);
     const badWords = [
@@ -235,9 +233,7 @@
     for (let word of badWords) {
       const cleanWord = getSanitizedText(word);
       if (cleanContent.includes(cleanWord) || cleanTitle.includes(cleanWord)) {
-        alert(isKoreanLang
-                ? "욕설, 비속어 또는 부적절한 내용은 올릴 수 없습니다."
-                : "Profanity or inappropriate content cannot be uploaded.");
+        alert("욕설, 비속어 또는 부적절한 내용은 올릴 수 없습니다.");
         if (e) e.preventDefault();
         return false;
       }
