@@ -162,7 +162,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
-
 <script>
   const contextPath = "${pageContext.request.contextPath}";
 
@@ -179,11 +178,84 @@
 
   const missionType = "${mission != null ? mission.missionType : 'POST'}";
 
+  function statusLabel(status, periodStatus) {
+    if (periodStatus === 'EXPIRED') return '기간 종료';
+    if (periodStatus === 'UPCOMING') return '예정';
+    if (status === 'DONE') return '완료';
+    if (status === 'IN_PROGRESS') return '진행 중';
+    if (status === 'READY') return '대기';
+    if (!status) return '미시작';
+    return status;
+  }
+
+  function refreshMissionProgress() {
+    if (!missionId) {
+      const summary = document.getElementById("progress-summary");
+      if (summary) summary.innerText = "미션 정보가 확인되지 않습니다.";
+      return;
+    }
+
+    fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(response => {
+        if (!response || !response.success || !response.data) return;
+
+        const data = response.data;
+        const currentCount = data.currentCount || 0;
+        const targetCount = data.targetCount || 0;
+        const percent = data.percent || 0;
+
+        const textDisplay = document.getElementById("progress-text-display");
+        if (textDisplay) textDisplay.innerText = currentCount + " / " + targetCount;
+
+        const bar = document.getElementById("progress-bar-element");
+        if (bar) {
+          bar.style.width = percent + "%";
+          bar.setAttribute("aria-valuenow", percent);
+        }
+
+        const statusEl = document.getElementById("missionStatus");
+        if (statusEl) statusEl.innerText = "상태: " + statusLabel(data.status, data.periodStatus);
+
+        const summary = document.getElementById("progress-summary");
+        if (summary) {
+          if (!data.loggedIn) {
+            summary.innerText = "로그인하면 미션을 진행할 수 있어요.";
+          } else if (data.periodStatus === 'EXPIRED') {
+            summary.innerText = "이 미션은 수행 기간이 끝났어요.";
+          } else if (data.periodStatus === 'UPCOMING') {
+            summary.innerText = "아직 시작 전인 미션이에요.";
+          } else if (data.status === 'DONE') {
+            summary.innerText = data.rewardReceived
+                    ? "미션 완료! 포인트가 지급됐어요."
+                    : "미션 완료!";
+          } else {
+            summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행 중이에요.";
+          }
+        }
+
+        const actionBtn = document.getElementById("missionActionBtn");
+        if (actionBtn) {
+          const canAct = data.loggedIn && data.available && data.status !== 'DONE';
+          actionBtn.style.display = canAct ? "block" : "none";
+        }
+      })
+      .catch(err => {
+        console.error("진행 상황 동기화 실패:", err);
+        const summary = document.getElementById("progress-summary");
+        if (summary) summary.innerText = "미션 정보를 불러오지 못했습니다.";
+      });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     if (missionId) {
       refreshMissionProgress();
     } else {
-      document.getElementById("progress-summary").innerText = "조회할 미션 정보가 없습니다. 미션 목록에서 미션을 선택해주세요.";
+      const summary = document.getElementById("progress-summary");
+      if (summary) summary.innerText = "조회할 미션 정보가 없습니다.";
       const actionBtn = document.getElementById("missionActionBtn");
       if (actionBtn) actionBtn.style.display = "none";
     }
@@ -217,63 +289,6 @@
       refreshMissionProgress();
     }
   });
-
-  function statusLabel(status, periodStatus) {
-    if (periodStatus === 'EXPIRED') return '기간 종료';
-    if (periodStatus === 'UPCOMING') return '예정';
-    if (status === 'DONE') return '완료';
-    if (status === 'IN_PROGRESS') return '진행 중';
-    if (status === 'READY') return '대기';
-    if (!status) return '미시작';
-    return status;
-  }
-
-  function refreshMissionProgress() {
-    if (!missionId) return;
-
-    fetch(contextPath + '/api/mission/progress?missionId=' + missionId)
-            .then(res => res.json())
-            .then(response => {
-              if (!response || !response.success || !response.data) return;
-
-              const data = response.data;
-              const currentCount = data.currentCount || 0;
-              const targetCount = data.targetCount || 0;
-              const percent = data.percent || 0;
-
-              document.getElementById("progress-text-display").innerText = currentCount + " / " + targetCount;
-
-              const bar = document.getElementById("progress-bar-element");
-              bar.style.width = percent + "%";
-              bar.setAttribute("aria-valuenow", percent);
-
-              document.getElementById("missionStatus").innerText = "상태: " + statusLabel(data.status, data.periodStatus);
-
-              const summary = document.getElementById("progress-summary");
-              if (!data.loggedIn) {
-                summary.innerText = "로그인하면 미션을 진행할 수 있어요.";
-              } else if (data.periodStatus === 'EXPIRED') {
-                summary.innerText = "이 미션은 수행 기간이 끝났어요.";
-              } else if (data.periodStatus === 'UPCOMING') {
-                summary.innerText = "아직 시작 전인 미션이에요.";
-              } else if (data.status === 'DONE') {
-                summary.innerText = data.rewardReceived
-                        ? "미션 완료! 포인트가 지급됐어요."
-                        : "미션 완료!";
-              } else {
-                summary.innerText = "목표 " + targetCount + "회 중 " + currentCount + "회 진행 중이에요.";
-              }
-
-              const canAct = data.loggedIn && data.available && data.status !== 'DONE';
-              const actionBtn = document.getElementById("missionActionBtn");
-              if (actionBtn) {
-                actionBtn.style.display = canAct ? "block" : "none";
-              }
-            })
-            .catch(err => {
-              console.error("진행 상황 동기화 실패:", err);
-            });
-  }
 </script>
 </body>
 </html>

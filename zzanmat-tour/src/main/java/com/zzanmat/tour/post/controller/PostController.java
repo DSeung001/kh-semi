@@ -2,6 +2,7 @@ package com.zzanmat.tour.post.controller;
 
 import com.zzanmat.tour.comment.service.CommentService;
 import com.zzanmat.tour.common.dto.ApiResponse;
+import com.zzanmat.tour.common.util.PostContentFilter;
 import com.zzanmat.tour.common.util.SessionConst;
 import com.zzanmat.tour.member.dto.MemberDto;
 import com.zzanmat.tour.member.service.MemberService;
@@ -159,13 +160,25 @@ public class PostController {
             ) List<MultipartFile> imageFiles,
             @RequestParam(required = false) Long missionId,
             @SessionAttribute(SessionConst.LOGIN_MEMBER)
-            MemberDto loginMember
+            MemberDto loginMember,
+            Model model
     ) throws IOException {
-        post.setUserId(loginMember.getId());
+        String rejectReason = PostContentFilter.rejectReason(
+                post.getTitle(),
+                post.getContent(),
+                missionId != null
+        );
 
+        if (rejectReason != null) {
+            model.addAttribute("errorMessage", rejectReason);
+            model.addAttribute("missionId", missionId);
+            model.addAttribute("post", post);
+            return "post/new-post";
+        }
+
+        post.setUserId(loginMember.getId());
         postService.save(post, imageFiles);
 
-        // 미션 하러가기(missionId)로 와도 조건 맞는 CREATE_POST 미션은 모두 진행
         missionService.recordEventProgress(loginMember.getId(), "CREATE_POST", post);
 
         if (missionId != null) {
@@ -228,7 +241,7 @@ public class PostController {
 
     @PostMapping("/delete-post")
     public String deletePost(@RequestParam Long postId,
-                            @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember) {
+                             @SessionAttribute(SessionConst.LOGIN_MEMBER) MemberDto loginMember) {
         PostDto post = postService.findById(postId);
 
         if (!post.getUserId().equals(loginMember.getId())) {
