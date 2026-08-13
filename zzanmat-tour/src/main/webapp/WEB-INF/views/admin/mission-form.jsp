@@ -62,7 +62,7 @@
                 <label class="form-check-label" for="modeChat">오픈 채팅</label>
               </div>
             </div>
-            <div class="form-text" id="modeHint">게시글 작성 시 장소·경비 조건으로 진행됩니다.</div>
+            <div class="form-text" id="modeHint">게시글을 작성하면 진행됩니다. 장소·경비는 선택 조건입니다.</div>
           </div>
 
           <div class="col-md-8">
@@ -98,7 +98,7 @@
               <div class="form-text">비우면 경비 제한 없음. 입력 시 교통비+식비+기타 합계가 상한 이하일 때만 인정됩니다.</div>
             </div>
             <div class="col-12">
-              <div class="form-text">포스트 미션은 장소 키워드 또는 총 경비 상한 중 하나 이상 입력해야 합니다.</div>
+              <div class="form-text">둘 다 비우면 게시글 작성만으로 인증됩니다.</div>
             </div>
           </div>
 
@@ -135,7 +135,7 @@
   const missionId = "${param.missionId}";
 
   const MODE_MAP = {
-    POST: { type: 'POST', trigger: 'CREATE_POST', hint: '게시글 작성 시 장소·경비 조건으로 진행됩니다.' },
+    POST: { type: 'POST', trigger: 'CREATE_POST', hint: '게시글을 작성하면 진행됩니다. 장소·경비는 선택 조건입니다.' },
     COMMENT: { type: 'COMMENT', trigger: 'CREATE_COMMENT', hint: '댓글을 작성하면 진행됩니다. 추가 조건은 없습니다.' },
     LIKE: { type: 'LIKE', trigger: 'LIKE', hint: '게시글·댓글에 좋아요를 누르면 진행됩니다. 추가 조건은 없습니다.' },
     CHAT: { type: 'CHAT', trigger: 'OPEN_CHAT', hint: '오픈 채팅에 메시지를 보내면 진행됩니다. 추가 조건은 없습니다.' }
@@ -204,12 +204,7 @@
     const maxTotalCostRaw = document.getElementById('maxTotalCost').value;
     let maxTotalCost = maxTotalCostRaw === '' ? 0 : Number(maxTotalCostRaw);
 
-    if (mode === 'POST') {
-      if (!placeKeyword && !(maxTotalCost > 0)) {
-        alert('포스트 미션은 장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.');
-        return;
-      }
-    } else {
+    if (mode !== 'POST') {
       placeKeyword = '';
       maxTotalCost = 0;
     }

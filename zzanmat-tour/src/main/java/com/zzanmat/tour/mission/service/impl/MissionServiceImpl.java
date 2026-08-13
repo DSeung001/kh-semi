@@ -361,12 +361,6 @@ public class MissionServiceImpl implements MissionService {
             maxTotalCost = 0L;
         }
         requestDto.setMaxTotalCost(maxTotalCost);
-
-        boolean hasPlace = StringUtils.hasText(placeKeyword);
-        boolean hasCost = maxTotalCost > 0;
-        if (!hasPlace && !hasCost) {
-            throw new IllegalArgumentException("포스트 미션은 장소 키워드 또는 총 경비 상한 중 하나 이상 입력해 주세요.");
-        }
     }
 
     private boolean matchesMissionConditions(MissionResponseDto.Info mission, PostDto post) {
