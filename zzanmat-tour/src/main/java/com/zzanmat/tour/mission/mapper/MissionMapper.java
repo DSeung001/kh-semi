@@ -41,7 +41,9 @@ public interface MissionMapper {
 
     int sumPointsByUserId(@Param("userId") Long userId);
 
-    List<Map<String, Object>> sumPointsByDayLast14();
+    List<Map<String, Object>> sumEarnedPointsByDayLast14();
+
+    List<Map<String, Object>> sumUsedPointsByDayLast14();
 
     void savePointHistory(
             @Param("userId") Long userId,

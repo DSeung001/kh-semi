@@ -27,7 +27,9 @@ public interface MissionService {
 
     int getUserPointBalance(Long userId);
 
-    List<Map<String, Object>> sumPointsByDayLast14();
+    List<Map<String, Object>> sumEarnedPointsByDayLast14();
+
+    List<Map<String, Object>> sumUsedPointsByDayLast14();
 
     void createMission(MissionRequestDto.SaveOrUpdate requestDto);
 

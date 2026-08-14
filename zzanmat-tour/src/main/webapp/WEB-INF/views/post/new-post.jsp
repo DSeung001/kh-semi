@@ -37,7 +37,7 @@
     <main class="zt-content">
 
       <header class="zt-page-header">
-        <h1>새 게시물 만들기 / Create New Post</h1>
+        <h1>새 게시물 만들기</h1>
         <p>사진, 여행 동선, 경비와 태그를 입력합니다.</p>
       </header>
 
@@ -83,7 +83,7 @@
                 <label class="zt-post-add-image"
                        for="new-post-image">
                   <i class="bi bi-plus-lg"></i>
-                  <span>사진 / Photo</span>
+                  <span>사진</span>
 
                   <input id="new-post-image"
                          name="imageFiles"

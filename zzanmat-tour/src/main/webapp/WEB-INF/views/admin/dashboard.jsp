@@ -213,8 +213,8 @@
           <div class="zt-admin-chart">
             <div class="zt-admin-chart-head">
               <div>
-                <h2>지급 포인트 추이</h2>
-                <p>최근 14일 포인트 지급량</p>
+                <h2>포인트 추이</h2>
+                <p>최근 14일 지급량·사용량</p>
               </div>
               <span class="zt-admin-chart-badge is-point"><span class="dot"></span>포인트</span>
             </div>
@@ -360,9 +360,13 @@
   });
 
   const pointCtx = document.getElementById('pointChart').getContext('2d');
-  const pointGradient = pointCtx.createLinearGradient(0, 0, 0, 260);
-  pointGradient.addColorStop(0, 'rgba(234, 88, 12, 0.22)');
-  pointGradient.addColorStop(1, 'rgba(234, 88, 12, 0)');
+  const earnedGradient = pointCtx.createLinearGradient(0, 0, 0, 260);
+  earnedGradient.addColorStop(0, 'rgba(234, 88, 12, 0.22)');
+  earnedGradient.addColorStop(1, 'rgba(234, 88, 12, 0)');
+
+  const usedGradient = pointCtx.createLinearGradient(0, 0, 0, 260);
+  usedGradient.addColorStop(0, 'rgba(100, 116, 139, 0.18)');
+  usedGradient.addColorStop(1, 'rgba(100, 116, 139, 0)');
 
   new Chart(pointCtx, {
     type: 'line',
@@ -372,17 +376,35 @@
         {
           label: '지급 포인트',
           data: [
-            <c:forEach var="value" items="${pointDailyCounts}" varStatus="st">
+            <c:forEach var="value" items="${pointEarnedDailyCounts}" varStatus="st">
               ${value}<c:if test="${!st.last}">,</c:if>
             </c:forEach>
           ],
           borderColor: '#ea580c',
-          backgroundColor: pointGradient,
+          backgroundColor: earnedGradient,
           borderWidth: 2.5,
           pointRadius: 3.5,
           pointHoverRadius: 6,
           pointBackgroundColor: '#fff',
           pointBorderColor: '#ea580c',
+          pointBorderWidth: 2,
+          tension: 0.35,
+          fill: true
+        },
+        {
+          label: '사용 포인트',
+          data: [
+            <c:forEach var="value" items="${pointUsedDailyCounts}" varStatus="st">
+              ${value}<c:if test="${!st.last}">,</c:if>
+            </c:forEach>
+          ],
+          borderColor: '#64748b',
+          backgroundColor: usedGradient,
+          borderWidth: 2.5,
+          pointRadius: 3.5,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#64748b',
           pointBorderWidth: 2,
           tension: 0.35,
           fill: true

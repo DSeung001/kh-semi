@@ -278,8 +278,14 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public List<Map<String, Object>> sumPointsByDayLast14() {
-        List<Map<String, Object>> rows = missionMapper.sumPointsByDayLast14();
+    public List<Map<String, Object>> sumEarnedPointsByDayLast14() {
+        List<Map<String, Object>> rows = missionMapper.sumEarnedPointsByDayLast14();
+        return rows != null ? rows : List.of();
+    }
+
+    @Override
+    public List<Map<String, Object>> sumUsedPointsByDayLast14() {
+        List<Map<String, Object>> rows = missionMapper.sumUsedPointsByDayLast14();
         return rows != null ? rows : List.of();
     }
 
