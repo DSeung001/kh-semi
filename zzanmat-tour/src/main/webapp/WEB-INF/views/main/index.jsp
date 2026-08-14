@@ -162,27 +162,52 @@
                         </div>
                     </header>
 
-                    <a href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
+                    <c:choose>
+                        <c:when test="${not empty post.images}">
+                            <div class="zt-detail-carousel" data-detail-carousel>
+                                <a class="zt-detail-slides"
+                                   href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
+                                    <c:forEach var="image" items="${post.images}" varStatus="status">
+                                        <img class="zt-post-image zt-detail-slide ${status.first ? 'is-active' : ''}"
+                                             src="${pageContext.request.contextPath}${image.uploadPath}"
+                                             alt="${image.originName}"
+                                             data-slide-index="${status.index}"
+                                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg';">
+                                    </c:forEach>
+                                </a>
 
-                        <c:choose>
+                                <c:if test="${post.images.size() > 1}">
+                                    <button type="button"
+                                            class="zt-detail-carousel-button zt-detail-carousel-prev"
+                                            data-carousel-prev
+                                            aria-label="이전 사진">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
 
-                            <c:when test="${not empty post.thumbnailPath}">
-                                <img class="zt-post-image"
-                                     src="${pageContext.request.contextPath}${post.thumbnailPath}"
-                                     alt="게시글 대표 이미지"
-                                     onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg';">
+                                    <button type="button"
+                                            class="zt-detail-carousel-button zt-detail-carousel-next"
+                                            data-carousel-next
+                                            aria-label="다음 사진">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
 
-                            </c:when>
+                                    <div class="zt-detail-carousel-count">
+                                        <span data-carousel-current>1</span>
+                                        /
+                                        <span data-carousel-total>${post.images.size()}</span>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </c:when>
 
-                            <c:otherwise>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/post-detail?postId=${post.postId}">
                                 <img class="zt-post-image"
                                      src="${pageContext.request.contextPath}/assets/images/zzanmat-default.jpg"
                                      alt="기본 여행 이미지">
-                            </c:otherwise>
-
-                        </c:choose>
-
-                    </a>
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
 
                     <div class="zt-post-actions">
 
@@ -242,6 +267,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/follow.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/post-detail-carousel.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/post-like.js"></script>
 
 </body>

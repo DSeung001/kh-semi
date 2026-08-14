@@ -42,6 +42,10 @@ public class HomeController {
         );
 
         for (PostDto post : latestPosts) {
+            post.setImages(
+                    postService.findImagesByPostId(post.getPostId())
+            );
+
             boolean liked = loginMember != null
                     && postService.isLiked(
                     post.getPostId(),

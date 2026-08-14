@@ -25,9 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ".zt-comment-row"
         );
 
-        const likeCount = commentRow.querySelector(
-            "[data-comment-like-count]"
-        );
+        const likeCount = commentRow
+            ? commentRow.querySelector("[data-comment-like-count]")
+            : null;
 
         likeButton.disabled = true;
 
@@ -67,11 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 result.liked
             );
 
-            likeIcon.className = result.liked
-                ? "bi bi-heart-fill"
-                : "bi bi-heart";
+            if (likeIcon) {
+                likeIcon.className = result.liked
+                    ? "bi bi-heart-fill"
+                    : "bi bi-heart";
+            }
 
-            likeCount.textContent = result.likeCount;
+            if (likeCount) {
+                likeCount.textContent = result.likeCount;
+            }
         } catch (error) {
             console.error(error);
             alert(error.message);

@@ -234,6 +234,10 @@ public class PostService {
         return postMapper.findPage(sort, keyword, offset, size);
     }
 
+    public List<PostImageDto> findImagesByPostId(Long postId) {
+        return postMapper.findImagesByPostId(postId);
+    }
+
     public int countAll(String keyword) {
         return postMapper.countAll(keyword);
     }

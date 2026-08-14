@@ -340,7 +340,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const likeCount = document.createElement("div");
 
             likeCount.className = "zt-comment-like-count";
-            likeCount.textContent = "좋아요 0개";
+
+            const likeCountNumber = document.createElement("span");
+
+            likeCountNumber.setAttribute("data-comment-like-count", "");
+            likeCountNumber.textContent = String(comment.likeCount ?? 0);
+
+            likeCount.append("좋아요 ");
+            likeCount.append(likeCountNumber);
+            likeCount.append("개");
 
             const commentActions = document.createElement("div");
 
